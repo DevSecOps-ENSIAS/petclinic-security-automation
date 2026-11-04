@@ -1,0 +1,587 @@
+/*
+ * Application shell and UI components.
+ *
+ * Visual language: a calm, bordered "feed" surface on white, generous rounded
+ * corners, pill-shaped controls, and the PetClinic green used only for
+ * emphasis (active navigation, primary actions, metadata chips).
+ */
+
+#app {
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  align-items: start;
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.app-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+  padding: 12px 0 24px;
+}
+
+.app-column {
+  min-width: 0;
+  min-height: 70vh;
+  background: $pc-surface;
+  border: 1px solid $pc-border;
+  border-radius: $pc-radius;
+  padding-bottom: 8px;
+  overflow: hidden;
+}
+
+.app-aside {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------- Page sections ---------- */
+
+.app-column section {
+  padding: 0 22px 14px;
+}
+
+.app-column section > h2,
+.app-column section > div > h2 {
+  margin: 0 -22px 18px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid $pc-border;
+}
+
+.app-column section h2:not(:first-child) {
+  margin-top: 10px;
+  border-top: 1px solid $pc-border;
+}
+
+/* ---------- Cards ---------- */
+
+.pc-card {
+  padding: 16px 18px;
+  background: $pc-surface;
+  border: 1px solid $pc-border;
+  border-radius: $pc-radius;
+}
+
+.pc-card__title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.pc-card p {
+  margin: 0;
+  color: $pc-muted;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.pc-card--form {
+  margin: 4px 0 18px;
+  padding: 18px;
+}
+
+.pc-svc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.pc-svc + .pc-svc {
+  border-top: 1px solid $pc-border;
+}
+
+.pc-svc__meta {
+  margin-left: auto;
+  color: $pc-muted;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.pc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $pc-green;
+  box-shadow: 0 0 0 3px $pc-green-ring;
+}
+
+/* ---------- Lists ---------- */
+
+.pc-list {
+  border-top: 1px solid $pc-border;
+}
+
+.pc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid $pc-border;
+  color: inherit;
+  text-decoration: none;
+  transition: background $pc-ease;
+
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+a.pc-row:hover {
+  background: $pc-hover;
+}
+
+.pc-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pc-row-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: $pc-ink;
+}
+
+.pc-row-meta {
+  margin-top: 2px;
+  color: $pc-muted;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.pc-row-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pc-row-chevron {
+  margin-left: auto;
+  padding-top: 4px;
+  color: $pc-faint;
+  font-size: 13px;
+  transition: color $pc-ease, transform $pc-ease;
+
+  .pc-row:hover & {
+    color: $pc-green;
+    transform: translateX(2px);
+  }
+}
+
+.pc-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $pc-green-soft;
+  color: $pc-green-deep;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.pc-avatar--lg {
+  flex-basis: 76px;
+  width: 76px;
+  height: 76px;
+  font-size: 25px;
+}
+
+/* ---------- Chips ---------- */
+
+.pc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  border-radius: $pc-pill;
+  background: $pc-green-soft;
+  color: $pc-green-deep;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.pc-chip--muted {
+  background: $pc-hover;
+  color: $pc-muted;
+}
+
+.pc-chip--outline {
+  background: transparent;
+  border: 1px solid $pc-divider;
+  color: $pc-muted;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  border-radius: $pc-pill;
+  font-family: $pc-font;
+  font-weight: 700;
+  transition: background $pc-ease, border-color $pc-ease, color $pc-ease;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.btn-primary {
+  margin-top: 0;
+  padding: 10px 22px;
+  border: 1px solid $pc-green;
+  background: $pc-green;
+  color: #fff;
+
+  &:hover,
+  &:focus,
+  &:active,
+  &.active {
+    background: $pc-green-dark;
+    border-color: $pc-green-dark;
+    color: #fff;
+    box-shadow: 0 0 0 4px $pc-green-ring;
+  }
+
+  &:disabled {
+    background: $pc-green;
+    border-color: $pc-green;
+    opacity: 0.55;
+  }
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13.5px;
+}
+
+.btn-ghost {
+  padding: 9px 18px;
+  border: 1px solid $pc-divider;
+  background: $pc-surface;
+  color: $pc-ink;
+
+  &:hover,
+  &:focus {
+    background: $pc-hover;
+    border-color: $pc-divider;
+    color: $pc-ink;
+  }
+}
+
+.pc-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: $pc-green-deep;
+
+  &:hover {
+    color: $pc-green-deep;
+  }
+}
+
+/* ---------- Forms ---------- */
+
+.pc-form {
+  max-width: 520px;
+  padding: 2px 0 4px;
+}
+
+.pc-form label,
+.pc-form .col-form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: $pc-muted;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pc-form .col-form-label {
+  text-align: left;
+  padding-top: 0;
+}
+
+.pc-form .mb-3 {
+  margin-bottom: 16px !important;
+}
+
+.form-control,
+.form-select {
+  padding: 11px 14px;
+  border: 1px solid $pc-divider;
+  border-radius: $pc-radius-sm;
+  background: $pc-surface;
+  color: $pc-ink;
+  font-size: 15px;
+  box-shadow: none;
+
+  &:focus {
+    border-color: $pc-green;
+    box-shadow: 0 0 0 4px $pc-green-ring;
+    background: $pc-surface;
+    color: $pc-ink;
+  }
+
+  &::placeholder {
+    color: $pc-faint;
+  }
+}
+
+textarea.form-control {
+  min-height: 108px;
+}
+
+.form-control-plaintext {
+  padding: 6px 0;
+  font-weight: 600;
+}
+
+.pc-search {
+  position: relative;
+  margin: 2px 0 18px;
+
+  .fa {
+    position: absolute;
+    top: 50%;
+    left: 17px;
+    transform: translateY(-50%);
+    color: $pc-faint;
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .form-control {
+    padding-left: 44px;
+    border-color: transparent;
+    border-radius: $pc-pill;
+    background: $pc-hover;
+
+    &:focus {
+      background: $pc-surface;
+      border-color: $pc-green;
+    }
+  }
+}
+
+.pc-form-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.pc-hint {
+  color: $pc-muted;
+  font-size: 12.5px;
+}
+
+.pc-count {
+  margin: -6px 0 14px;
+}
+
+.pc-empty--flush {
+  padding-left: 0;
+}
+
+/* ---------- Alerts ---------- */
+
+.alert {
+  margin: 12px 0 4px;
+  padding: 13px 16px 13px 16px;
+  border: 1px solid $pc-border;
+  border-radius: $pc-radius-sm;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.alert-danger {
+  border-color: $pc-danger-border;
+  background: $pc-danger-bg;
+  color: $pc-danger-ink;
+
+  ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+}
+
+.alert-dismissible {
+  padding-right: 46px;
+
+  .btn-close {
+    top: 10px;
+  }
+}
+
+/* ---------- Home hero ---------- */
+
+.pc-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 24px;
+  align-items: center;
+  margin: 6px 0 8px;
+  padding: 26px;
+  border: 1px solid $pc-border;
+  border-radius: $pc-radius;
+  background: linear-gradient(135deg, $pc-green-soft 0%, #ffffff 62%);
+}
+
+.pc-hero h1 {
+  margin-bottom: 10px;
+  font-size: 29px;
+}
+
+.pc-hero p {
+  max-width: 42ch;
+  margin: 0 0 20px;
+  color: $pc-muted;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.pc-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pc-hero__art {
+  width: 100%;
+  border-radius: 14px;
+}
+
+/* ---------- Owner profile ---------- */
+
+.pc-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 6px 0 18px;
+  border-bottom: 1px solid $pc-border;
+}
+
+.pc-profile__name {
+  margin: 2px 0 4px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.pc-profile__meta {
+  margin: 0 0 14px;
+  color: $pc-muted;
+  font-size: 14px;
+}
+
+.pc-profile__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Pets and visits ---------- */
+
+.pc-pet {
+  padding: 16px 0;
+  border-bottom: 1px solid $pc-border;
+}
+
+.pc-pet__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.pc-pet__actions {
+  display: flex;
+  gap: 14px;
+  margin-left: auto;
+  padding-top: 6px;
+}
+
+.pc-visits {
+  margin: 12px 0 0;
+  padding: 0 0 0 58px;
+  list-style: none;
+}
+
+.pc-visits li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px dashed $pc-border;
+  color: $pc-ink;
+  font-size: 14px;
+}
+
+.pc-date {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  border-radius: $pc-pill;
+  background: $pc-hover;
+  color: $pc-muted;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.pc-empty {
+  margin: 12px 0 0;
+  padding-left: 58px;
+  color: $pc-faint;
+  font-size: 13.5px;
+}
+
+/* ---------- Loading ---------- */
+
+[role="status"] {
+  padding: 40px 0;
+}
+
+.spinner-border {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+  border-color: $pc-green-ring;
+  border-right-color: $pc-green;
+}
+
+/* ---------- Footer ---------- */
+
+.app-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+  margin-top: 8px;
+  padding: 20px 16px 32px;
+  border-top: 1px solid $pc-border;
+  color: $pc-muted;
+  font-size: 12.5px;
+
+  img {
+    height: 20px;
+    opacity: 0.5;
+    filter: grayscale(1);
+  }
+}

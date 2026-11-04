@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router';
 
 import { request, requireObject } from '../api/client.js';
 import { formatDate } from '../utils/dates.js';
+import { initials } from '../utils/initials.js';
 import { useRequest } from '../utils/useRequest.js';
 
 export const OwnerDetailsPage = {
@@ -16,6 +17,7 @@ export const OwnerDetailsPage = {
         return {
             owner,
             formatDate,
+            initials,
             loading: state.loading,
             failed: state.failed,
             failure: state.failure
@@ -26,76 +28,40 @@ export const OwnerDetailsPage = {
             <loading-spinner v-if="loading"></loading-spinner>
             <load-failure v-else-if="failed" :error="failure" resource="Owner details"></load-failure>
             <div v-else-if="owner">
-                <h2>Owner Information</h2>
-                <table class="table table-striped">
-                    <tbody>
-                        <tr>
-                            <th class="col-sm-3">Name</th>
-                            <td><b>{{ owner.firstName }} {{ owner.lastName }}</b></td>
-                        </tr>
-                        <tr><th>Address</th><td>{{ owner.address }}</td></tr>
-                        <tr><th>City</th><td>{{ owner.city }}</td></tr>
-                        <tr><th>Telephone</th><td>{{ owner.telephone }}</td></tr>
-                        <tr>
-                            <td>
-                                <router-link class="btn btn-primary" :to="'/owners/' + owner.id + '/edit'">
-                                    Edit Owner
-                                </router-link>
-                            </td>
-                            <td>
-                                <router-link class="btn btn-primary" :to="'/owners/' + owner.id + '/new-pet'">
-                                    Add New Pet
-                                </router-link>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h2>Pets and Visits</h2>
-                <table class="table table-striped">
-                    <tbody>
-                        <tr v-for="pet in owner.pets" :key="pet.id">
-                            <td class="align-top">
-                                <dl class="row mb-0">
-                                    <dt class="col-md-4">Name</dt>
-                                    <dd class="col-md-8">
-                                        <router-link :to="'/owners/' + owner.id + '/pets/' + pet.id">
-                                            {{ pet.name }}
-                                        </router-link>
-                                    </dd>
-                                    <dt class="col-md-4">Birth Date</dt>
-                                    <dd class="col-md-8">{{ formatDate(pet.birthDate) }}</dd>
-                                    <dt class="col-md-4">Type</dt>
-                                    <dd class="col-md-8">{{ pet.type.name }}</dd>
-                                </dl>
-                            </td>
-                            <td class="align-top">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr><th>Visit Date</th><th>Description</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="visit in pet.visits" :key="visit.id">
-                                            <td>{{ formatDate(visit.date) }}</td>
-                                            <td>{{ visit.description }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <router-link :to="'/owners/' + owner.id + '/pets/' + pet.id">
-                                                    Edit Pet
-                                                </router-link>
-                                            </td>
-                                            <td>
-                                                <router-link :to="'/owners/' + owner.id + '/pets/' + pet.id + '/visits'">
-                                                    Add Visit
-                                                </router-link>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="pc-profile">
+                    <span class="pc-avatar pc-avatar--lg">{{ initials(owner.firstName, owner.lastName) }}</span>
+                    <div class="pc-row-body">
+                        <h1 class="pc-profile__name">{{ owner.firstName }} {{ owner.lastName }}</h1>
+                        <p class="pc-profile__meta">{{ owner.address }} · {{ owner.city }} · {{ owner.telephone }}</p>
+                        <div class="pc-profile__actions">
+                            <router-link class="btn btn-primary btn-sm" :to="'/owners/' + owner.id + '/edit'">Edit owner</router-link>
+                            <router-link class="btn btn-ghost btn-sm" :to="'/owners/' + owner.id + '/new-pet'">Add a pet</router-link>
+                        </div>
+                    </div>
+                </div>
+                <h2>Pets and visits</h2>
+                <div class="pc-list">
+                    <article v-for="pet in owner.pets" :key="pet.id" class="pc-pet">
+                        <header class="pc-pet__head">
+                            <span class="pc-avatar">{{ initials(pet.name, '') }}</span>
+                            <div class="pc-row-body">
+                                <div class="pc-row-title">{{ pet.name }}</div>
+                                <div class="pc-row-meta">{{ pet.type.name }} · born {{ formatDate(pet.birthDate) }}</div>
+                            </div>
+                            <div class="pc-pet__actions">
+                                <router-link class="pc-link" :to="'/owners/' + owner.id + '/pets/' + pet.id">Edit pet</router-link>
+                                <router-link class="pc-link" :to="'/owners/' + owner.id + '/pets/' + pet.id + '/visits'">Add visit</router-link>
+                            </div>
+                        </header>
+                        <ul v-if="pet.visits.length" class="pc-visits">
+                            <li v-for="visit in pet.visits" :key="visit.id">
+                                <span class="pc-date">{{ formatDate(visit.date) }}</span>
+                                <span>{{ visit.description }}</span>
+                            </li>
+                        </ul>
+                        <p v-else class="pc-empty">No visit recorded yet.</p>
+                    </article>
+                </div>
             </div>
         </section>
     `

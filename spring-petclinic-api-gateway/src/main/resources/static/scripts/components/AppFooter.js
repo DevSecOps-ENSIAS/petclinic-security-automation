@@ -1,9 +1,7 @@
 export const AppFooter = {
     template: `
-        <footer class="container">
-            <div class="row">
-                <div class="col-12 text-center">
-                <img src="/images/spring-pivotal-logo.png" alt="Sponsored by Pivotal">
-                </div>
-            </div></footer>`
+        <footer class="app-footer">
+            <img src="/images/spring-pivotal-logo.png" alt="Sponsored by Pivotal">
+            <span>A Spring PetClinic demo · customers, visits and vets services</span>
+        </footer>`
 };

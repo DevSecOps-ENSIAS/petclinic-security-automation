@@ -15,13 +15,21 @@
     <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
+    <!--
+        Périmètre du projet : 3 microservices métier (customers, visits, vets)
+        + 2 services d'infrastructure (discovery-server, api-gateway).
+
+        Modules volontairement sortis du build (fichiers conservés sur le disque) :
+          - spring-petclinic-config-server : configuration externalisée depuis un dépôt Git public,
+            remplacée par la configuration embarquée dans chaque service.
+          - spring-petclinic-genai-service  : dépend d'une clé OPENAI_API_KEY, réponses non
+            déterministes et écritures en base, hors du sujet « communication inter-services ».
+          - spring-petclinic-admin-server   : Jolokia (accès JMX distant) + Chaos Monkey.
+    -->
     <modules>
-        <module>spring-petclinic-admin-server</module>
         <module>spring-petclinic-customers-service</module>
         <module>spring-petclinic-vets-service</module>
         <module>spring-petclinic-visits-service</module>
-        <module>spring-petclinic-genai-service</module>
-        <module>spring-petclinic-config-server</module>
         <module>spring-petclinic-discovery-server</module>
         <module>spring-petclinic-api-gateway</module>
     </modules>

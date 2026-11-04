@@ -11,6 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * Design tokens for the PetClinic UI.
+ *
+ * The layout language follows a modern "feed" style (left navigation rail,
+ * bordered content column, secondary column), while the primary accent stays
+ * the PetClinic green so the application keeps its identity.
+ */
 /*!
    * Bootstrap  v5.3.3 (https://getbootstrap.com/)
    * Copyright 2011-2024 The Bootstrap Authors
@@ -9477,134 +9484,722 @@ hr {
   .chatbox-footer button:hover {
     background-color: #128C7E; }
 
-@font-face {
-  font-family: 'varela_roundregular';
-  src: url("../fonts/varela_round-webfont.eot");
-  src: url("../fonts/varela_round-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/varela_round-webfont.woff") format("woff"), url("../fonts/varela_round-webfont.ttf") format("truetype"), url("../fonts/varela_round-webfont.svg#varela_roundregular") format("svg");
-  font-weight: normal;
-  font-style: normal; }
+/* Modern type system: system UI stack, tight tracking on headings. */
+body,
+h1,
+.h1, h2, .h2, h3, .h3, h4, .h4,
+p, input, button, select, textarea {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  color: #0f1419; }
 
-@font-face {
-  font-family: 'montserratregular';
-  src: url("../fonts/montserrat-webfont.eot");
-  src: url("../fonts/montserrat-webfont.eot?#iefix") format("embedded-opentype"), url("../fonts/montserrat-webfont.woff") format("woff"), url("../fonts/montserrat-webfont.ttf") format("truetype"), url("../fonts/montserrat-webfont.svg#montserratregular") format("svg");
-  font-weight: normal;
-  font-style: normal; }
-
-body, h1, .h1, h2, .h2, h3, .h3, p, input {
+body {
   margin: 0;
-  font-weight: 400;
-  font-family: "varela_roundregular", sans-serif;
-  color: #34302d; }
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility; }
 
 h1, .h1 {
-  font-size: 24px;
-  line-height: 30px;
-  font-family: "montserratregular", sans-serif; }
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px; }
 
 h2, .h2 {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 24px;
-  margin-bottom: 10px;
-  font-family: "montserratregular", sans-serif; }
+  font-size: 19px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0; }
 
 h3, .h3 {
   font-size: 16px;
-  line-height: 24px;
-  margin-bottom: 10px;
+  line-height: 1.4;
+  font-weight: 700;
+  margin: 0 0 10px; }
+
+p {
+  font-size: 15px;
+  line-height: 1.55; }
+
+strong, b {
   font-weight: 700; }
 
-strong {
-  font-weight: 700;
-  font-family: "montserratregular", sans-serif; }
+a {
+  color: #3d7a1f;
+  text-decoration: none; }
+  a:hover {
+    color: #3d7a1f;
+    text-decoration: underline; }
 
-.navbar {
-  border-top: 4px solid #6db33f;
-  background-color: #34302d;
-  margin-bottom: 0px;
-  border-bottom: 0;
-  border-left: 0;
-  border-right: 0; }
+/* Left navigation rail (desktop) that collapses into a sticky top bar (mobile). */
+.side-rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 8px 24px;
+  max-height: 100vh;
+  overflow-y: auto; }
 
-.navbar a.navbar-brand {
-  background: url("../images/spring-logo-dataflow.png") -1px -1px no-repeat;
-  margin: 12px 0 6px;
-  width: 229px;
-  height: 46px;
-  display: inline-block;
+.side-rail__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px 20px;
+  color: #0f1419;
+  text-decoration: none; }
+  .side-rail__brand:hover {
+    color: #0f1419;
+    text-decoration: none; }
+
+.side-rail__mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: #6db33f;
+  color: #fff;
+  font-size: 19px;
+  box-shadow: 0 10px 24px rgba(109, 179, 63, 0.28);
+  transition: background 0.15s ease, transform 0.15s ease; }
+  .side-rail__brand:hover .side-rail__mark {
+    background: #5fa134;
+    transform: translateY(-1px); }
+
+.side-rail__name {
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em; }
+
+.side-rail__link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 16px;
+  border-radius: 9999px;
+  color: #0f1419;
+  font-size: 15px;
+  font-weight: 600;
   text-decoration: none;
-  padding: 0; }
+  transition: background 0.15s ease, color 0.15s ease; }
+  .side-rail__link .fa {
+    width: 20px;
+    font-size: 18px;
+    text-align: center;
+    color: #536471;
+    transition: color 0.15s ease; }
+  .side-rail__link:hover {
+    background: #f7f9f9;
+    color: #0f1419;
+    text-decoration: none; }
+    .side-rail__link:hover .fa {
+      color: #0f1419; }
+  .side-rail__link.is-active {
+    background: #edf7e6;
+    color: #3d7a1f;
+    font-weight: 700; }
+    .side-rail__link.is-active .fa {
+      color: #6db33f; }
+    .side-rail__link.is-active:hover {
+      background: #edf7e6;
+      color: #3d7a1f; }
 
-.navbar a.navbar-brand span {
-  display: block;
-  width: 229px;
-  height: 46px;
-  background: url("../images/spring-logo-dataflow.png") -1px -48px no-repeat;
-  opacity: 0;
-  -moz-transition: opacity 0.12s ease-in-out;
-  -webkit-transition: opacity 0.12s ease-in-out;
-  -o-transition: opacity 0.12s ease-in-out; }
+.side-rail__label {
+  white-space: nowrap; }
 
-.navbar a.navbar-brand:hover span {
-  opacity: 1; }
+.side-rail__cta {
+  margin-top: 16px;
+  padding: 13px 20px;
+  border-radius: 9999px;
+  background: #6db33f;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(109, 179, 63, 0.28);
+  transition: background 0.15s ease, transform 0.15s ease; }
+  .side-rail__cta:hover {
+    background: #5fa134;
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px); }
 
-.navbar li > a, .navbar-text {
-  font-family: "montserratregular", sans-serif;
-  text-shadow: none;
-  font-size: 14px;
-  /* line-height: 14px; */
-  padding: 28px 20px;
-  transition: all 0.15s;
-  -webkit-transition: all 0.15s;
-  -moz-transition: all 0.15s;
-  -o-transition: all 0.15s;
-  -ms-transition: all 0.15s; }
+.side-rail__foot {
+  margin: auto 0 0;
+  padding: 22px 14px 0;
+  color: #536471;
+  font-size: 12.5px;
+  line-height: 1.5; }
+  .side-rail__foot strong {
+    color: #0f1419; }
 
-.navbar li > a {
-  text-transform: uppercase; }
-
-.navbar .navbar-text {
-  margin-top: 0;
-  margin-bottom: 0; }
-
-.navbar li:hover > a {
-  color: #eeeeee;
-  background-color: #6db33f; }
-
-.navbar-toggle {
-  border-width: 0; }
-  .navbar-toggle .icon-bar + .icon-bar {
-    margin-top: 3px; }
-  .navbar-toggle .icon-bar {
-    width: 19px;
-    height: 3px; }
-
-@media (max-width: 768px) {
-  .navbar-toggle {
-    position: absolute;
-    z-index: 9999;
-    left: 0px;
-    top: 0px; }
-  .navbar a.navbar-brand {
-    display: block;
-    margin: 0 auto 0 auto;
-    width: 148px;
-    height: 50px;
-    float: none;
-    background: url("../images/spring-logo-dataflow-mobile.png") 0 center no-repeat; }
-  .homepage-billboard .homepage-subtitle {
-    font-size: 21px;
-    line-height: 21px; }
-  .navbar a.navbar-brand span {
+/* Layout breakpoints: three columns -> two -> one, rail becomes a top bar. */
+@media (max-width: 1180px) {
+  .app-aside {
     display: none; }
-  .navbar {
-    border-top-width: 0; }
-  .xd-container {
-    margin-top: 20px;
-    margin-bottom: 30px; }
-  .index-page--subtitle {
-    margin-top: 10px;
-    margin-bottom: 30px; } }
+  .app-main {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 760px;
+    margin: 0 auto; } }
+
+@media (max-width: 991px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0; }
+  .side-rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 1px solid #eff3f4;
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px); }
+  .side-rail__brand {
+    padding: 0 10px 0 0; }
+  .side-rail__mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    font-size: 15px; }
+  .side-rail__name,
+  .side-rail__label,
+  .side-rail__foot {
+    display: none; }
+  .side-rail__link {
+    gap: 0;
+    padding: 9px 12px; }
+  .side-rail__cta {
+    margin: 0 0 0 auto;
+    padding: 9px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+    box-shadow: none; }
+  .app-main {
+    padding: 0;
+    max-width: none; }
+  .app-column {
+    border: 0;
+    border-radius: 0;
+    min-height: 0; }
+  .app-column section {
+    padding: 0 16px 12px; }
+  .app-column section > h2, .app-column section > .h2,
+  .app-column section > div > h2,
+  .app-column section > div > .h2 {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px; }
+  .pc-hero {
+    grid-template-columns: minmax(0, 1fr); }
+  .pc-hero__art {
+    order: -1;
+    max-width: 220px; }
+  .app-footer {
+    padding-bottom: 24px;
+    text-align: center; } }
+
+@media (max-width: 575px) {
+  .side-rail__cta {
+    font-size: 13px;
+    padding: 8px 12px; }
+  .pc-profile {
+    flex-direction: column;
+    align-items: flex-start; }
+  .pc-pet__head {
+    flex-wrap: wrap; }
+  .pc-pet__actions {
+    margin-left: 56px; } }
+
+/*
+ * Application shell and UI components.
+ *
+ * Visual language: a calm, bordered "feed" surface on white, generous rounded
+ * corners, pill-shaped controls, and the PetClinic green used only for
+ * emphasis (active navigation, primary actions, metadata chips).
+ */
+#app {
+  min-height: 100vh; }
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  align-items: start;
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 0 16px; }
+
+.app-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+  padding: 12px 0 24px; }
+
+.app-column {
+  min-width: 0;
+  min-height: 70vh;
+  background: #ffffff;
+  border: 1px solid #eff3f4;
+  border-radius: 16px;
+  padding-bottom: 8px;
+  overflow: hidden; }
+
+.app-aside {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; }
+
+/* ---------- Page sections ---------- */
+.app-column section {
+  padding: 0 22px 14px; }
+
+.app-column section > h2, .app-column section > .h2,
+.app-column section > div > h2,
+.app-column section > div > .h2 {
+  margin: 0 -22px 18px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid #eff3f4; }
+
+.app-column section h2:not(:first-child), .app-column section .h2:not(:first-child) {
+  margin-top: 10px;
+  border-top: 1px solid #eff3f4; }
+
+/* ---------- Cards ---------- */
+.pc-card {
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid #eff3f4;
+  border-radius: 16px; }
+
+.pc-card__title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em; }
+
+.pc-card p {
+  margin: 0;
+  color: #536471;
+  font-size: 13.5px;
+  line-height: 1.55; }
+
+.pc-card--form {
+  margin: 4px 0 18px;
+  padding: 18px; }
+
+.pc-svc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13.5px;
+  font-weight: 600; }
+
+.pc-svc + .pc-svc {
+  border-top: 1px solid #eff3f4; }
+
+.pc-svc__meta {
+  margin-left: auto;
+  color: #536471;
+  font-size: 12.5px;
+  font-weight: 500; }
+
+.pc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6db33f;
+  box-shadow: 0 0 0 3px rgba(109, 179, 63, 0.16); }
+
+/* ---------- Lists ---------- */
+.pc-list {
+  border-top: 1px solid #eff3f4; }
+
+.pc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #eff3f4;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s ease; }
+  .pc-row:hover {
+    color: inherit;
+    text-decoration: none; }
+
+a.pc-row:hover {
+  background: #f7f9f9; }
+
+.pc-row-body {
+  flex: 1;
+  min-width: 0; }
+
+.pc-row-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f1419; }
+
+.pc-row-meta {
+  margin-top: 2px;
+  color: #536471;
+  font-size: 14px;
+  line-height: 1.45; }
+
+.pc-row-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px; }
+
+.pc-row-chevron {
+  margin-left: auto;
+  padding-top: 4px;
+  color: #8b98a5;
+  font-size: 13px;
+  transition: color 0.15s ease, transform 0.15s ease; }
+  .pc-row:hover .pc-row-chevron {
+    color: #6db33f;
+    transform: translateX(2px); }
+
+.pc-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #edf7e6;
+  color: #3d7a1f;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em; }
+
+.pc-avatar--lg {
+  flex-basis: 76px;
+  width: 76px;
+  height: 76px;
+  font-size: 25px; }
+
+/* ---------- Chips ---------- */
+.pc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 11px;
+  border-radius: 9999px;
+  background: #edf7e6;
+  color: #3d7a1f;
+  font-size: 12.5px;
+  font-weight: 600; }
+
+.pc-chip--muted {
+  background: #f7f9f9;
+  color: #536471; }
+
+.pc-chip--outline {
+  background: transparent;
+  border: 1px solid #cfd9de;
+  color: #536471; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  border-radius: 9999px;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+  .btn:hover {
+    text-decoration: none; }
+
+.btn-primary {
+  margin-top: 0;
+  padding: 10px 22px;
+  border: 1px solid #6db33f;
+  background: #6db33f;
+  color: #fff; }
+  .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active {
+    background: #5fa134;
+    border-color: #5fa134;
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(109, 179, 63, 0.16); }
+  .btn-primary:disabled {
+    background: #6db33f;
+    border-color: #6db33f;
+    opacity: 0.55; }
+
+.btn-sm, .btn-group-sm > .btn {
+  padding: 8px 16px;
+  font-size: 13.5px; }
+
+.btn-ghost {
+  padding: 9px 18px;
+  border: 1px solid #cfd9de;
+  background: #ffffff;
+  color: #0f1419; }
+  .btn-ghost:hover, .btn-ghost:focus {
+    background: #f7f9f9;
+    border-color: #cfd9de;
+    color: #0f1419; }
+
+.pc-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #3d7a1f; }
+  .pc-link:hover {
+    color: #3d7a1f; }
+
+/* ---------- Forms ---------- */
+.pc-form {
+  max-width: 520px;
+  padding: 2px 0 4px; }
+
+.pc-form label,
+.pc-form .col-form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #536471;
+  font-size: 13px;
+  font-weight: 700; }
+
+.pc-form .col-form-label {
+  text-align: left;
+  padding-top: 0; }
+
+.pc-form .mb-3 {
+  margin-bottom: 16px !important; }
+
+.form-control,
+.form-select {
+  padding: 11px 14px;
+  border: 1px solid #cfd9de;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0f1419;
+  font-size: 15px;
+  box-shadow: none; }
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #6db33f;
+    box-shadow: 0 0 0 4px rgba(109, 179, 63, 0.16);
+    background: #ffffff;
+    color: #0f1419; }
+  .form-control::placeholder,
+  .form-select::placeholder {
+    color: #8b98a5; }
+
+textarea.form-control {
+  min-height: 108px; }
+
+.form-control-plaintext {
+  padding: 6px 0;
+  font-weight: 600; }
+
+.pc-search {
+  position: relative;
+  margin: 2px 0 18px; }
+  .pc-search .fa {
+    position: absolute;
+    top: 50%;
+    left: 17px;
+    transform: translateY(-50%);
+    color: #8b98a5;
+    font-size: 14px;
+    pointer-events: none; }
+  .pc-search .form-control {
+    padding-left: 44px;
+    border-color: transparent;
+    border-radius: 9999px;
+    background: #f7f9f9; }
+    .pc-search .form-control:focus {
+      background: #ffffff;
+      border-color: #6db33f; }
+
+.pc-form-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px; }
+
+.pc-hint {
+  color: #536471;
+  font-size: 12.5px; }
+
+.pc-count {
+  margin: -6px 0 14px; }
+
+.pc-empty--flush {
+  padding-left: 0; }
+
+/* ---------- Alerts ---------- */
+.alert {
+  margin: 12px 0 4px;
+  padding: 13px 16px 13px 16px;
+  border: 1px solid #eff3f4;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5; }
+
+.alert-danger {
+  border-color: #f5c6c3;
+  background: #fdeceb;
+  color: #8b1a17; }
+  .alert-danger ul {
+    margin: 6px 0 0;
+    padding-left: 18px; }
+
+.alert-dismissible {
+  padding-right: 46px; }
+  .alert-dismissible .btn-close {
+    top: 10px; }
+
+/* ---------- Home hero ---------- */
+.pc-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 24px;
+  align-items: center;
+  margin: 6px 0 8px;
+  padding: 26px;
+  border: 1px solid #eff3f4;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #edf7e6 0%, #ffffff 62%); }
+
+.pc-hero h1, .pc-hero .h1 {
+  margin-bottom: 10px;
+  font-size: 29px; }
+
+.pc-hero p {
+  max-width: 42ch;
+  margin: 0 0 20px;
+  color: #536471;
+  font-size: 15px;
+  line-height: 1.6; }
+
+.pc-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; }
+
+.pc-hero__art {
+  width: 100%;
+  border-radius: 14px; }
+
+/* ---------- Owner profile ---------- */
+.pc-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 6px 0 18px;
+  border-bottom: 1px solid #eff3f4; }
+
+.pc-profile__name {
+  margin: 2px 0 4px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em; }
+
+.pc-profile__meta {
+  margin: 0 0 14px;
+  color: #536471;
+  font-size: 14px; }
+
+.pc-profile__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; }
+
+/* ---------- Pets and visits ---------- */
+.pc-pet {
+  padding: 16px 0;
+  border-bottom: 1px solid #eff3f4; }
+
+.pc-pet__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px; }
+
+.pc-pet__actions {
+  display: flex;
+  gap: 14px;
+  margin-left: auto;
+  padding-top: 6px; }
+
+.pc-visits {
+  margin: 12px 0 0;
+  padding: 0 0 0 58px;
+  list-style: none; }
+
+.pc-visits li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px dashed #eff3f4;
+  color: #0f1419;
+  font-size: 14px; }
+
+.pc-date {
+  flex: 0 0 auto;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: #f7f9f9;
+  color: #536471;
+  font-size: 12.5px;
+  font-weight: 600; }
+
+.pc-empty {
+  margin: 12px 0 0;
+  padding-left: 58px;
+  color: #8b98a5;
+  font-size: 13.5px; }
+
+/* ---------- Loading ---------- */
+[role="status"] {
+  padding: 40px 0; }
+
+.spinner-border {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+  border-color: rgba(109, 179, 63, 0.16);
+  border-right-color: #6db33f; }
+
+/* ---------- Footer ---------- */
+.app-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+  margin-top: 8px;
+  padding: 20px 16px 32px;
+  border-top: 1px solid #eff3f4;
+  color: #536471;
+  font-size: 12.5px; }
+  .app-footer img {
+    height: 20px;
+    opacity: 0.5;
+    filter: grayscale(1); }
 
 /*# sourceMappingURL=../../../../../target/petclinic.css.map */

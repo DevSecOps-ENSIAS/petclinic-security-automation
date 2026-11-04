@@ -1,0 +1,41 @@
+/*
+ * Design tokens for the PetClinic UI.
+ *
+ * The layout language follows a modern "feed" style (left navigation rail,
+ * bordered content column, secondary column), while the primary accent stays
+ * the PetClinic green so the application keeps its identity.
+ */
+
+// Brand greens
+$pc-green:       #6db33f;
+$pc-green-dark:  #5fa134;
+$pc-green-deep:  #3d7a1f;
+$pc-green-soft:  #edf7e6;
+$pc-green-ring:  rgba(109, 179, 63, 0.16);
+
+// Neutrals
+$pc-ink:         #0f1419;
+$pc-muted:       #536471;
+$pc-faint:       #8b98a5;
+$pc-border:      #eff3f4;
+$pc-divider:     #cfd9de;
+$pc-hover:       #f7f9f9;
+$pc-surface:     #ffffff;
+
+// Feedback
+$pc-danger-bg:      #fdeceb;
+$pc-danger-border:  #f5c6c3;
+$pc-danger-ink:     #8b1a17;
+
+// Shape
+$pc-radius:      16px;
+$pc-radius-sm:   12px;
+$pc-pill:        9999px;
+$pc-shadow:      0 8px 28px rgba(15, 20, 25, 0.07);
+$pc-shadow-lift: 0 10px 24px rgba(109, 179, 63, 0.28);
+
+// Motion
+$pc-ease: 0.15s ease;
+
+// Type
+$pc-font: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;

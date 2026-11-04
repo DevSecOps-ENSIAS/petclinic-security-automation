@@ -1,8 +1,19 @@
 spring:
   application:
     name: discovery-server
-  config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
+
+server:
+  port: 8761
+
+# Mode autonome (standalone) : l'annuaire ne s'enregistre pas lui-même
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:localhost}
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
 
 # Avoid some debugging logs at startup
 logging:
@@ -11,11 +22,3 @@ logging:
       springframework:
         boot: INFO
         web: INFO
-
----
-spring:
-  config:
-    activate:
-      on-profile: docker
-    import: configserver:http://config-server:8888
-

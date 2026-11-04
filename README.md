@@ -11,24 +11,44 @@ Spring Boot Admin, Chaos Monkey for Spring Boot,  and the Eureka Service Discove
 
 [![Open in Codeanywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](https://app.codeanywhere.com/#https://github.com/spring-petclinic/spring-petclinic-microservices)
 
+## Périmètre du projet : 3 microservices
+
+Ce dépôt est une version réduite du PetClinic Microservices, utilisée comme support du projet DevSecOps
+« sécurité de la communication entre microservices ». Le périmètre métier est volontairement limité à
+**3 microservices** :
+
+| Service | Port (Docker) | Rôle |
+|---|---|---|
+| `customers-service` | 8081 | propriétaires et animaux |
+| `vets-service` | 8083 | vétérinaires |
+| `visits-service` | 8082 | visites |
+
+Deux services d'infrastructure sont conservés car ils portent la communication inter-services :
+`discovery-server` (annuaire Eureka, 8761) et `api-gateway` (point d'entrée unique, 8080, routage `lb://`
++ CircuitBreaker/Retry).
+
+Trois modules du dépôt d'origine ont été **sortis du build** (les sources restent sur le disque, ils ne sont
+plus dans `<modules>` du `pom.xml` racine ni dans `docker-compose.yml`) :
+
+* `config-server` : la configuration est désormais embarquée dans chaque `application.yml` du service
+  (port, Eureka, datasource HSQLDB, endpoints Actuator, tracing Zipkin).
+* `genai-service` : dépend d'une clé `OPENAI_API_KEY`, réponses non déterministes ; hors du sujet
+  « communication entre microservices ». La route `/api/genai/**` et le composant `ChatBox` du front ont été retirés.
+* `admin-server` : expose Jolokia (pont JMX distant) et Chaos Monkey.
+
 ## Starting services locally without Docker
 
 Every microservice is a Spring Boot application and can be started locally using IDE or `../mvnw spring-boot:run` command.
-Please note that supporting services (Config and Discovery Server) must be started before any other application (Customers, Vets, Visits and API).
-Startup of Tracing server, Admin server, Grafana and Prometheus is optional.
+Please note that the Discovery Server must be started before any other application (Customers, Vets, Visits and API).
+Startup of Tracing server, Grafana and Prometheus is optional.
+Each business service listens on a random port by default; set `SERVER_PORT` to pin it (for example `SERVER_PORT=8081`).
 If everything goes well, you can access the following services at given location:
 * Discovery Server - http://localhost:8761
-* Config Server - http://localhost:8888
 * Vue.js frontend (API Gateway) - http://localhost:8080
-* Customers, Vets, Visits and GenAI Services - random port, check Eureka Dashboard 
+* Customers, Vets and Visits Services - random port, check Eureka Dashboard 
 * Tracing Server (Zipkin) - http://localhost:9411/zipkin/ (we use [openzipkin](https://github.com/openzipkin/zipkin/tree/main/zipkin-server))
-* Admin Server (Spring Boot Admin) - http://localhost:9090
 * Grafana Dashboards - http://localhost:3030
 * Prometheus - http://localhost:9091
-
-You can tell Config Server to use your local Git repository by using `native` Spring profile and setting
-`GIT_REPO` environment variable, for example:
-`-Dspring.profiles.active=native -DGIT_REPO=/projects/spring-petclinic-microservices-config`
 
 ## Starting services locally with docker-compose
 In order to start entire infrastructure using Docker, you have to build images by executing
@@ -86,16 +106,17 @@ You can then access petclinic here: http://localhost:8080/
 
 ## Microservices Overview
 
-This project consists of several microservices:
+This project consists of three business microservices plus two infrastructure services:
 - **Customers Service**: Manages customer data.
 - **Vets Service**: Handles information about veterinarians.
 - **Visits Service**: Manages pet visit records.
-- **GenAI Service**: Provides a chatbot interface to the application.
 - **API Gateway**: Routes client requests to the appropriate services.
-- **Config Server**: Centralized configuration management for all services.
 - **Discovery Server**: Eureka-based service registry.
 
 Each service has its own specific role and communicates via REST APIs.
+
+The GenAI, Config and Admin services of the upstream project are not part of this build;
+see « Périmètre du projet : 3 microservices » above.
 
 
 ![Spring Petclinic Microservices screenshot](docs/application-screenshot.png)

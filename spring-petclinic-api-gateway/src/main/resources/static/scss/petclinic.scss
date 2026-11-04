@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ @import "tokens.scss";
  @import "bootstrap";
 
 $icon-font-path:    "../../webjars/bootstrap/fonts/";
@@ -333,3 +334,4 @@ hr {
 @import "typography.scss";
 @import "header.scss";
 @import "responsive.scss";
+@import "theme.scss";

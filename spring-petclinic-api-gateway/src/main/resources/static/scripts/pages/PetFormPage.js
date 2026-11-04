@@ -82,42 +82,36 @@ export const PetFormPage = {
             <loading-spinner v-if="loading"></loading-spinner>
             <load-failure v-else-if="failed" :error="failure" resource="Pet details"></load-failure>
             <div v-else>
-                <h2>Pet</h2>
-                <form class="row g-3" @input="clearError" @change="clearError" @submit.prevent="submit">
-                    <div class="col-12 row">
-                        <div class="col-md-2 col-form-label">Owner</div>
-                        <div class="col-md-6">
+                <h2>{{ isEdit ? 'Edit pet' : 'Add a pet' }}</h2>
+                <div class="pc-card pc-card--form">
+                    <form class="pc-form" @input="clearError" @change="clearError" @submit.prevent="submit">
+                        <div class="mb-3">
+                            <label>Owner</label>
                             <p class="form-control-plaintext mb-0">{{ pet.owner }}</p>
                         </div>
-                    </div>
-                    <div class="col-12 row">
-                        <label class="col-md-2 col-form-label" for="pet-name">Name</label>
-                        <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="pet-name">Name</label>
                             <input id="pet-name" v-model.trim="pet.name" class="form-control" required type="text">
                         </div>
-                    </div>
-                    <div class="col-12 row">
-                        <label class="col-md-2 col-form-label" for="pet-birth-date">Birth date</label>
-                        <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="pet-birth-date">Birth date</label>
                             <input id="pet-birth-date" v-model="pet.birthDate" class="form-control" required type="date">
                         </div>
-                    </div>
-                    <div class="col-12 row">
-                        <label class="col-md-2 col-form-label" for="pet-type">Type</label>
-                        <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="pet-type">Type</label>
                             <select id="pet-type" v-model="pet.typeId" class="form-select" required>
                                 <option v-for="type in types" :key="type.id" :value="String(type.id)">
                                     {{ type.name }}
                                 </option>
                             </select>
                         </div>
-                    </div>
-                    <div class="col-12 offset-md-2">
-                        <button class="btn btn-primary" type="submit" :disabled="submitting">
-                            {{ submitting ? 'Saving...' : isEdit ? 'Update Pet' : 'Submit' }}
-                        </button>
-                    </div>
-                </form>
+                        <div class="pc-form-foot">
+                            <button class="btn btn-primary" type="submit" :disabled="submitting">
+                                {{ submitting ? 'Saving…' : isEdit ? 'Update pet' : 'Add pet' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </section>
     `

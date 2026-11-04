@@ -1,19 +1,20 @@
 export const AppNavigation = {
     template: `
-        <nav class="navbar navbar-expand-lg navbar-dark" role="navigation">
-            <div class="container-fluid">
-                <router-link class="navbar-brand" to="/"><span></span></router-link>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="main-navbar">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><router-link class="nav-link" to="/" title="home page"><span class="fa fa-home me-2" aria-hidden="true"></span><span>Home</span></router-link></li>
-                        <li class="nav-item"><router-link exact-active-class="active" class="nav-link" to="/owners" title="find owners"><span class="fa fa-search me-2" aria-hidden="true"></span><span>Find owners</span></router-link></li>
-                        <li class="nav-item"><router-link exact-active-class="active" class="nav-link" to="/owners/new" title="register owner"><span class="fa fa-plus me-2" aria-hidden="true"></span><span>Register owner</span></router-link></li>
-                        <li class="nav-item"><router-link exact-active-class="active" class="nav-link" to="/vets" title="veterinarians"><span class="fa fa-th-list me-2" aria-hidden="true"></span><span>Veterinarians</span></router-link></li>
-                    </ul>
-                </div>
-            </div>
+        <nav class="side-rail" role="navigation" aria-label="Main">
+            <router-link class="side-rail__brand" to="/" title="PetClinic home">
+                <span class="side-rail__mark"><i class="fa fa-paw" aria-hidden="true"></i></span>
+                <span class="side-rail__name">PetClinic</span>
+            </router-link>
+            <router-link class="side-rail__link" exact-active-class="is-active" to="/" title="Home">
+                <i class="fa fa-home" aria-hidden="true"></i><span class="side-rail__label">Home</span>
+            </router-link>
+            <router-link class="side-rail__link" active-class="is-active" to="/owners" title="Find owners">
+                <i class="fa fa-search" aria-hidden="true"></i><span class="side-rail__label">Find owners</span>
+            </router-link>
+            <router-link class="side-rail__link" active-class="is-active" to="/vets" title="Veterinarians">
+                <i class="fa fa-stethoscope" aria-hidden="true"></i><span class="side-rail__label">Veterinarians</span>
+            </router-link>
+            <router-link class="side-rail__cta" to="/owners/new" title="Register owner">Register owner</router-link>
+            <p class="side-rail__foot"><strong>PetClinic</strong><br>Owners, visits and veterinarians behind a Spring Cloud gateway.</p>
         </nav>`
 };

@@ -1,41 +1,124 @@
-@media (max-width: 768px) {
-  .navbar-toggle {
-    position:absolute;
-    z-index: 9999;
-    left:0px;
-    top:0px;
-  }
+/* Layout breakpoints: three columns -> two -> one, rail becomes a top bar. */
 
-  .navbar a.navbar-brand {
-    display: block;
-    margin: 0 auto 0 auto;
-    width: 148px;
-    height: 50px;
-    float: none;
-    background: url("../images/spring-logo-dataflow-mobile.png") 0 center no-repeat;
-  }
-
-  .homepage-billboard .homepage-subtitle {
-    font-size: 21px;
-    line-height: 21px;
-  }
-
-  .navbar a.navbar-brand span {
+@media (max-width: 1180px) {
+  .app-aside {
     display: none;
   }
 
-  .navbar {
-    border-top-width: 0;
+  .app-main {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 760px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 991px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
   }
 
-  .xd-container {
-    margin-top: 20px;
-    margin-bottom: 30px;
+  .side-rail {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 1px solid $pc-border;
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
   }
 
-  .index-page--subtitle {
-    margin-top: 10px;
-    margin-bottom: 30px;
+  .side-rail__brand {
+    padding: 0 10px 0 0;
   }
 
+  .side-rail__mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    font-size: 15px;
+  }
+
+  .side-rail__name,
+  .side-rail__label,
+  .side-rail__foot {
+    display: none;
+  }
+
+  .side-rail__link {
+    gap: 0;
+    padding: 9px 12px;
+  }
+
+  .side-rail__cta {
+    margin: 0 0 0 auto;
+    padding: 9px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+    box-shadow: none;
+  }
+
+  .app-main {
+    padding: 0;
+    max-width: none;
+  }
+
+  .app-column {
+    border: 0;
+    border-radius: 0;
+    min-height: 0;
+  }
+
+  .app-column section {
+    padding: 0 16px 12px;
+  }
+
+  .app-column section > h2,
+  .app-column section > div > h2 {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .pc-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pc-hero__art {
+    order: -1;
+    max-width: 220px;
+  }
+
+  .app-footer {
+    padding-bottom: 24px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 575px) {
+  .side-rail__cta {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .pc-profile {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pc-pet__head {
+    flex-wrap: wrap;
+  }
+
+  .pc-pet__actions {
+    margin-left: 56px;
+  }
 }

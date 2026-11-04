@@ -73,8 +73,9 @@ export const OwnerFormPage = {
             <loading-spinner v-if="loading"></loading-spinner>
             <load-failure v-else-if="failed" :error="failure" resource="Owner details"></load-failure>
             <div v-else>
-                <h2>Owner</h2>
-                <form style="max-width: 25em;" @input="clearError" @submit.prevent="submit">
+                <h2>{{ isEdit ? 'Edit owner' : 'Register owner' }}</h2>
+                <div class="pc-card pc-card--form">
+                <form class="pc-form" @input="clearError" @submit.prevent="submit">
                     <div class="mb-3">
                         <label for="owner-first-name">First name</label>
                         <input id="owner-first-name" v-model.trim="owner.firstName" class="form-control" required>
@@ -95,12 +96,13 @@ export const OwnerFormPage = {
                         <label for="owner-telephone">Telephone</label>
                         <input id="owner-telephone" v-model.trim="owner.telephone" class="form-control" inputmode="numeric" maxlength="12" pattern="[0-9]{1,12}" placeholder="905554443322" required>
                     </div>
-                    <div>
+                    <div class="pc-form-foot">
                         <button class="btn btn-primary" type="submit" :disabled="submitting">
-                            {{ submitting ? 'Saving...' : isEdit ? 'Update Owner' : 'Submit' }}
+                            {{ submitting ? 'Saving…' : isEdit ? 'Update owner' : 'Register owner' }}
                         </button>
                     </div>
                 </form>
+                </div>
             </div>
         </section>
     `

@@ -1,0 +1,484 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{tgheros}
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\renewcommand{\familydefault}{\sfdefault}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
+
+\usepackage{xcolor}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{etoolbox}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------
+% Macros
+% ---------------------------------------------------------------
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\fait}{\hfill\textcolor{green!45!black}{\small\textbf{Fait}}}
+\newcommand{\afaire}{\hfill\textcolor{orange!80!black}{\small\textbf{\`A faire}}}
+
+\newcommand{\etape}[2]{%
+  \subsection*{#1\ifstrequal{#2}{f}{\fait}{\afaire}}%
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\small\thepage}
+
+\begin{document}
+
+% ---------------------------------------------------------------
+% Page de garde légère
+% ---------------------------------------------------------------
+\begin{flushright}
+Salé, le \underline{\hspace{3cm}}
+\end{flushright}
+
+\vspace{0.3cm}
+
+\noindent
+\textbf{Nom et prénom :} \underline{\hspace{6cm}}\\[0.5em]
+\textbf{Encadrant :} \underline{\hspace{6cm}}\\[0.5em]
+\textbf{Module :} DevSecOps --- ENSIAS
+
+\vspace{0.8cm}
+
+\begin{center}
+{\Large\bfseries Plan du projet}\\[0.4em]
+{\large S\'ecurit\'e de la communication entre microservices}\\[0.3em]
+{\normalsize Application : Spring PetClinic Microservices r\'eduite \`a 3 microservices}
+\end{center}
+
+\vspace{0.6cm}
+
+\hrule
+
+\vspace{0.6cm}
+
+\section*{Objet et p\'erim\`etre}
+
+Ce document d\'ecrit, \'etape par \'etape, la d\'emarche compl\`ete du projet, depuis le cadrage
+jusqu'\`a la r\'edaction du rapport final (30--40 pages, r\'ef\'erences incluses).
+
+L'application retenue est le projet Spring PetClinic Microservices, r\'eduit \`a
+\textbf{trois microservices m\'etier} :
+
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \code{customers-service} (port 8081) : propri\'etaires et animaux ;
+  \item \code{visits-service} (port 8082) : visites ;
+  \item \code{vets-service} (port 8083) : v\'et\'erinaires.
+\end{itemize}
+
+Deux composants d'infrastructure compl\`etent l'ensemble sans entrer dans le d\'ecompte des
+trois microservices : \code{api-gateway} (8080) et \code{discovery-server} (Eureka, 8761).
+Les modules \code{config-server}, \code{genai-service} et \code{admin-server} sont conserv\'es
+en sources mais exclus de la compilation.
+
+\subsection*{Constat sur les flux r\'eels}
+
+L'analyse du code montre que \textbf{les trois microservices m\'etier ne s'appellent jamais entre
+eux} : aucun client HTTP n'est d\'eclar\'e dans \code{customers}, \code{vets} ni \code{visits}.
+La topologie est en \'etoile~: tous les \'echanges passent par la passerelle, qui r\'esout les
+services par Eureka (\code{lb://}). La communication \guillemotleft{} entre microservices \guillemotright{}
+\`a s\'ecuriser est donc le flux \textbf{est--ouest passerelle $\rightarrow$ services}, en plus du
+flux nord--sud navigateur $\rightarrow$ passerelle.
+
+\subsection*{L\'egende}
+
+\hspace{1em}\fait\hspace{2em}\afaire
+
+\vspace{0.4cm}
+
+% ---------------------------------------------------------------
+\section{Vue d'ensemble}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lXc c@{}}
+\toprule
+\textbf{Phase} & \textbf{Contenu} & \textbf{Effort} & \textbf{\'Etat} \\
+\midrule
+0 & Cadrage, d\'ep\^ot Git, branches, protection de \code{main} & 0,5 j & \`A faire \\
+A & Application r\'eduite \`a 3 microservices et interface & --- & Fait \\
+B & Tests, JaCoCo, Sonar, GitHub Actions (TP03) & 3--4 j & \`A faire \\
+C & S\'ecurisation des communications (JWT, mTLS, durcissement) & 5--6 j & \`A faire \\
+D & RDS MySQL et profils de production (TP04) & 2 j & \`A faire \\
+E & Observabilit\'e et r\'eponse \`a incident & 2 j & \`A faire \\
+F & Rapport \LaTeX{} de 30--40 pages & 4--5 j & \`A faire \\
+\midrule
+ & \textbf{Total restant} & \textbf{17--20 j} & \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ---------------------------------------------------------------
+\section{Phase 0 --- Cadrage}
+
+\etape{\'Etape 0.1 --- Figer le p\'erim\`etre}{f}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Objectif :} disposer d'un p\'erim\`etre stable et justifiable.
+  \item \textbf{Actions :} trois microservices m\'etier ; passerelle et Eureka en infrastructure ;
+        modules \code{config-server}, \code{genai-service} et \code{admin-server} hors build.
+  \item \textbf{Preuve :} r\'eacteur Maven \`a cinq modules, \code{docker compose config} valide.
+  \item \textbf{Rapport :} section \guillemotleft{} P\'erim\`etre et justification des choix \guillemotright{}.
+\end{itemize}
+
+\etape{\'Etape 0.2 --- V\'erifier la cha\^ine d'outils}{f}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} JDK 21, Maven 3.9 (ou \code{mvnw}), Docker Desktop, compte GitHub,
+        compte SonarCloud (ou instance SonarQube locale).
+  \item \textbf{Preuve :} \code{mvn -v}, \code{docker version}, build complet.
+\end{itemize}
+
+\etape{\'Etape 0.3 --- Cr\'eer le d\'ep\^ot et la strat\'egie de branches}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} \code{git init}, d\'ep\^ot distant, branches \code{main},
+        \code{dev} et \code{feature/*} ; protection de \code{main} (PR obligatoire et
+        v\'erifications CI requises).
+  \item \textbf{Preuve :} capture des r\`egles de branche et d'une PR de d\'emonstration.
+  \item \textbf{Rapport :} section \guillemotleft{} D\'emarche DevSecOps et int\'egration continue \guillemotright{}.
+\end{itemize}
+
+% ---------------------------------------------------------------
+\section{Phase A --- Application (r\'ealis\'ee)}
+
+\etape{\'Etape A.1 --- R\'eduction \`a trois microservices}{f}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} \code{pom.xml} racine, \code{docker-compose.yml}, cinq \code{pom.xml},
+        cinq \code{application.yml} ; composant \code{ChatBox} d\'ebranch\'e du front ; \code{README.md}.
+  \item \textbf{Preuve :} build des cinq modules, quatre services enregistr\'es dans Eureka,
+        trois routes m\'etier en 200 via la passerelle, \code{/api/genai/**} en 404.
+\end{itemize}
+
+\etape{\'Etape A.2 --- Configuration embarqu\'ee}{f}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} configuration du \code{config-server} r\'einject\'ee dans chaque
+        \code{application.yml} ; d\'ependance \code{spring-cloud-starter-config} retir\'ee.
+  \item \textbf{Preuve :} d\'emarrage sans d\'ependance \`a un d\'ep\^ot de configuration externe.
+\end{itemize}
+
+\etape{\'Etape A.3 --- Modernisation de l'interface}{f}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} rail de navigation, colonnes en cartes, listes \`a avatars,
+        couleur verte PetClinic conserv\'ee comme accent unique.
+  \item \textbf{Preuve :} six \'ecrans parcourus, styles calcul\'es v\'erifi\'es, console sans erreur.
+  \item \textbf{Note :} la feuille \code{css/theme.css} a \'et\'e \'ecrite \`a la main, le plugin
+        \code{libsass-maven-plugin} ne se r\'esolvant plus ; les fichiers \code{scss/} restent la source.
+\end{itemize}
+
+% ---------------------------------------------------------------
+\section{Phase B --- Qualit\'e et int\'egration continue (TP03)}
+
+\etape{\'Etape B.1 --- \'Ecrire les tests manquants des trois services m\'etier}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Objectif :} passer d'une couverture nulle \`a une couverture mesurable.
+        \`A ce jour, \code{customers}, \code{vets} et \code{visits} ne contiennent
+        \textbf{aucun fichier de test}.
+  \item \textbf{Actions :} tests \code{@WebMvcTest} sur chaque contr\^oleur (200 nominal,
+        404 inconnu, 400 payload invalide) ; tests \code{@DataJpaTest} sur les d\'ep\^ots
+        (HSQLDB en m\'emoire, scripts \code{db/hsqldb}) ; tests de mapping DTO--entit\'e ;
+        test du cache de \code{vets-service}.
+  \item \textbf{Cible :} au moins 60\,\% de couverture de lignes par service.
+  \item \textbf{Preuve :} \code{mvn test} vert et rapport \code{target/site/jacoco/index.html}.
+  \item \textbf{Rapport :} tableau de couverture par module.
+\end{itemize}
+
+\etape{\'Etape B.2 --- Ajouter JaCoCo au \code{pom.xml} parent}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} \code{jacoco-maven-plugin} avec \code{prepare-agent},
+        objectif \code{report} en phase \code{verify}, puis objectif \code{check}
+        avec seuils ; d\'eclaration unique au parent pour les cinq modules.
+  \item \textbf{Preuve :} build volontairement mis en \'echec par un seuil non atteint, puis corrig\'e.
+  \item \textbf{Rapport :} section \guillemotleft{} Mesure de la qualit\'e \guillemotright{}.
+\end{itemize}
+
+\etape{\'Etape B.3 --- Ajouter l'analyse Sonar}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} \code{sonar-maven-plugin} au parent ; propri\'et\'es
+        \code{sonar.projectKey}, \code{sonar.organization}, \code{sonar.host.url} et
+        \code{sonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml}.
+  \item \textbf{Preuve :} tableau de bord avec couverture, dette technique et Quality Gate verte.
+  \item \textbf{Rapport :} capture du Quality Gate et interpr\'etation.
+\end{itemize}
+
+\etape{\'Etape B.4 --- \'Ecrire le workflow GitHub Actions}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Fichier :} \code{.github/workflows/deploy.yml}.
+  \item \textbf{Actions :} \code{actions/checkout@v4} avec \code{fetch-depth: 0} ;
+        \code{actions/setup-java@v4} en distribution \code{temurin}, matrice
+        \code{java: ['17', '21']} et \code{cache: maven} ; \code{mvn -B clean verify} ;
+        puis \code{mvn -B sonar:sonar -Dsonar.token=\$\{\{ secrets.SONAR\_TOKEN \}\}} ;
+        publication des rapports Surefire et JaCoCo en artefacts.
+  \item \textbf{D\'eclencheurs :} \code{push} sur \code{dev} et \code{main},
+        \code{pull\_request} vers \code{main}.
+  \item \textbf{Preuve :} pipeline vert sur une PR \code{feature/*} $\rightarrow$ \code{dev},
+        puis \code{dev} $\rightarrow$ \code{main}.
+  \item \textbf{Rapport :} section pipeline CI/CD et captures des ex\'ecutions.
+\end{itemize}
+
+\etape{\'Etape B.5 --- Secrets et configuration de production}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} secrets GitHub \code{SONAR\_TOKEN}, puis \code{DB\_URL},
+        \code{DB\_USERNAME} et \code{DB\_PASSWORD} (\'etape D.2) ; v\'erification du
+        \code{.gitignore} ; aucun secret dans le d\'ep\^ot.
+\end{itemize}
+
+\etape{\'Etape B.6 --- SAST et SCA}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} Dependabot (Maven et GitHub Actions) ou \code{dependency-check} ;
+        analyse Sonar d\'ej\`a en place ; \code{trivy fs} pour les d\'ependances et les images ;
+        \code{gitleaks} en pr\'e-commit et en CI.
+  \item \textbf{Preuve :} rapport de vuln\'erabilit\'es avant et apr\`es mise \`a jour.
+  \item \textbf{Rapport :} section s\'ecurit\'e de la cha\^ine logicielle (SSDLC).
+\end{itemize}
+
+% ---------------------------------------------------------------
+\section{Phase C --- S\'ecurisation de la communication (c\oe{}ur du sujet)}
+
+\etape{\'Etape C.1 --- Mod\`ele de menace}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} cartographier les quatre flux (navigateur $\rightarrow$ passerelle,
+        passerelle $\rightarrow$ trois services, services $\rightarrow$ Eureka, Actuator et
+        Prometheus) ; appliquer STRIDE \`a chaque flux ; identifier les actifs.
+  \item \textbf{Constats initiaux :} \code{/actuator/**} expos\'e en \code{include: '*'} sans
+        authentification ; HTTP en clair ; aucune authentification inter-services ; image Docker
+        ex\'ecut\'ee en \code{root}.
+  \item \textbf{Preuve :} tableau flux $\times$ menace $\times$ contre-mesure.
+  \item \textbf{Rapport :} section analyse de risque (deux \`a trois pages, pi\`ece ma\^itresse).
+\end{itemize}
+
+\etape{\'Etape C.2 --- Authentification \`a la bordure (nord--sud)}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} fournisseur d'identit\'e Keycloak en conteneur, ou serveur
+        d'autorisation embarqu\'e ; passerelle en \emph{resource server} JWT avec filtre
+        \code{TokenRelay} vers les services ; CORS restrictif ; en-t\^etes de s\'ecurit\'e ;
+        limitation de d\'ebit.
+  \item \textbf{Preuve :} sans jeton 401 ; jeton expir\'e ou invalide 401 ; jeton valide 200.
+  \item \textbf{Rapport :} section s\'ecurisation de la bordure.
+\end{itemize}
+
+\etape{\'Etape C.3 --- mTLS entre la passerelle et les trois services}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} autorit\'e de certification locale et un certificat par service ;
+        c\^ot\'e services \code{server.ssl.enabled=true},
+        \code{server.ssl.client-auth=need} et \emph{truststore} ; c\^ot\'e passerelle, client
+        HTTP avec contexte SSL compatible avec la r\'esolution \code{lb://}.
+  \item \textbf{Attention :} c'est le point technique le plus d\'elicat du projet ; valider
+        d'abord un appel direct, puis via Eureka.
+  \item \textbf{Preuve :} appel direct sans certificat client $\rightarrow$ \'echec de
+        poign\'ee de main ; avec certificat $\rightarrow$ 200.
+  \item \textbf{Rapport :} section canaux est--ouest et extraits de configuration.
+\end{itemize}
+
+\etape{\'Etape C.4 --- Propagation d'identit\'e et autorisation}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} chaque service valide le JWT avec sa propre audience et applique
+        des scopes ou r\^oles via \code{@PreAuthorize} ; le sujet du jeton appara\^it dans
+        les journaux et les traces.
+  \item \textbf{Preuve :} 403 lorsqu'un scope manque ; corr\'elation sujet et identifiant de trace.
+  \item \textbf{Rapport :} section autorisation et tra\c{c}abilit\'e.
+\end{itemize}
+
+\etape{\'Etape C.5 --- Durcir Eureka et Actuator}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} authentification basique et TLS sur l'annuaire ; clients configur\'es
+        avec identifiants ; \code{management.endpoints.web.exposure.include=health,info,prometheus},
+        \code{show-details: never}, port de gestion s\'epar\'e et prot\'eg\'e.
+  \item \textbf{Preuve :} \code{/actuator/env} inaccessible anonymement ; collecte Prometheus authentifi\'ee.
+  \item \textbf{Rapport :} section r\'eduction de la surface d'attaque.
+\end{itemize}
+
+\etape{\'Etape C.6 --- Durcir les images et l'ex\'ecution}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} utilisateur non privil\'egi\'e, image de base minimale,
+        \code{HEALTHCHECK}, aucun secret dans les couches ; r\'eseaux s\'epar\'es
+        (bordure, services, donn\'ees).
+  \item \textbf{Preuve :} \code{docker compose config} valide et rapport Trivy avant/apr\`es.
+\end{itemize}
+
+\etape{\'Etape C.7 --- Tests de s\'ecurit\'e automatis\'es}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} tests d'int\'egration du refus sans mTLS, sans jeton et sans scope ;
+        analyse dynamique OWASP ZAP en mode \emph{baseline} sur la passerelle.
+  \item \textbf{Preuve :} rapport ZAP et tests int\'egr\'es au pipeline.
+  \item \textbf{Rapport :} section validation de la s\'ecurit\'e.
+\end{itemize}
+
+% ---------------------------------------------------------------
+\section{Phase D --- Donn\'ees et infrastructure (TP04)}
+
+\etape{\'Etape D.1 --- Instance RDS MySQL}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} MySQL 8, classe \code{db.t3.micro} (offre gratuite),
+        instance \textbf{priv\'ee}, groupe de s\'ecurit\'e limit\'e au groupe applicatif,
+        chiffrement au repos, sauvegardes automatiques.
+  \item \textbf{Point cl\'e :} le TP04 laissait \guillemotleft{} Public access: Yes \guillemotright{},
+        \guillemotleft{} Anywhere-IPv4 \guillemotright{}, chiffrement et sauvegardes d\'esactiv\'es.
+        Reproduire puis \textbf{corriger}, en documentant l'\'ecart.
+  \item \textbf{Preuve :} captures de configuration et tableau avant/apr\`es.
+  \item \textbf{Rapport :} section infrastructure de donn\'ees et critique argument\'ee.
+\end{itemize}
+
+\etape{\'Etape D.2 --- Brancher les trois services sur MySQL}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} trois sch\'emas sur l'instance (\code{petclinic\_customers},
+        \code{petclinic\_visits}, \code{petclinic\_vets}) ; profil \code{prod} et
+        \code{application-prod.properties} par service ; initialisation \`a partir des
+        scripts \code{db/mysql/*.sql} ; secrets inject\'es au d\'eploiement.
+  \item \textbf{Preuve :} d\'emarrage en profil \code{prod} et donn\'ees persist\'ees apr\`es red\'emarrage.
+  \item \textbf{Rapport :} section persistance et s\'eparation des donn\'ees.
+\end{itemize}
+
+\etape{\'Etape D.3 --- Gestion des secrets}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} rotation document\'ee, aucun secret en clair, fichier \code{.env} ignor\'e.
+  \item \textbf{Preuve :} historique Git sans secret.
+\end{itemize}
+
+% ---------------------------------------------------------------
+\section{Phase E --- Observabilit\'e et r\'eponse}
+
+\etape{\'Etape E.1 --- M\'etriques et traces}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} Prometheus avec collecte authentifi\'ee, tableaux de bord Grafana
+        (latence, taux d'erreur, 401 et 403), traces Zipkin inter-services.
+  \item \textbf{Preuve :} tableau de bord affichant une trace passerelle $\rightarrow$ service.
+  \item \textbf{Rapport :} section supervision.
+\end{itemize}
+
+\etape{\'Etape E.2 --- Alertes et proc\'edure d'incident}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} alertes sur taux de 5xx, \'echec de poign\'ee de main mTLS et rejets
+        massifs de jetons ; r\'ediger une proc\'edure en cas de fuite de certificat, de jeton
+        ou de compromission de l'annuaire.
+  \item \textbf{Preuve :} alerte d\'eclench\'ee volontairement.
+  \item \textbf{Rapport :} section r\'eponse \`a incident.
+\end{itemize}
+
+% ---------------------------------------------------------------
+\section{Phase F --- Rapport \LaTeX}
+
+\etape{\'Etape F.1 --- Squelette et bibliographie}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} \code{rapport/main.tex}, dossier \code{sections/},
+        \code{biblio.bib} en BibTeX, classe \code{report}, paquetages \code{hyperref},
+        \code{listings} et \code{graphicx}.
+\end{itemize}
+
+\etape{\'Etape F.2 --- Plan d\'etaill\'e et budget de pages}{a}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}cXc@{}}
+\toprule
+\textbf{\#} & \textbf{Chapitre} & \textbf{Pages} \\
+\midrule
+1 & Introduction, contexte, probl\'ematique & 2--3 \\
+2 & \'Etat de l'art : microservices, s\'ecurit\'e des communications, DevSecOps, OWASP & 4--5 \\
+3 & Pr\'esentation du projet et architecture : trois services, flux, p\'erim\`etre & 4 \\
+4 & D\'emarche : SSDLC, STRIDE, correspondance avec les TP & 3 \\
+5 & CI/CD et qualit\'e : TP03, JaCoCo, Sonar, r\'esultats chiffr\'es & 5 \\
+6 & S\'ecurisation des communications : JWT, mTLS, autorisation, preuves & 6--7 \\
+7 & Infrastructure et donn\'ees : TP04, RDS, durcissement & 3--4 \\
+8 & R\'esultats, limites et discussion & 3 \\
+9 & Conclusion et perspectives & 2 \\
+10 & R\'ef\'erences & 2 \\
+\midrule
+ & \textbf{Total} & \textbf{34--40} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\etape{\'Etape F.3 --- R\'edaction et figures}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} sch\'emas d'architecture, de flux de confiance, de pipeline et de
+        mod\`ele de menace ; extraits de configuration comment\'es ; captures Sonar, ZAP et
+        Trivy ; tableaux avant/apr\`es pour chaque durcissement.
+\end{itemize}
+
+\etape{\'Etape F.4 --- Relecture et compilation}{a}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.1em]
+  \item \textbf{Actions :} \code{pdflatex}, \code{bibtex}, puis \code{pdflatex} deux fois ;
+        v\'erifier la pagination (30--40 pages, r\'ef\'erences comprises), l'orthographe et la
+        coh\'erence des renvois aux figures.
+\end{itemize}
+
+% ---------------------------------------------------------------
+\section{Ordre conseill\'e et charge}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}clXl@{}}
+\toprule
+\textbf{Phase} & \textbf{Contenu} & \textbf{D\'epend de} & \textbf{Effort} \\
+\midrule
+0 & Cadrage et Git & --- & 0,5 j \\
+A & Application & --- & fait \\
+B & Tests et pipeline (TP03) & A & 3--4 j \\
+C & S\'ecurisation des flux & B & 5--6 j \\
+D & RDS MySQL (TP04) & B & 2 j \\
+E & Observabilit\'e & C & 2 j \\
+F & Rapport & B, C, D & 4--5 j \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+En cas de contrainte de temps : traiter \textbf{B puis C} (le sujet du projet) et r\'eduire
+D et E \`a une section du rapport.
+
+% ---------------------------------------------------------------
+\section{Conditions de r\'eussite}
+
+\begin{itemize}[leftmargin=1.4em,itemsep=0.2em]
+  \item[$\square$] \code{mvn clean verify} vert sur \code{main} et Quality Gate Sonar verte
+  \item[$\square$] couverture d'au moins 60\,\% par service m\'etier
+  \item[$\square$] pipeline GitHub Actions vert sur PR et sur \code{main}
+  \item[$\square$] sans jeton : 401 sur les routes m\'etier ; sans certificat client : poign\'ee
+        de main refus\'ee
+  \item[$\square$] \code{/actuator/env} inaccessible anonymement
+  \item[$\square$] aucune image ne s'ex\'ecute en \code{root} ; Trivy sans vuln\'erabilit\'e critique
+  \item[$\square$] instance RDS priv\'ee, chiffr\'ee et sauvegard\'ee ; donn\'ees persist\'ees
+  \item[$\square$] rapport compil\'e, 30--40 pages, r\'ef\'erences compl\`etes
+\end{itemize}
+
+% ---------------------------------------------------------------
+\section*{Risques identifi\'es}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}p{5.2cm}X@{}}
+\toprule
+\textbf{Risque} & \textbf{Parade} \\
+\midrule
+mTLS avec r\'esolution \code{lb://} : configuration d\'elicate &
+r\'eserver une journ\'ee, valider d'abord un appel direct puis via Eureka \\
+\code{libsass-maven-plugin} introuvable : SCSS non compil\'e &
+conserver \code{css/theme.css} ou migrer l'outillage CSS hors chemin critique \\
+TP1 et TP2 illisibles (scans sans texte) : \'etapes peut-\^etre manquantes &
+confirmer la liste attendue avec l'encadrant \\
+Offre gratuite RDS sans Multi-AZ &
+l'assumer et l'inscrire dans les limites du rapport \\
+Jeton Sonar ou secrets absents : pipeline en \'echec &
+secrets GitHub, jamais dans le d\'ep\^ot \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\vspace{0.6cm}
+\hrule
+\vspace{0.3cm}
+{\small\itshape Document de travail --- plan susceptible d'\^etre ajust\'e selon les consignes
+de l'encadrant.}
+
+\end{document}

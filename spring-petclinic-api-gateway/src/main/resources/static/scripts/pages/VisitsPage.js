@@ -64,31 +64,34 @@ export const VisitsPage = {
             <loading-spinner v-if="loading"></loading-spinner>
             <load-failure v-else-if="failed" :error="failure" resource="Visit data"></load-failure>
             <div v-else>
-                <h2>Visits</h2>
-                <form @input="clearError" @submit.prevent="submit">
-                    <div class="mb-3">
-                        <label for="visit-date">Date</label>
-                        <input id="visit-date" v-model="form.date" type="date" class="form-control" required>
+                <h2>Add a visit</h2>
+                <div class="pc-card pc-card--form">
+                    <form class="pc-form" @input="clearError" @submit.prevent="submit">
+                        <div class="mb-3">
+                            <label for="visit-date">Date</label>
+                            <input id="visit-date" v-model="form.date" type="date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="visit-description">Description</label>
+                            <textarea id="visit-description" v-model.trim="form.description" class="form-control" maxlength="8192" style="resize:vertical;" required></textarea>
+                        </div>
+                        <div class="pc-form-foot">
+                            <button class="btn btn-primary" type="submit" :disabled="submitting">
+                                {{ submitting ? 'Saving…' : 'Add visit' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <h2>Previous visits</h2>
+                <div class="pc-list">
+                    <div v-for="visit in visits" :key="visit.id" class="pc-row">
+                        <span class="pc-date">{{ visit.date }}</span>
+                        <div class="pc-row-body">
+                            <div class="pc-row-meta" style="white-space: pre-line;">{{ visit.description }}</div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="visit-description">Description</label>
-                        <textarea id="visit-description" v-model.trim="form.description" class="form-control" maxlength="8192" style="resize:vertical;" required></textarea>
-                    </div>
-                    <div>
-                        <button class="btn btn-primary" type="submit" :disabled="submitting">
-                            {{ submitting ? 'Saving...' : 'Add New Visit' }}
-                        </button>
-                    </div>
-                </form>
-                <h3>Previous Visits</h3>
-                <table class="table">
-                    <tbody>
-                        <tr v-for="visit in visits" :key="visit.id">
-                            <td class="col-sm-2">{{ visit.date }}</td>
-                            <td style="white-space: pre-line">{{ visit.description }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                </div>
+                <p v-if="!visits.length" class="pc-empty pc-empty--flush">No visit recorded yet.</p>
             </div>
         </section>
     `
