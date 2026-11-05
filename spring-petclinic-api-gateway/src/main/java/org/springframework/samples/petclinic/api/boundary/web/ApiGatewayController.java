@@ -54,19 +54,25 @@ public class ApiGatewayController {
     @GetMapping(value = "owners/{ownerId}")
     public Mono<OwnerDetails> getOwnerDetails(final @PathVariable int ownerId) {
         return customersServiceClient.getOwner(ownerId)
-            .flatMap(owner ->
-                visitsServiceClient.getVisitsForPets(owner.getPetIds())
+            .flatMap(owner -> {
+                if (owner == null || owner.pets() == null || owner.pets().isEmpty()) {
+                    return Mono.just(owner);
+                }
+                return visitsServiceClient.getVisitsForPets(owner.getPetIds())
                     .transform(it -> {
                         ReactiveCircuitBreaker cb = cbFactory.create("getOwnerDetails");
                         return cb.run(it, throwable -> emptyVisitsForPets());
                     })
-                    .map(addVisitsToOwner(owner))
-            );
+                    .map(addVisitsToOwner(owner));
+            });
 
     }
 
     private Function<Visits, OwnerDetails> addVisitsToOwner(OwnerDetails owner) {
         return visits -> {
+            if (owner.pets() == null) {
+                return owner;
+            }
             owner.pets()
                 .forEach(pet -> pet.visits()
                     .addAll(visits.items().stream()

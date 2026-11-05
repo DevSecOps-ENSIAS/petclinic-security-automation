@@ -64,6 +64,25 @@ class ApiGatewayControllerTest {
             .jsonPath("$.pets[0].visits[0].description").isEqualTo("First visit");
     }
 
+    @Test
+    void getOwnerDetails_withNoPets() {
+        OwnerDetails owner = OwnerDetails.OwnerDetailsBuilder.anOwnerDetails()
+            .pets(Collections.emptyList())
+            .build();
+        Mockito
+            .when(customersServiceClient.getOwner(1))
+            .thenReturn(Mono.just(owner));
+
+        client.get()
+            .uri("/api/gateway/owners/1")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .jsonPath("$.pets").isEmpty();
+
+        Mockito.verify(visitsServiceClient, Mockito.never()).getVisitsForPets(Mockito.any());
+    }
+
     /**
      * Test Resilience4j fallback method
      */

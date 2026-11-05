@@ -40,6 +40,9 @@ public class VisitsServiceClient {
     }
 
     public Mono<Visits> getVisitsForPets(final List<Integer> petIds) {
+        if (petIds == null || petIds.isEmpty()) {
+            return Mono.just(new Visits(List.of()));
+        }
         return webClientBuilder.build()
             .get()
             .uri(hostname + "pets/visits?petId={petId}", joinIds(petIds))

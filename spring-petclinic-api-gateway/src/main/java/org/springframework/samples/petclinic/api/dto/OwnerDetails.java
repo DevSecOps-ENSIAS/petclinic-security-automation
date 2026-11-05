@@ -31,8 +31,17 @@ public record OwnerDetails(
     String telephone,
     List<PetDetails> pets) {
 
+    public OwnerDetails {
+        if (pets == null) {
+            pets = List.of();
+        }
+    }
+
     @JsonIgnore
     public List<Integer> getPetIds() {
+        if (pets == null || pets.isEmpty()) {
+            return List.of();
+        }
         return pets.stream()
             .map(PetDetails::id)
             .toList();
