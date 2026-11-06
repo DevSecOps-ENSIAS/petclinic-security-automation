@@ -38,6 +38,8 @@
 #     ports:
 #      - 9090:9090
 
+name: devsec
+
 services:
   discovery-server:
     image: springcommunity/spring-petclinic-discovery-server
