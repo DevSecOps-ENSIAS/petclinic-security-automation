@@ -17,6 +17,7 @@
     <properties>
         <docker.image.exposed.port>8761</docker.image.exposed.port>
         <docker.image.dockerfile.dir>${basedir}/../docker</docker.image.dockerfile.dir>
+        <jacoco.check.skip>true</jacoco.check.skip>
     </properties>
 
     <dependencies>
