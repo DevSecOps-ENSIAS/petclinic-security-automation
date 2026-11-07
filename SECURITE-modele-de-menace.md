@@ -134,6 +134,8 @@ Score simple : **Gravité (1-3) × Probabilité (1-3)**.
 | F9 (RDS exposée) | 9 | 7 | 6 | 9 | 7 | **7,6** | 12 |
 | F8-a (fuite de secret) | 8 | 6 | 5 | 10 | 6 | **7,0** | 14 |
 | F2-c (doublon POST) | 6 | 7 | 7 | 8 | 6 | **6,8** | 15 |
+| F10 | Navigateur → gateway | **E** | Un utilisateur authentifié modifie les données d'un autre propriétaire en changeant l'identifiant dans l'URL (`/api/customer/owners/42`) | C1 | Élevée | Contrôle d'accès par objet + rôles/scopes | 7 | ⬜ | requête sur l'ID d'autrui → 403 |
+| F11 | Navigateur → gateway | **I** | Messages d'erreur trop détaillés (stack trace, requête SQL) aidant l'attaquant | C1, C13 | Moyenne | Gestionnaire d'erreurs générique, logs côté serveur | 10 | ⬜ | réponse 500 sans détail |
 
 > Les notes sont une appréciation d'équipe : justifiez chaque colonne en une phrase dans le rapport
 > (par exemple, *Discoverability* = 10 parce que `/actuator/env` est lisible par un simple `curl` anonyme).
