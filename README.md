@@ -128,6 +128,9 @@ see « Périmètre du projet : 3 microservices » above.
 
 ## Integrating the Spring AI Chatbot
 
+> **Hors périmètre** : le module `spring-petclinic-genai-service` est exclu du build (voir « Périmètre du projet :
+> 3 microservices »). Cette section est conservée pour mémoire ; la route `/api/genai/**` n'existe plus.
+
 Spring Petclinic integrates a Chatbot that allows you to interact with the application in a natural language. Here are some examples of what you could ask:
 
 1. Please list the owners that come to the clinic.
