@@ -25,7 +25,7 @@ done
 
 INFRA_SERVICES=(grafana-server prometheus-server tracing-server)
 
-APP_MODULES=(config-server discovery-server customers-service visits-service vets-service genai-service api-gateway admin-server)
+APP_MODULES=(discovery-server customers-service visits-service vets-service api-gateway)
 
 # Resolves the executable jar of a module (ignores sources/javadoc/original jars).
 find_jar() {
@@ -88,17 +88,13 @@ docker compose up -d "${INFRA_SERVICES[@]}"
 
 echo "Running apps"
 mkdir -p target
-start_app spring-petclinic-config-server 8888 config-server
-wait_for_service config-server 8888
 start_app spring-petclinic-discovery-server 8761 discovery-server
 wait_for_service discovery-server 8761
 start_app spring-petclinic-customers-service 8081 customers-service
 start_app spring-petclinic-visits-service 8082 visits-service
 start_app spring-petclinic-vets-service 8083 vets-service
-start_app spring-petclinic-genai-service 8084 genai-service
 start_app spring-petclinic-api-gateway 8080 api-gateway
-start_app spring-petclinic-admin-server 9090 admin-server
-for service in "customers-service 8081" "visits-service 8082" "vets-service 8083" "genai-service 8084" "api-gateway 8080" "admin-server 9090"; do
+for service in "customers-service 8081" "visits-service 8082" "vets-service 8083" "api-gateway 8080"; do
   # shellcheck disable=SC2086
   wait_for_service ${service}
 done

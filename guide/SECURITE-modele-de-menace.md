@@ -112,6 +112,32 @@ Score simple : **Gravité (1-3) × Probabilité (1-3)**.
 | 3 | F8-a/b/c/d, F9 | Chaîne de livraison et cloud |
 | 4 | F1-d, F2-c, F5, F4-b | Durcissement complémentaire |
 
+### 5.1 Cotation DREAD des menaces principales (méthode du cours, ch. 4)
+
+`Risque = (Damage + Reproducibility + Exploitability + Affected users + Discoverability) / 5`
+
+| Menace | D | R | E | A | Dsc | Score /10 | Rang |
+|---|---|---|---|---|---|---|---|
+| F4-a (Actuator) | 9 | 10 | 10 | 10 | 10 | **9,8** | 1 |
+| F1-a (écriture sans identité) | 8 | 10 | 10 | 10 | 10 | **9,6** | 2 |
+| F1-b (HTTP en clair) | 8 | 10 | 9 | 10 | 9 | **9,2** | 3 |
+| F6 (contournement du gateway) | 8 | 10 | 10 | 9 | 9 | **9,2** | 3 |
+| F7 (Grafana anonyme Admin) | 8 | 10 | 10 | 8 | 9 | **9,0** | 5 |
+| F2-b (interception est-ouest) | 8 | 9 | 9 | 8 | 8 | **8,4** | 6 |
+| F1-c (falsification en transit) | 6 | 9 | 9 | 9 | 8 | **8,2** | 7 |
+| F1-d (rafale sur /api) | 5 | 9 | 9 | 9 | 9 | **8,2** | 7 |
+| F1-e (non-répudiation) | 5 | 8 | 9 | 10 | 8 | **8,0** | 9 |
+| F2-a (faux service) | 9 | 7 | 6 | 10 | 7 | **7,8** | 10 |
+| F4-b (loggers/refresh) | 8 | 8 | 8 | 8 | 7 | **7,8** | 10 |
+| F3-a (empoisonnement Eureka) | 9 | 7 | 6 | 10 | 6 | **7,6** | 12 |
+| F9 (RDS exposée) | 9 | 7 | 6 | 9 | 7 | **7,6** | 12 |
+| F8-a (fuite de secret) | 8 | 6 | 5 | 10 | 6 | **7,0** | 14 |
+| F2-c (doublon POST) | 6 | 7 | 7 | 8 | 6 | **6,8** | 15 |
+
+> Les notes sont une appréciation d'équipe : justifiez chaque colonne en une phrase dans le rapport
+> (par exemple, *Discoverability* = 10 parce que `/actuator/env` est lisible par un simple `curl` anonyme).
+> L'ordre DREAD confirme les priorités de la section 5 : F4-a, F1-a, puis F1-b/F6, puis F7.
+
 ---
 
 ## 6. Risques résiduels (à assumer dans le rapport)

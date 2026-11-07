@@ -21,3 +21,17 @@ target/
 generated/
 
 **/.DS_Store
+
+# Secrets et cryptographie : JAMAIS dans Git
+*.pem
+*.key
+*.p12
+*.jks
+*.csr
+*.srl
+.keystore
+.env
+.env.*
+secrets/
+pki/
+docs/preuves/**/*.har
