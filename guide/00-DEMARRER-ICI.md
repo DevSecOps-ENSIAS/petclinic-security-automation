@@ -34,11 +34,11 @@ Trois pièges propres à ce dépôt, traités dans le guide :
 
 | | 🅰️ **Membre A — Pipeline, qualité, cloud** | 🅱️ **Membre B — Sécurité, crypto, données** |
 |---|---|---|
-| Phases principales | 1, 3, 4, 9, 11 | 5, 6, 7, 8, 10 |
+| Phases principales | 1, 2, 3, 4, 9, 11 | 5, 6, 7, 8, 10 |
 | Fichiers dont il est propriétaire | `pom.xml` racine, `.github/**`, `docker/**`, `docker-compose*.yml`, `scripts/*.sh` (hors `pki`) | `application*.yml` des 5 services, classes `*Security*`, `scripts/pki/**`, `docs/**` sécurité |
 | Comptes à créer | GitHub (propriétaire), SonarCloud, AWS (ECR/EC2/IAM) | AWS (RDS), Keycloak local |
 | Chapitres du rapport | CI/CD, qualité, supply chain, déploiement, supervision | Cryptographie, TLS/mTLS, JWT, données, durcissement |
-| En commun | Phase 2 (menace), phase 12 (rapport), phase 13 (soutenance) |
+| En commun | Phase 12 (rapport), phase 13 (soutenance) |
 
 **Pourquoi cette séparation de fichiers :** elle évite 90 % des conflits Git. Si l'un doit modifier un fichier de l'autre, il ouvre une PR et l'autre la relit.
 
@@ -59,7 +59,7 @@ Trois pièges propres à ce dépôt, traités dans le guide :
 |---|---|---|---|---|---|
 | 0 | Préparation des outils et comptes | — | A + B | 0,5 j | — |
 | 1 | Dépôt, branches, nettoyage | TP2 | A | 0,5 j | 0 |
-| 2 | Modèle de menace | — | A + B | 0,5 j | 1 |
+| 2 | Modèle de menace | — | A seul | 0,5 j | 1 |
 | 3 | CI + JaCoCo | TP2 | A | 1,5 j | 1 |
 | 4 | Sonar + SCA + secrets | TP5 | A | 1 j | 3 |
 | 5 | PKI avec OpenSSL | TP1 | B | 1 j | 1 |
@@ -187,19 +187,30 @@ git checkout dev
 
 ---
 
-## PHASE 2 — Modèle de menace (🅰️ + 🅱️, 1 h ensemble)
+## PHASE 2 — Modèle de menace (🅰️ seul, 1 h)
 
-Le fichier `SECURITE-modele-de-menace.md` est fourni (constats C1 à C14, tableau STRIDE par flux F1 à F9).
+> **Exception à la répartition A/B** : cette phase est réalisée **entièrement par A**. Les tâches
+> initialement attribuées à B (captures, relecture) sont reprises par A. **Une seule personne suffit** :
+> les constats sont des commandes, les captures des écrans, et le tableau est déjà rédigé. Seule la règle
+> GitHub « PR approuvée » impose un second compte pour le clic *Approve*.
 
-1. **A** le copie à la racine du dépôt (branche `feature/p2-threat-model`).
-2. Chacun relit seul les sections 3 et 4 et exécute les commandes de la colonne « Où le vérifier ».
-3. **B** produit les captures « avant » :
+Le fichier `SECURITE-modele-de-menace.md` est fourni dans `guide/` (constats C1 à C14, tableau STRIDE par flux F1 à F9).
+
+1. **A** le copie à la racine du dépôt (branche `feature/p2-threat-model`) :
+   ```bash
+   git checkout dev && git pull
+   git checkout -b feature/p2-threat-model
+   cp guide/SECURITE-modele-de-menace.md .
+   ```
+2. **A** relit les sections 3 et 4 et exécute les commandes de la colonne « Où le vérifier ».
+3. **A** produit les captures « avant » :
    - `grep -l security spring-petclinic-*/pom.xml pom.xml` (aucun résultat) ;
    - `curl http://localhost:8080/actuator/env` (réponse JSON complète) ;
    - Grafana ouvert sur http://localhost:3030 **sans mot de passe** ;
    - `curl http://localhost:8081/owners` en contournant le gateway (si compose lancé).
-4. Ensemble : ajouter vos menaces propres, confirmer gravités et priorités.
-5. PR vers `dev`, relue par l'autre.
+4. **A** ajoute au moins 2 menaces propres (F10, F11) et confirme gravités et priorités.
+5. PR vers `dev`. **Approbation** : le binôme clique *Approve* (aucune production de sa part), ou un second
+   compte ; à défaut, fusionner et documenter la revue comme simulée.
 
 **✅ Fin de phase :** fichier mergé dans `dev`, ≥ 3 captures « avant ».
 Cette phase alimente le chapitre « Analyse de risque » du rapport.

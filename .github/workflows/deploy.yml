@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '17', '21' ]
+
+    steps:
+      - name: Vérification du code source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: temurin
+          cache: maven
+
+      - name: Wrapper exécutable
+        run: chmod +x mvnw
+
+      - name: Build, tests et couverture
+        run: ./mvnw -B -P quality clean verify
+
+      - name: Publier les rapports JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-java-${{ matrix.java }}
+          path: '**/target/site/jacoco/'

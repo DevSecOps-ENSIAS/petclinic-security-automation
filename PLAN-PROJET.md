@@ -50,12 +50,14 @@ Note technique : `css/theme.css` écrit à la main car `libsass-maven-plugin:0.2
 ## Phase B — Qualité et intégration continue (TP03) — 3 à 4 jours
 
 ### Étape B.1 ⬜ Écrire les tests manquants des 3 services métier
-État actuel : **0 test** dans `customers`, `vets`, `visits` (seuls gateway et discovery en ont).
+État au 07/11/2026 : **14 tests** dans les 3 services métier — `customers` 10 (dont `PetResourceTest` 7),
+`vets` 2, `visits` 2 — auxquels s'ajoutent 10 tests du gateway et 1 du discovery-server (25 au total).
+Reste à compléter : cas 400/404, `@DataJpaTest` sur les repositories, test du cache `vets`.
 - `@WebMvcTest` sur chaque contrôleur REST : 200 nominal, 404 inconnu, 400 payload invalide.
 - `@DataJpaTest` sur les repositories (HSQLDB en mémoire, scripts `db/hsqldb`).
 - Tests de mapping DTO ↔ entité, tests de cache pour `vets` (`@Cacheable`).
 - Cible : **≥ 60 % de couverture de lignes** par service.
-- Preuve : `mvn test` vert, rapport `target/site/jacoco/index.html`.
+- Preuve : `./mvnw test` vert, rapport `target/site/jacoco/index.html`.
 - Rapport : § « Tests et couverture » (tableau par module).
 
 ### Étape B.2 ⬜ Ajouter JaCoCo au `pom.xml` parent
