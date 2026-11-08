@@ -54,3 +54,36 @@ management:
   zipkin:
     tracing:
       endpoint: http://tracing-server:9411/api/v2/spans
+
+
+
+---
+spring:
+  config:
+    activate:
+      on-profile: tls
+
+server:
+  port: ${SERVER_PORT:8082}
+  ssl:
+    enabled: true
+    key-store: file:${PKI_DIR:secrets}/visits.p12
+    key-store-type: PKCS12
+    key-store-password: ${PKI_PASS}
+    key-alias: visits
+    client-auth: want
+    trust-store: file:${PKI_DIR:secrets}/truststore.p12
+    trust-store-type: PKCS12
+    trust-store-password: ${PKI_PASS}
+
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8092}
+
+eureka:
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
+    prefer-ip-address: false
+    secure-port-enabled: true
+    non-secure-port-enabled: false
+    secure-port: ${SERVER_PORT:8082}
