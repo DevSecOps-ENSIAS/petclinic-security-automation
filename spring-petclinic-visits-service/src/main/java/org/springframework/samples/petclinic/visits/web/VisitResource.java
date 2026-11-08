@@ -56,9 +56,14 @@ class VisitResource {
     @PostMapping("owners/*/pets/{petId}/visits")
     @ResponseStatus(HttpStatus.CREATED)
     public Visit create(
-        @Valid @RequestBody Visit visit,
+        @Valid @RequestBody VisitRequest request,
         @PathVariable("petId") @Min(1) int petId) {
 
+        Visit visit = new Visit();
+        visit.setDescription(request.description());
+        if (request.date() != null) {
+            visit.setDate(request.date());
+        }
         visit.setPetId(petId);
         log.info("Saving visit {}", visit);
         return visitRepository.save(visit);
