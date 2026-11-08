@@ -40,7 +40,7 @@
         <spring-cloud.version>2025.1.0</spring-cloud.version>
         <chaos-monkey-spring-boot.version>4.0.0</chaos-monkey-spring-boot.version>
         <jolokia-core.version>1.7.1</jolokia-core.version>
-        <datasource-micrometer.version>2.0.1</datasource-micrometer.version>
+        <datasource-micrometer.version>2.3.0</datasource-micrometer.version>
 
         <docker.image.prefix>springcommunity</docker.image.prefix>
         <docker.image.exposed.port>9090</docker.image.exposed.port>
