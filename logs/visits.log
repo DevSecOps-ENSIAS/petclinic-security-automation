@@ -1,0 +1,113 @@
+16:45:15,216 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.1)
+
+2026-11-08T16:45:16.445Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.s.p.visits.VisitsServiceApplication  : Starting VisitsServiceApplication v4.0.1 using Java 21.0.11 with PID 30772 (C:\Users\akram\Downloads\petclinic-security-automation\spring-petclinic-visits-service\target\spring-petclinic-visits-service-4.0.1.jar started by akram in C:\Users\akram\Downloads\petclinic-security-automation)
+2026-11-08T16:45:16.454Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.s.p.visits.VisitsServiceApplication  : No active profile set, falling back to 1 default profile: "default"
+2026-11-08T16:45:23.809Z  INFO 30772 --- [visits-service] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-08T16:45:24.681Z  INFO 30772 --- [visits-service] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 801 ms. Found 1 JPA repository interface.
+2026-11-08T16:45:27.376Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.cloud.context.scope.GenericScope     : BeanFactory id=37240dad-aa42-3836-9d36-5992e6487824
+2026-11-08T16:45:33.170Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8082 (http)
+2026-11-08T16:45:33.216Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-08T16:45:33.217Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.15]
+2026-11-08T16:45:33.324Z  INFO 30772 --- [visits-service] [           main] [                                                 ] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 16659 ms
+2026-11-08T16:45:38.568Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-08T16:45:41.551Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Driver does not support get/set network timeout for connections. (feature not supported)
+2026-11-08T16:45:41.556Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.hsqldb.jdbc.JDBCConnection@54f9326c
+2026-11-08T16:45:41.561Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-08T16:45:42.822Z  INFO 30772 --- [visits-service] [           main] [                                                 ] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-08T16:45:43.123Z  INFO 30772 --- [visits-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.0.Final
+2026-11-08T16:45:43.496Z  WARN 30772 --- [visits-service] [/api/v2/spans}}] [                                                 ] z.r.i.AsyncReporter$BoundedAsyncReporter : Spans were dropped due to exceptions. All subsequent errors will be logged at FINE level.
+2026-11-08T16:45:43.497Z  WARN 30772 --- [visits-service] [/api/v2/spans}}] [                                                 ] z.r.i.AsyncReporter$BoundedAsyncReporter : Dropped 11 spans due to ConnectException()
+
+java.net.ConnectException
+	at java.net.http/jdk.internal.net.http.HttpClientImpl.send(HttpClientImpl.java:955)
+	at java.net.http/jdk.internal.net.http.HttpClientFacade.send(HttpClientFacade.java:133)
+	at org.springframework.boot.zipkin.autoconfigure.ZipkinHttpClientSender.postSpans(ZipkinHttpClientSender.java:59)
+	at org.springframework.boot.zipkin.autoconfigure.HttpSender.postSpans(HttpSender.java:69)
+	at org.springframework.boot.zipkin.autoconfigure.HttpSender.postSpans(HttpSender.java:41)
+	at zipkin2.reporter.BaseHttpSender.send(BaseHttpSender.java:123)
+	at zipkin2.reporter.internal.AsyncReporter$BoundedAsyncReporter.flush(AsyncReporter.java:266)
+	at zipkin2.reporter.internal.AsyncReporter$Flusher.run(AsyncReporter.java:352)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.net.ConnectException
+	at java.net.http/jdk.internal.net.http.common.Utils.toConnectException(Utils.java:1065)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.connectAsync(PlainHttpConnection.java:227)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.checkRetryConnect(PlainHttpConnection.java:280)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.lambda$connectAsync$2(PlainHttpConnection.java:238)
+	at java.base/java.util.concurrent.CompletableFuture.uniHandle(CompletableFuture.java:934)
+	at java.base/java.util.concurrent.CompletableFuture$UniHandle.tryFire(CompletableFuture.java:911)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1773)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	... 1 common frames omitted
+Caused by: java.nio.channels.ClosedChannelException
+	at java.base/sun.nio.ch.SocketChannelImpl.ensureOpen(SocketChannelImpl.java:202)
+	at java.base/sun.nio.ch.SocketChannelImpl.beginConnect(SocketChannelImpl.java:786)
+	at java.base/sun.nio.ch.SocketChannelImpl.connect(SocketChannelImpl.java:874)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.lambda$connectAsync$1(PlainHttpConnection.java:210)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:571)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.connectAsync(PlainHttpConnection.java:212)
+	... 9 common frames omitted
+
+2026-11-08T16:45:45.237Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-08T16:45:45.539Z  INFO 30772 --- [visits-service] [           main] [                                                 ] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:hsqldb:mem:3afc1d7a-fe19-469b-82b5-c3739b452a7e]
+	Database driver: HSQL Database Engine Driver
+	Database dialect: HSQLDialect
+	Database version: 2.7.3
+	Default catalog/schema: PUBLIC/PUBLIC
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-08T16:45:46.094Z  WARN 30772 --- [visits-service] [           main] [                                                 ] org.hibernate.orm.deprecation            : HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at org.springframework.samples.petclinic.visits.model.Visit.date.
+2026-11-08T16:45:49.243Z  INFO 30772 --- [visits-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-08T16:45:49.443Z  INFO 30772 --- [visits-service] [           main] [                                                 ] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-08T16:45:50.164Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-08T16:45:57.337Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-08T16:46:00.930Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-08T16:46:00.999Z  INFO 30772 --- [visits-service] [           main] [                                                 ] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestClient.
+2026-11-08T16:46:01.259Z  WARN 30772 --- [visits-service] [           main] [                                                 ] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-11-08T16:46:01.298Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 17 endpoints beneath base path '/actuator'
+2026-11-08T16:46:01.612Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-11-08T16:46:01.826Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-11-08T16:46:01.881Z  INFO 30772 --- [visits-service] [           main] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-08T16:46:01.936Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-11-08T16:46:01.953Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-11-08T16:46:01.956Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-11-08T16:46:01.956Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-11-08T16:46:01.957Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-11-08T16:46:01.965Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-11-08T16:46:01.987Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-11-08T16:46:03.957Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-11-08T16:46:03.963Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-11-08T16:46:03.969Z  INFO 30772 --- [visits-service] [           main] [                                                 ] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-11-08T16:46:03.975Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1794156363973 with initial instances count: 0
+2026-11-08T16:46:03.996Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application VISITS-SERVICE with eureka with status UP
+2026-11-08T16:46:03.999Z  INFO 30772 --- [visits-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1794156363999, current=UP, previous=STARTING]
+2026-11-08T16:46:04.033Z  INFO 30772 --- [visits-service] [foReplicator-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_VISITS-SERVICE/visits-service:3e9fc3c5-3cf9-4830-82ac-87430cca8f54: registering service...
+2026-11-08T16:46:04.042Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8082 (http) with context path '/'
+2026-11-08T16:46:04.044Z  INFO 30772 --- [visits-service] [           main] [                                                 ] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8082
+2026-11-08T16:46:04.346Z  INFO 30772 --- [visits-service] [foReplicator-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_VISITS-SERVICE/visits-service:3e9fc3c5-3cf9-4830-82ac-87430cca8f54 - registration status: 204
+2026-11-08T16:46:05.107Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-08T16:46:05.131Z  INFO 30772 --- [visits-service] [           main] [                                                 ] o.s.s.p.visits.VisitsServiceApplication  : Started VisitsServiceApplication in 53.336 seconds (process running for 55.898)
+2026-11-08T16:46:33.969Z  INFO 30772 --- [visits-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-11-08T16:46:33.969Z  INFO 30772 --- [visits-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-11-08T16:46:33.969Z  INFO 30772 --- [visits-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-11-08T16:46:33.969Z  INFO 30772 --- [visits-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-11-08T16:46:33.969Z  INFO 30772 --- [visits-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-11-08T16:46:33.969Z  INFO 30772 --- [visits-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application version is -1: false
+2026-11-08T16:46:33.970Z  INFO 30772 --- [visits-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-11-08T16:46:34.005Z  INFO 30772 --- [visits-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-11-08T16:51:01.997Z  INFO 30772 --- [visits-service] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
