@@ -33,5 +33,5 @@ generated/
 .env
 .env.*
 secrets/
-pki/
+/pki/
 docs/preuves/**/*.har
