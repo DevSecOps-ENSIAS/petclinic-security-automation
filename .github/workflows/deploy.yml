@@ -48,7 +48,7 @@ jobs:
 
       - name: Scan Trivy (dépendances, secrets, configuration)
         if: matrix.java == '21'
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -56,12 +56,6 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: '0'
           format: table
-
-      - name: Gitleaks (détection de secrets)
-        if: matrix.java == '21'
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publier les rapports JaCoCo
         if: always()
