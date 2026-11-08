@@ -84,4 +84,18 @@ class VisitResourceTest {
             .andExpect(jsonPath("$.petId").value(3))
             .andExpect(jsonPath("$.description").value("checkup"));
     }
+
+    @Test
+    void ignoresServerControlledFieldsSentInTheBody() throws Exception {
+        given(visitRepository.save(any(Visit.class))).willAnswer(invocation -> invocation.getArgument(0));
+
+        mvc.perform(post("/owners/1/pets/3/visits")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"id":999,"petId":999,"description":"checkup","date":"2025-01-15"}
+                    """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.petId").value(3))
+            .andExpect(jsonPath("$.description").value("checkup"));
+    }
 }
