@@ -40,8 +40,10 @@ jobs:
       - name: Build, tests et couverture
         run: ./mvnw -B -P quality clean verify
 
+      # Les workflows déclenchés par Dependabot n'ont pas accès aux secrets :
+      # on saute l'analyse Sonar (qui exige SONAR_TOKEN) sur ces PR.
       - name: Analyse SonarCloud
-        if: matrix.java == '21'
+        if: matrix.java == '21' && github.actor != 'dependabot[bot]'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./mvnw -B -P quality sonar:sonar
