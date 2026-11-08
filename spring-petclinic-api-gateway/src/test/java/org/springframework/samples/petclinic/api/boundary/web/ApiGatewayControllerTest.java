@@ -15,6 +15,10 @@ import org.springframework.samples.petclinic.api.dto.Visits;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import org.springframework.context.annotation.Import;
+import org.springframework.samples.petclinic.api.config.SecurityConfig;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.net.ConnectException;
 import java.util.ArrayList;
@@ -22,8 +26,11 @@ import java.util.Collections;
 import java.util.List;
 
 @WebFluxTest(controllers = ApiGatewayController.class)
-@Import({ReactiveResilience4JAutoConfiguration.class, CircuitBreakerConfiguration.class})
+@Import({ReactiveResilience4JAutoConfiguration.class, CircuitBreakerConfiguration.class, SecurityConfig.class})
 class ApiGatewayControllerTest {
+
+    @MockitoBean
+    private ReactiveJwtDecoder jwtDecoder;
 
     @MockitoBean
     private CustomersServiceClient customersServiceClient;

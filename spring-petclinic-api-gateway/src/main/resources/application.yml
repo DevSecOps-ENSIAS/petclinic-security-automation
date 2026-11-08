@@ -1,4 +1,9 @@
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/petclinic}
   application:
     name: api-gateway
   cloud:
@@ -14,7 +19,7 @@ spring:
               args:
                 retries: 1
                 statuses: SERVICE_UNAVAILABLE
-                methods: POST
+                methods: GET
           routes:
             - id: vets-service
               uri: lb://vets-service
@@ -58,12 +63,13 @@ management:
       exposure:
         include: '*'
   metrics:
-    export:
-      prometheus:
-        enabled: true
   tracing:
     sampling:
       probability: 1
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 ---
 spring:
@@ -77,6 +83,7 @@ eureka:
       defaultZone: http://discovery-server:8761/eureka/
 
 management:
-  zipkin:
-    tracing:
-      endpoint: http://tracing-server:9411/api/v2/spans
+  tracing:
+    export:
+      zipkin:
+        endpoint: http://tracing-server:9411/api/v2/spans
