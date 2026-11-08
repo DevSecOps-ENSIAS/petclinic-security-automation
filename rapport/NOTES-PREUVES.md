@@ -127,9 +127,38 @@ Contrôle final : `pdfinfo rapport/main.pdf | grep Pages`.
 
 ## Phase 4 — Sonar + SCA + secrets
 
-- **À remplir** : Quality Gate, notes (sécurité/fiabilité/maintenabilité), couverture vue par Sonar, alertes Trivy, Dependabot, gitleaks, interprétation (exigence TP5).
-- **Figures** : tableau de bord Sonar, tableau Trivy, alertes Dependabot.
-- **Chapitre** : 5.
+- **Fait** : projet SonarCloud `DevSecOps-ENSIAS_petclinic-security-automation` (org `devsecops-ensias`) ; analyse Maven avec import du rapport JaCoCo ; Dependabot (Maven, GitHub Actions, Docker) ; Trivy (`vuln,secret,misconfig`) ; Gitleaks retiré (licence organisation) → les secrets sont couverts par Trivy.
+- **Résultats (analyse du 08/11/2026, branche `main`)** :
+  - Quality Gate : **Passed**
+  - Sécurité : **D** (1 issue High, `java:S4684`) → **A** après correction
+  - Fiabilité : **A**
+  - Maintenabilité : **A**
+  - Couverture : **68,3 %**
+  - Duplications : **0,0 %**
+  - Security Hotspots : **0**
+  - Issues : **1** (S4684) → **0** après correction
+  - Lignes de code analysées : **1,9 k**
+- **SCA** :
+  - Trivy : **270 occurrences** (comptage **par cible**, modules hors build inclus), dont **55 critiques** sur le pom racine ; **0 secret** détecté ; **3 misconfigurations** sur `docker/Dockerfile` (root, HEALTHCHECK, image).
+  - Dependabot : **0 alerte ouverte**, **784 dépendances** analysées (graphe de dépendances actif).
+  - Sonar : **258 risques de dépendances** signalés dans la décoration de PR.
+- **Correctif** : DTO `VisitRequest` (mass assignment S4684), commit `9293e8b`, test d'abus prouvant que `id`/`petId` envoyés par le client sont ignorés.
+- **Captures** : `01-pr-checks`, `02-sonar-dashboard`, `03-sonar-issues`, `04-trivy`, `05-dependabot`.
+- **Décisions** : corriger S4684 (fait) ; accepter les duplications (0 %) ; planifier la remédiation des CVE en phase 10 (suppression de `jolokia-core` et `chaos-monkey`, mises à jour Dependabot) ; garder Trivy non bloquant (`exit-code: 0`) tant que la remédiation n'est pas terminée.
+- **Risque résiduel** : CVE transitives non corrigées, SCA non bloquant, couverture < 100 %, `discovery-server` non mesuré.
+- **Phrase clé** : deux outils SCA donnent des chiffres très différents (270 vs 0) car leurs bases (NVD vs GHSA) et leurs périmètres (fichiers vs graphe résolu) diffèrent — écart expliqué dans le rapport.
+
+### Texte prêt à coller — chapitre 5 (phase 4)
+
+> L'analyse SonarCloud du projet (5 modules, 28 tests, 1,9 k lignes) attribue une note de fiabilité **A**, une note de maintenabilité **A** et une couverture de lignes de **68,3 %** (customers 67,9 %, vets 64,7 %, visits 84,8 %, gateway 73,9 %), au-dessus du seuil de 60 % imposé par le Quality Gate. La note de sécurité initiale était **D** en raison d'une vulnérabilité de *mass assignment* (`S4684`) sur `VisitResource` : l'entité JPA était liée directement au corps de la requête, permettant de fixer l'identifiant et le propriétaire de la visite. La remédiation a consisté à introduire un DTO `VisitRequest` restreint aux champs métier et à ajouter un test d'abus ; après réanalyse, l'issue est fermée et la note passe à **A**. Le Quality Gate est **Passed**, sans duplication ni hotspot résiduel.
+>
+> L'analyse de composition logicielle a été conduite avec deux outils complémentaires. Trivy (base NVD) relève 270 occurrences de vulnérabilités réparties par cible, dont 55 critiques sur le pom racine, ainsi que trois mauvaises configurations du `Dockerfile` (utilisateur root, absence de HEALTHCHECK, image non épinglée). Dependabot, fondé sur le graphe de dépendances résolu (784 paquets) et la base GHSA, ne signale aucune alerte ouverte. Cet écart, loin d'être une contradiction, illustre les limites du SCA : les bases de vulnérabilités et les périmètres d'analyse diffèrent, et un comptage par fichier surestime nécessairement les occurrences. La remédiation est planifiée : suppression des dépendances `jolokia-core` et `chaos-monkey` devenues inutiles, application des mises à jour proposées par Dependabot, puis mesure avant/après.
+
+### Pourquoi la capture 02 doit être refaite
+
+La capture `02-sonar-dashboard.png` prise le 08/11 montre **Security D** et **1 issue** : c'est l'état *avant* correction `S4684`.
+Le texte du rapport affirme **Security A** et **0 issue** : la figure doit correspondre à l'état final, sinon le jury voit une contradiction.
+Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le tableau avant/après), et refaire `02-sonar-dashboard.png` après la réanalyse de `main`.
 
 ## Phases 5-8 — binôme (B)
 
