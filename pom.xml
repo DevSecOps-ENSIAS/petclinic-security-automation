@@ -89,8 +89,8 @@
                 <jacoco.version>0.8.12</jacoco.version>
                 <jacoco.minimum>0.60</jacoco.minimum>
                 <jacoco.check.skip>false</jacoco.check.skip>
-                <sonar.projectKey>Akram-Alm_petclinic-security-automation</sonar.projectKey>
-                <sonar.organization>REMPLACER_ORGANISATION</sonar.organization>
+                <sonar.projectKey>DevSecOps-ENSIAS_petclinic-security-automation</sonar.projectKey>
+                <sonar.organization>devsecops-ensias</sonar.organization>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <sonar.coverage.jacoco.xmlReportPaths>**/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
                 <sonar.exclusions>**/static/**,**/*.scss,**/webjars/**</sonar.exclusions>
