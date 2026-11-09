@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <webjars-bootstrap.version>5.3.3</webjars-bootstrap.version>
+        <webjars-bootstrap.version>5.3.8</webjars-bootstrap.version>
         <webjars-font-awesome.version>4.7.0</webjars-font-awesome.version>
         <webjars-vue-router.version>4.5.1</webjars-vue-router.version>
         <webjars-dompurify.version>3.3.1</webjars-dompurify.version>
