@@ -34,10 +34,10 @@ Trois pièges propres à ce dépôt, traités dans le guide :
 
 | | 🅰️ **Membre A — Pipeline, qualité, cloud** | 🅱️ **Membre B — Sécurité, crypto, données** |
 |---|---|---|
-| Phases principales | 1, 2, 3, 4, 9, 11 | 5, 6, 7, 8, 10 |
+| Phases principales | 1, 2, 3, 4, 4 bis, 8, 9, 11 | 5, 6, 7, 10 |
 | Fichiers dont il est propriétaire | `pom.xml` racine, `.github/**`, `docker/**`, `docker-compose*.yml`, `scripts/*.sh` (hors `pki`) | `application*.yml` des 5 services, classes `*Security*`, `scripts/pki/**`, `docs/**` sécurité |
 | Comptes à créer | GitHub (propriétaire), SonarCloud, AWS (ECR/EC2/IAM) | AWS (RDS), Keycloak local |
-| Chapitres du rapport | CI/CD, qualité, supply chain, déploiement, supervision | Cryptographie, TLS/mTLS, JWT, données, durcissement |
+| Chapitres du rapport | CI/CD, qualité, supply chain, données, déploiement, supervision | Cryptographie, TLS/mTLS, JWT, durcissement |
 | En commun | Phase 12 (rapport), phase 13 (soutenance) |
 
 **Pourquoi cette séparation de fichiers :** elle évite 90 % des conflits Git. Si l'un doit modifier un fichier de l'autre, il ouvre une PR et l'autre la relit.
@@ -62,17 +62,18 @@ Trois pièges propres à ce dépôt, traités dans le guide :
 | 2 | Modèle de menace | — | A seul | 0,5 j | 1 |
 | 3 | CI + JaCoCo | TP2 | A | 1,5 j | 1 |
 | 4 | Sonar + SCA + secrets | TP5 | A | 1 j | 3 |
+| 4 bis | Sécurité de la chaîne (SBOM, SAST, blocage, SHA) | — | A | 1 j | 4 |
 | 5 | PKI avec OpenSSL | TP1 | B | 1 j | 1 |
 | 6 | Authentification JWT | — | B | 2 j | 1 |
 | 7 | TLS puis mTLS | TP3 | B | 3 j | 5, 6 |
-| 8 | RDS MySQL + profil prod | TP4 | B (+A secrets) | 2 j | 1 |
+| 8 | RDS MySQL + profil prod | TP4 | A | 2 j | 1 |
 | 9 | Docker, ECR, EC2 | TP3 suite | A | 3 j | 3, 8 |
 | 10 | Durcissement | — | B (+A) | 2 j | 6, 7, 9 |
 | 11 | Observabilité et alertes | — | A | 1,5 j | 7, 10 |
 | 12 | Rapport LaTeX | — | A + B | 4 j | tout |
 | 13 | Soutenance | — | A + B | 1 j | 12 |
 
-**En parallèle :** pendant que A fait 3 → 4, B fait 5 → 6. Pendant que B fait 7 → 8, A prépare 9.
+**En parallèle :** pendant que A fait 3 → 4, B fait 5 → 6. Ensuite A enchaîne **8** (RDS) puis **9** (Docker/ECR/EC2) pendant que B fait **7** (TLS/mTLS) puis **10** (durcissement applicatif). Les phases AWS (8 et 9) sont assurées par A.
 
 ---
 
@@ -475,6 +476,272 @@ Pour chaque indicateur, noter valeur, note (A à E) et décision :
 
 ---
 
+
+## PHASE 4 bis — Sécurité de la chaîne logicielle (🅰️)
+
+> **But** : passer d'un pipeline « qui mesure » à un pipeline « qui bloque ».
+> **Dépend de** : phase 4 (Sonar, Trivy, Dependabot).
+> **Durée** : ~1 jour. **Peut être faite après la phase 9** sans bloquer B.
+> **Chapitre du rapport** : 5 (CI/CD, qualité, supply chain).
+
+Les TP s'arrêtent à JaCoCo + Sonar + RDS. Un projet DevSecOps ajoute quatre contrôles :
+SBOM, SAST dédié, politique de blocage, épinglage des actions. Cette phase les met en place.
+
+---
+
+### 4bis.0 — Réduire d'abord la surface de dépendances
+
+Avant de rendre Trivy bloquant, supprimer les dépendances inutiles. Depuis le retrait d'`admin-server`,
+`jolokia-core` (pont JMX) et `chaos-monkey` ne servent plus à rien et sont une surface d'attaque.
+
+Dans les 4 `pom.xml` (`customers`, `vets`, `visits`, `api-gateway`), supprimer :
+
+```xml
+<dependency>
+    <groupId>org.jolokia</groupId>
+    <artifactId>jolokia-core</artifactId>
+</dependency>
+<dependency>
+    <groupId>de.codecentric</groupId>
+    <artifactId>chaos-monkey-spring-boot</artifactId>
+</dependency>
+```
+
+Puis :
+
+```bash
+./mvnw -B -P quality clean verify
+```
+
+**✅** Build vert. Si le profil `chaos-monkey` de `run_all.sh` n'est plus utilisé, le retirer aussi.
+
+**Preuve** : tableau Trivy avant/après (nombre de CVE).
+
+> Si un besoin de démonstration Chaos Monkey subsiste, le conserver uniquement en profil Maven `chaos`
+> et le documenter. Par défaut, il ne doit pas être dans le jar de production.
+
+---
+
+### 4bis.1 — SBOM CycloneDX
+
+### Plugin
+
+Dans le `pom.xml` racine, profil `quality`, ajouter dans `<plugins>` :
+
+```xml
+<plugin>
+    <groupId>org.cyclonedx</groupId>
+    <artifactId>cyclonedx-maven-plugin</artifactId>
+    <version>2.9.1</version>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals><goal>makeAggregateBom</goal></goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+```bash
+./mvnw -B -P quality -DskipTests package
+ls target/bom.json
+```
+
+**✅** `target/bom.json` contient les composants (nom, version, licence, hash).
+
+### Publication en CI
+
+Dans `deploy.yml`, après l'upload JaCoCo :
+
+```yaml
+      - name: Publier le SBOM
+        if: matrix.java == '21'
+        uses: actions/upload-artifact@<SHA>
+        with:
+          name: sbom-cyclonedx
+          path: target/bom.json
+```
+
+**Preuve** : artefact `sbom-cyclonedx` téléchargeable ; capture de `bom.json` (premières lignes).
+
+---
+
+### 4bis.2 — SAST dédié : Semgrep
+
+Sonar est un SAST « généraliste » ; Semgrep apporte des règles Spring/Java ciblées.
+
+### Local
+
+```bash
+docker run --rm -v "$(pwd):/src" semgrep/semgrep \
+  semgrep --config=p/java --config=p/spring --severity=ERROR /src
+```
+
+### CI
+
+```yaml
+      - name: Semgrep (SAST)
+        if: matrix.java == '21'
+        run: |
+          docker run --rm -v "$PWD:/src" semgrep/semgrep \
+            semgrep --config=p/java --config=p/spring --severity=ERROR --error /src
+```
+
+`--error` fait échouer l'étape dès qu'une règle de sévérité ERROR est trouvée.
+
+**Démarche** :
+1. premier run : noter les findings ;
+2. corriger les vrais positifs ;
+3. ajouter `.semgrepignore` pour les faux positifs **avec un commentaire** ;
+4. conserver l'étape bloquante.
+
+**Preuve** : sortie Semgrep avant/après, capture des règles déclenchées.
+
+---
+
+### 4bis.3 — Trivy bloquant (politique)
+
+Aujourd'hui `exit-code: '0'` : Trivy informe mais ne bloque pas. On passe à une politique explicite.
+
+#### 4bis.3.1 — Ignorer les CVE sans correctif
+
+```yaml
+      - name: Scan Trivy (dépendances, secrets, configuration)
+        if: matrix.java == '21'
+        uses: aquasecurity/trivy-action@<SHA>   # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          format: table
+```
+
+#### 4bis.3.2 — Exceptions justifiées
+
+Créer `.trivyignore` à la racine :
+
+```text
+# CVE-2024-XXXXX — dépendance transitive de <paquet>, pas de correctif amont,
+# non exploitable dans notre contexte (pas d'exposition réseau). Revue le 2026-11-09.
+CVE-2024-XXXXX
+```
+
+Chaque ligne doit avoir une justification et une date de revue.
+
+#### 4bis.3.3 — Périmètre
+
+Ajouter `skip-dirs` pour les modules hors build (sinon le scan compte 3 fois) :
+
+```yaml
+          skip-dirs: '.git,**/target,spring-petclinic-config-server,spring-petclinic-genai-service,spring-petclinic-admin-server'
+```
+
+**Preuve** : un run rouge provoqué volontairement par une CVE critique (ou un secret factice), puis vert après correction/exception.
+
+> Sans cette étape, le rapport ne peut pas affirmer que « le pipeline bloque » : il ne fait qu'afficher.
+
+---
+
+### 4bis.4 — Épingler toutes les actions par SHA
+
+Règle Sonar `S7637`. Les tags (`@v4`) sont mobiles ; un SHA est immuable.
+
+### Récupérer les SHA
+
+```bash
+for repo in actions/checkout actions/setup-java actions/upload-artifact; do
+  echo -n "$repo: "
+  curl -s "https://api.github.com/repos/$repo/git/ref/tags/v4" | grep -m1 '"sha"' | cut -d'"' -f4
+done
+```
+
+(Adapter `v4` à la version majeure réellement utilisée.)
+
+### Remplacer dans `deploy.yml`
+
+```yaml
+- uses: actions/checkout@<sha>          # v4.x
+- uses: actions/setup-java@<sha>        # v4.x
+- uses: actions/upload-artifact@<sha>   # v4.x
+```
+
+Conserver le commentaire de version : Dependabot sait mettre à jour un pin SHA commenté.
+
+**Preuve** : `grep -n "uses:" deploy.yml` ne montre plus aucun tag.
+
+---
+
+### 4bis.5 — Détection de secrets sur tout l'historique
+
+Trivy `secret` scanne les fichiers actuels ; il faut aussi l'historique Git.
+
+```bash
+docker run --rm -v "$(pwd):/p" trufflesecurity/trufflehog:latest \
+  git file:///p --only-verified
+```
+
+En CI (facultatif, l'action nécessite parfois une licence selon l'organisation) :
+
+```yaml
+      - name: TruffleHog
+        if: matrix.java == '21'
+        uses: trufflesecurity/trufflehog@<SHA>
+        with:
+          path: ./
+          extra_args: --only-verified
+```
+
+**Attendu** : `0 verified secrets`. Sinon : révoquer la clé, puis nettoyer l'historique (`git filter-repo`).
+
+**Preuve** : sortie « 0 verified secrets » + `git log -p | grep -iE "ghp_|sqp_|AKIA|PRIVATE KEY"` propre.
+
+---
+
+### 4bis.6 — Récapitulatif de la politique
+
+À écrire dans le rapport (une page) :
+
+| Contrôle | Outil | Seuil | Comportement |
+|---|---|---|---|
+| Couverture | JaCoCo | < 60 % | **bloquant** |
+| Qualité/sécurité | Sonar Quality Gate | gate projet | **bloquant** |
+| SAST | Semgrep | règle ERROR | **bloquant** |
+| SCA | Trivy | CRITICAL corrigeable | **bloquant** |
+| Secrets | Trivy + TruffleHog | secret vérifié | **bloquant** |
+| IaC | Trivy config | erreur | avertissement puis bloquant |
+| Mises à jour | Dependabot | hebdomadaire | PR, revue humaine |
+
+C'est cette table qui transforme un « pipeline de TP » en **politique DevSecOps**.
+
+---
+
+## Checkpoint phase 4 bis
+
+- [ ] `jolokia-core` et `chaos-monkey` retirés des 4 poms
+- [ ] `target/bom.json` généré et publié en artefact
+- [ ] Semgrep exécuté, findings traités, étape bloquante
+- [ ] Trivy en `exit-code: 1`, `ignore-unfixed`, `.trivyignore` justifié
+- [ ] Toutes les actions épinglées par SHA
+- [ ] TruffleHog sur l'historique : 0 secret
+- [ ] Tableau de politique ajouté au rapport
+- [ ] PR fusionnée dans `dev`
+
+## Effort
+
+| Tâche | Durée |
+|---|---|
+| 4bis.0 suppression dépendances | 1 h |
+| 4bis.1 SBOM | 1 h |
+| 4bis.2 Semgrep | 2 h |
+| 4bis.3 Trivy bloquant | 1 h |
+| 4bis.4 SHA pins | 30 min |
+| 4bis.5 TruffleHog | 30 min |
+| 4bis.6 rédaction | 30 min |
+| **Total** | **~1 jour** |
+
 ## PHASE 5 — PKI avec OpenSSL (🅱️, TP1)
 
 Tout se fait dans `secrets/` à la racine (**ignoré par Git**) pour ne jamais committer une clé. Seul le script `scripts/pki/generate.sh` est committé.
@@ -826,7 +1093,9 @@ Eureka reste en HTTP dans cette phase (annuaire interne) ; sa protection (authen
 
 ---
 
-## PHASE 8 — Base RDS MySQL et profil `prod` (🅱️, TP4 ; 🅰️ pour les secrets)
+## PHASE 8 — Base RDS MySQL et profil `prod` (🅰️, TP4)
+
+> **Répartition** : A réalise les phases 8 (RDS) et 9 (Docker/ECR/EC2), qui sont les seules à dépendre d'AWS. B réalise 5, 6, 7 et 10 (local).
 
 ### 8.0 Deux écarts à connaître
 1. Dans votre dépôt, les 3 scripts `db/mysql/schema.sql` commencent par `CREATE DATABASE IF NOT EXISTS petclinic; USE petclinic;`. Cela **ignore** la base de l'URL JDBC : les 3 services écriraient dans la même base `petclinic`. Pour avoir 3 schémas séparés (principe de séparation des données), **supprimer ces deux lignes** dans les trois fichiers (les `INSERT IGNORE` et `CREATE TABLE IF NOT EXISTS` sont déjà rejouables sans doublon).
@@ -890,7 +1159,7 @@ Contrairement au TP5, **ne pas** mettre `spring.profiles.active=prod` en dur dan
 URL type (exemple pour customers) :
 `jdbc:mysql://<endpoint-rds>:3306/petclinic_customers?sslMode=REQUIRED`
 
-### 8.5 Secrets GitHub (TP5 étape 6) — 🅰️ les crée, B les lui transmet hors Git
+### 8.5 Secrets GitHub (TP5 étape 6) — 🅰️ les crée (aucun partage nécessaire)
 GitHub → Settings → Secrets and variables → Actions :
 
 | Secret | Valeur |
@@ -920,6 +1189,8 @@ Créer un propriétaire (phase 6), **arrêter** le service, le relancer, relire 
 ---
 
 ## PHASE 9 — Docker, ECR, EC2 : le Deploy Job (🅰️, TP3 suite)
+
+> **Répartition** : A réalise la phase 9 (AWS) ; elle dépend de la phase 8 (profil `prod`), également réalisée par A.
 
 Le schéma du TP : *Configure AWS credentials → Login to Amazon ECR → Build, Tag & Push Docker image → Deploy to EC2.* Je n'ai que ce schéma (pas le détail des étapes du PDF) : la section ci-dessous est l'implémentation standard de ce schéma, adaptée à vos 5 modules.
 
@@ -1316,7 +1587,7 @@ Compilation : `pdflatex main && bibtex main && pdflatex main && pdflatex main`.
 | 5 | CI/CD et qualité (TP2, TP5) : pipeline, JaCoCo, Sonar, Trivy | 5 | A | B |
 | 6 | Cryptographie et PKI (TP1) | 3 | B | A |
 | 7 | Sécurisation des communications : JWT, TLS, mTLS (TP3) | 6-7 | B | A |
-| 8 | Données et infrastructure (TP4) : RDS, avant/après | 3-4 | B | A |
+| 8 | Données et infrastructure (TP4) : RDS, avant/après | 3-4 | A | B |
 | 9 | Déploiement Docker, ECR, EC2 (TP3 suite) | 3 | A | B |
 | 10 | Observabilité et réponse à incident | 2-3 | A | B |
 | 11 | Résultats, limites, discussion | 3 | A + B | croisé |
