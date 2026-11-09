@@ -22,7 +22,7 @@
         <webjars-marked.version>14.1.2</webjars-marked.version>
         <squareup-okhttp3.version>5.0.0-alpha.14</squareup-okhttp3.version>
 
-        <libsass-maven-plugin.version>0.2.29</libsass-maven-plugin.version>
+        <libsass-maven-plugin.version>0.3.4</libsass-maven-plugin.version>
         <docker.image.exposed.port>8081</docker.image.exposed.port>
         <docker.image.dockerfile.dir>${basedir}/../docker</docker.image.dockerfile.dir>
     </properties>
