@@ -1,0 +1,28 @@
+{
+  "realm": "petclinic",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 300,
+  "roles": { "realm": [ { "name": "staff" }, { "name": "viewer" } ] },
+  "clients": [ {
+    "clientId": "petclinic-cli",
+    "protocol": "openid-connect",
+    "publicClient": true,
+    "directAccessGrantsEnabled": true,
+    "standardFlowEnabled": false
+  } ],
+  "users": [
+    { "username": "alice", "enabled": true, "emailVerified": true,
+      "email": "alice@petclinic.local", "firstName": "Alice", "lastName": "Martin",
+      "credentials": [ { "type": "password", "value": "alice-pass", "temporary": false } ],
+      "realmRoles": [ "staff" ] },
+    { "username": "bob", "enabled": true, "emailVerified": true,
+      "email": "bob@petclinic.local", "firstName": "Bob", "lastName": "Durand",
+      "credentials": [ { "type": "password", "value": "bob-pass", "temporary": false } ],
+      "realmRoles": [ "viewer" ] },
+    { "username": "carol", "enabled": true, "emailVerified": true,
+      "email": "carol@petclinic.local", "firstName": "Carol", "lastName": "Petit",
+      "credentials": [ { "type": "password", "value": "carol-pass", "temporary": false } ],
+      "realmRoles": [] }
+  ]
+}
