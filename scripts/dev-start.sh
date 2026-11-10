@@ -2,6 +2,9 @@
 # Usage : scripts/dev-start.sh [plain|tls]
 # Démarre discovery, les 3 services (ports 8081/8082/8083) puis le gateway. Logs dans logs/.
 MODE="${1:-plain}"
+# Identifiants de l annuaire Eureka (protégé depuis la phase 10)
+export EUREKA_USER="${EUREKA_USER:-eureka}"
+export EUREKA_PASSWORD="${EUREKA_PASSWORD:-eureka-pass}"
 mkdir -p logs
 jarof() { ls "$1"/target/*.jar 2>/dev/null | grep -v -e '-sources' -e '\.original' | head -n 1; }
 

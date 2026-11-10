@@ -15,7 +15,7 @@
 | 5 | CI/CD et qualité (TP2, TP5) : pipeline, JaCoCo, Sonar, Trivy | 5 | A | B |
 | 6 | Cryptographie et PKI (TP1) | 3 | B | A |
 | 7 | Sécurisation des communications : JWT, TLS, mTLS (TP3) | 6-7 | B | A |
-| 8 | Données et infrastructure (TP4) : RDS, avant/après | 3-4 | B | A |
+| 8 | Chaîne logicielle et automatisation (SBOM, SAST, SCA) | 2-3 | A | B |
 | 9 | Déploiement Docker, ECR, EC2 (TP3 suite) | 3 | A | B |
 | 10 | Observabilité et réponse à incident | 2-3 | A | B |
 | 11 | Résultats, limites, discussion | 3 | A + B | croisé |
@@ -63,21 +63,15 @@ Contrôle final : `pdfinfo rapport/main.pdf | grep Pages`.
 | 7 (B) | TLS activé | 200 avec `--cacert`, échec sans | `p07-tls/01-tls.png` | 7 |
 | 7 (B) | mTLS strict | handshake refusé sans certificat client, accepté avec | `p07-tls/02-mtls.png` | 7 |
 | 7 (B) | Eureka | instances en `https` | `p07-tls/03-eureka-https.png` | 7 |
-| 8 (B) | création RDS (réglages du TP4) | Public access Yes, chiffrement/backups décochés | `p08-rds/01-avant.png` | 8 |
-| 8 (B) | après durcissement | Private, chiffrement, backups, SG restreint | `p08-rds/02-apres.png` | 8 |
-| 8 (B) | Workbench | 3 schémas + tables | `p08-rds/03-schemas.png` | 8 |
-| 8 (B) | redémarrage | données toujours présentes | `p08-rds/04-persistance.png` | 8 |
-| 8 (B) | GitHub Secrets | **noms seulement**, valeurs masquées | `p08-rds/05-secrets.png` | 8 |
+| 4 bis | run CI vert (B, PR #44) | artefact `sbom-cyclonedx` + Semgrep et Trivy bloquants | `p04bis-chaine/01-run.png` | 5 |
 | 9 | build + push | images construites / poussées | `p09-deploy/01-images.png` | 9 |
 | 9 | ECR | 5 dépôts + *Scan on push* | `p09-deploy/02-ecr.png` | 9 |
 | 9 | EC2 | `docker compose ps` sur l'instance | `p09-deploy/03-ec2.png` | 9 |
 | 9 | navigateur | application via l'URL EC2 | `p09-deploy/04-url.png` | 9 |
 | 9 | terminal | `whoami` dans le conteneur = `spring` | `p09-deploy/05-nonroot.png` | 9 |
-| 10 | après réduction Actuator | `env` = 404, `health` = 200 | `p10-durcissement/01-actuator.png` | 10 |
-| 10 | Eureka protégé | 401 sans identifiants | `p10-durcissement/02-eureka-auth.png` | 10 |
-| 10 | Grafana | écran de connexion obligatoire | `p10-durcissement/03-grafana-login.png` | 10 |
-| 10 | `docker compose config` | ports internes non publiés | `p10-durcissement/04-ports.png` | 10 |
-| 10 | ZAP terminé | résumé FAIL/WARN | `p10-durcissement/05-zap.png` | 10 |
+| 10 (P8) | Actuator réduit | `actuator/env` = **404**, `actuator/health` = **200** | `p08-durcissement/01-actuator.png` | 7 |
+| 10 (P8) | Eureka protégé | `eureka/apps` : **401** sans identifiants, **200** avec `-u` | `p08-durcissement/02-eureka-auth.png` | 7 |
+| 10 (P8) | services toujours enregistrés | instance `UP`, `registration status: 204` | `p08-durcissement/03-services-up.png` | 7 |
 | 11 | Grafana | dashboard latence + 401/403 | `p11-observabilite/01-dashboard.png` | 10 |
 | 11 | alerte déclenchée | notification / seuil dépassé | `p11-observabilite/02-alerte.png` | 10 |
 | 11 | Zipkin | trace gateway → service | `p11-observabilite/03-trace.png` | 10 |
@@ -160,9 +154,10 @@ La capture `02-sonar-dashboard.png` prise le 08/11 montre **Security D** et **1 
 Le texte du rapport affirme **Security A** et **0 issue** : la figure doit correspondre à l'état final, sinon le jury voit une contradiction.
 Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le tableau avant/après), et refaire `02-sonar-dashboard.png` après la réanalyse de `main`.
 
-## Phase 4 bis — Sécurité de la chaîne (A)
+## Phase 4 bis — Sécurité de la chaîne (B, PR #44) — ✅ FAIT
 
-- **À faire** : SBOM CycloneDX, Semgrep (SAST), Trivy bloquant, épinglage de toutes les actions en SHA, TruffleHog.
+- **Fait** : SBOM CycloneDX (`application.cdx.json`, publié en artefact CI), Semgrep `p/java` + `p/owasp-top-ten` bloquant (`--severity=ERROR --error`), Trivy bloquant (`exit-code: 1`, sévérité CRITICAL, `ignore-unfixed`), toutes les actions GitHub épinglées en SHA, `.semgrepignore` pour exclure les cibles hors build.
+- **Gitleaks** : retiré (licence organisation) → les secrets restent couverts par Trivy (`secret`).
 - **Chapitre** : 5.
 
 ## Phases 5-7 — binôme (B)
@@ -172,27 +167,25 @@ Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le t
 - **Chapitres** : 6, 7.
 - **À compléter par B** : chiffres exacts (handshake, 401/201), figures.
 
-## Phase 8 — RDS MySQL (A)
+## Phase 8 — RDS MySQL (A) — ❌ SUPPRIMÉE le 10/11/2026
 
-- **Fait** : instance RDS MySQL 8, `db.t3.micro`, région `us-east-1`, endpoint `petclinic-db.chciaky805n5.us-east-1.rds.amazonaws.com`.
-- **Durcissement** : chiffrement activé, backups 7 jours, SG restreint, accès public désactivé.
-- **Schémas** : `petclinic_customers`, `petclinic_vets`, `petclinic_visits` ; utilisateur `petclinic_app` (droits limités + `REFERENCES`).
-- **Profil** : `application-prod.yml` ×3, URL par `${SPRING_DATASOURCE_URL}`.
-- **Persistance** : après redémarrage, l'owner id 11 « Test Persistance » est toujours présent ; **11** owners (10 + 1), sans doublon (`INSERT IGNORE`).
-- **Avant/après** : public + non chiffré + sans backup (TP4) → privé + chiffré + backups.
-- **Captures** : `01a-avant-configuration`, `01b-avant-reseau`, `02-apres`, `02b-apres-prive`, `03-schemas`, `04-persistance`, `05-secrets`.
-- **Chapitre** : 8.
-- **Incident rencontré** : `Access denied` puis `REFERENCES command denied` — corrigés par réinitialisation du mot de passe maître et ajout du privilège `REFERENCES` à `petclinic_app`.
+La v2 place AWS hors périmètre (« HSQLDB en mémoire suffit »). Le travail avait été réalisé, mais ses artefacts ont été **retirés du dépôt** pour que l'état du projet corresponde au guide : `application-prod.yml` (×3), `docs/preuves/p08-rds/` et le profil `prod` n'existent plus. Les dépendances `mysql-connector-j` et les scripts `db/mysql/*.sql` viennent du premier commit (amont) : ils restent en place, non activés.
+- **Chapitre** : aucun — le chapitre « données » du rapport disparaît de la grille (voir les 9 chapitres de la v2).
 
 ## Phase 9 — Docker, ECR, EC2
 
 - **À remplir** : Dockerfile non-root, images, scan ECR, déploiement, URL de démonstration.
 - **Chapitre** : 9.
 
-## Phase 10 — Durcissement
+## Phase 10 — Durcissement (= P8 de la v2) — ✅ FAIT le 10/11/2026
 
-- **À remplir** : Actuator (env 404 / health 200), Eureka 401, Grafana non anonyme, ports non publiés, ZAP.
-- **Chapitre** : 10 (et tableau avant/après).
+- **Actuator** : `exposure.include: health,info` + `endpoint.health.show-details: never` sur les 5 applications (gateway, customers, vets, visits, discovery). Mesuré : `/actuator/env` = **404**, `/actuator/prometheus` = **404**, `/actuator/health` = **200**.
+- **Eureka protégé** : `spring-boot-starter-security` + `EurekaSecurityConfig` (CSRF ignoré sur `/eureka/**`, HTTP Basic, `/actuator/health` public), identifiants `EUREKA_USER`/`EUREKA_PASSWORD` dans le `defaultZone` (local et docker), exportés par `dev-start.sh` et `run_all.sh`. Mesuré : `eureka/apps` = **401** sans identifiants, **401** avec un mauvais mot de passe, **200** avec `-u`, console `/` = **401** ; `customers` se réenregistre (`registration status: 204`, instance `UP`).
+- **Non-régression** : `./mvnw -pl spring-petclinic-discovery-server test` → 1 test, 0 échec ; `./mvnw -DskipTests package` → `BUILD SUCCESS`.
+- **Hors périmètre v2 (assumé, non fait)** : Grafana non anonyme, ZAP, publication des ports Docker.
+- **Limite à écrire dans le rapport** : identifiants statiques en HTTP Basic, sans rotation, et annuaire en clair en local.
+- **Captures** : `p08-durcissement/01-actuator`, `02-eureka-auth`, `03-services-up`.
+- **Chapitre** : 7 (et tableau avant/après).
 
 ## Phase 11 — Observabilité
 
@@ -211,15 +204,15 @@ Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le t
 |---|---|---|---|
 | Authentification | aucune (C1) | JWT Keycloak | phase 6 |
 | Transport | HTTP clair (C4) | TLS, mTLS | phase 7 |
-| Contournement gateway | ports 8081-8083 publiés (C3) | non publiés | phases 9-10 |
-| Actuator | `*` (C2) | `health,info,prometheus` | phase 10 |
-| Eureka | ouvert (C5) | basic auth | phase 10 |
-| Grafana | anonyme Admin (C6) | connexion obligatoire | phase 10 |
-| Conteneurs | root (C7) | non-root | phase 9 |
+| Contournement gateway | ports 8081-8083 publiés (C3) | à traiter par le JWT dans chaque service | P5-P6 |
+| Actuator | `*` (C2) | `health,info`, sans détail | phase 10 (10/11) |
+| Eureka | ouvert (C5) | HTTP Basic, CSRF exclu sur `/eureka/**` | phase 10 (10/11) |
+| Grafana | anonyme Admin (C6) | hors périmètre v2 (non traité) | — |
+| Conteneurs | root (C7) | non-root (commit `b2cb853`) | phase 4 bis |
 | Retry | POST rejoué (C9) | GET seulement | phase 6 |
-| Base | HSQLDB mémoire | RDS chiffrée, 3 schémas, 11 owners persistés | phase 8 |
+| Base | HSQLDB mémoire | conservée en mémoire (phase 8 supprimée) | — |
 | Qualité | build seul | JaCoCo, Sonar, Trivy, Dependabot | phases 3-4 |
-| Chaîne logicielle | scans non bloquants | SBOM, Semgrep, Trivy bloquant, SHA pins | phase 4 bis |
+| Chaîne logicielle | scans non bloquants | SBOM, Semgrep, Trivy bloquants, SHA pins | phase 4 bis (fait) |
 | Gouvernance | main ouverte | PR + checks | phase 3 |
 
 ## Références à intégrer (liste courante)
@@ -228,5 +221,5 @@ Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le t
 - NIST SP 800-204 (sécurité des microservices) ; NIST SP 800-57 (clés).
 - RFC 8446 (TLS 1.3) ; RFC 7519 (JWT) ; RFC 5280 (X.509).
 - Documentation Spring Security, Spring Cloud Gateway, Spring Boot Actuator.
-- Documentation Keycloak ; AWS RDS ; AWS ECR ; SonarQube Cloud ; JaCoCo.
+- Documentation Keycloak ; SonarQube Cloud ; JaCoCo ; CycloneDX ; Semgrep ; Trivy.
 - Microsoft STRIDE (threat modeling).

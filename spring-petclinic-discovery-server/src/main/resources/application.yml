@@ -1,6 +1,10 @@
 spring:
   application:
     name: discovery-server
+  security:
+    user:
+      name: ${EUREKA_USER:eureka}
+      password: ${EUREKA_PASSWORD:eureka-pass}
 
 server:
   port: 8761
@@ -14,6 +18,16 @@ eureka:
     fetch-registry: false
     service-url:
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+
+# Durcissement : seuls health et info sont exposés, sans détail
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
 
 # Avoid some debugging logs at startup
 logging:
