@@ -52,7 +52,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | **P1** | Dépôt, branches, hygiène des secrets | ✅ TERMINÉ | A | `docs/preuves/p01-depot/` |
 | **P2** | Modèle de menace (constats « avant ») | ✅ TERMINÉ | A | `docs/preuves/p02-menace/` |
 | **P3** | PKI OpenSSL (CA + certificats) | 🟨 PARTIEL — reste `rogue-client` | B | `docs/preuves/p03-pki/` |
-| **P4** | Keycloak : émission de jetons OIDC | ⬜ À FAIRE | A | `docs/preuves/p04-keycloak/` |
+| **P4** | Keycloak : émission de jetons OIDC | ✅ TERMINÉ le 10/11/2026 (PR #54) | A | `docs/preuves/p04-keycloak/` |
 | **P5** | Module `spring-petclinic-security` : JWT + RBAC partout | ⬜ À FAIRE | A | `docs/preuves/p05-jwt-rbac/` |
 | **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — paliers 1-2 faits | B | `docs/preuves/p06-mtls/` |
 | **P7** | Scénario `dossier` à 3 microservices | ⬜ À FAIRE | A (gateway) + B (client mTLS) | `docs/preuves/p07-dossier/` |
@@ -69,6 +69,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | `p01-depot/` | P1 | PR fusionnée, branches, protection de `main` | ❌ à créer |
 | `p02-menace/` | P2 | les 5 constats « avant » + README | ✅ **présent** |
 | `p03-pki/` | P3 | CA, sortie `openssl verify`, keystore | ❌ **absent du dépôt** (captures chez B) |
+| `p04-keycloak/` | P4 | realm importé, 3 utilisateurs, rôle d'`alice`, jeton décodé | ✅ **présent** (4 captures) |
 | `p05-jwt-rbac/` | P5 | matrice 401/403/200/403/201 | ❌ à créer |
 | `p06-mtls/` | P6 | les 5 tests du palier 3 + Eureka en `https` | ❌ **absent du dépôt** (paliers 1-2 chez B) |
 | `p07-dossier/` | P7 | `dossier` 200/401/403 + diagramme de séquence | ❌ à créer |
@@ -334,10 +335,37 @@ et **une seule CA** doit servir pour la démonstration finale.
 
 ---
 
-## P4 — Keycloak : émission de jetons OIDC · ⬜ À FAIRE (0,5 j, 🅰️)
+## P4 — Keycloak : émission de jetons OIDC · ✅ TERMINÉ le 10/11/2026 (0,5 j, 🅰️)
 
 **But** : un émetteur de jetons **reproductible** — le realm est importé au démarrage, aucun clic n'est
 nécessaire pour le recréer. C'est la brique qui rend P5 possible.
+
+### Ce qui a été livré (PR #54, fusionnée dans `dev` le 10/11/2026)
+
+| Élément | Fichier | Contenu |
+|---|---|---|
+| Compose | `docker-compose.security.yml` | Keycloak 26.0, `start-dev --import-realm`, port **8180**, admin par `KC_BOOTSTRAP_ADMIN_*` / `KC_ADMIN_PASS` |
+| Realm | `keycloak/petclinic-realm.json` | realm `petclinic`, `accessTokenLifespan: 300`, rôles `staff`/`viewer`, client public `petclinic-cli`, utilisateurs `alice`/`bob`/`carol` |
+| Preuves | `docs/preuves/p04-keycloak/` | `01-realm.png`, `02-users.png`, `03-roles-alice.png`, `04-jeton.png` |
+
+Rejeu de la vérification (utile seulement sur une nouvelle machine ou après un `down`) :
+
+```bash
+docker compose -f docker-compose.security.yml up -d
+docker compose -f docker-compose.security.yml logs -f keycloak   # attendre "started"
+```
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8180/realms/petclinic/protocol/openid-connect/token \
+  -d grant_type=password -d client_id=petclinic-cli \
+  -d username=alice -d password=alice-pass \
+  | sed -E 's/.*"access_token":"([^"]+)".*/\1/')
+echo "${TOKEN:0:30}..."      # doit afficher eyJ...
+```
+
+> Le realm n'est importé qu'à la **création** du conteneur : après toute modification de
+> `keycloak/petclinic-realm.json`, faire `docker compose -f docker-compose.security.yml down`
+> puis `up -d`, sinon l'ancien realm reste en base.
 
 ### 4.1 Créer le fichier Compose
 
