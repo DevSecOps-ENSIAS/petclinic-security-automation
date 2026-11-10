@@ -1,0 +1,101 @@
+name: petclinic
+
+# Déploiement EC2 (AWS Academy).
+# - seul le port 8080 du gateway est publié ;
+# - les services ne sont accessibles que sur le réseau interne ;
+# - TLS interne : les services exposent HTTPS, le gateway présente son certificat client (mTLS) ;
+# - Keycloak fournit l'IdP OIDC dont dépend le gateway (issuer-uri).
+# Les secrets ne sont PAS dans ce fichier : voir .env.example et secrets/ (hors Git).
+
+x-java: &java
+  restart: unless-stopped
+  networks: [internal]
+  volumes:
+    - ./secrets:/run/secrets/pki:ro
+  environment: &java-env
+    PKI_DIR: /run/secrets/pki
+    PKI_PASS: ${PKI_PASS}
+    EUREKA_URL: http://discovery-server:8761/eureka/
+
+services:
+
+  discovery-server:
+    image: ${ECR}/petclinic/spring-petclinic-discovery-server:latest
+    container_name: discovery-server
+    restart: unless-stopped
+    networks: [internal]
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+    volumes:
+      - ./keycloak/realm-petclinic.json:/opt/keycloak/data/import/realm-petclinic.json:ro
+    networks: [internal]
+
+  customers-service:
+    <<: *java
+    image: ${ECR}/petclinic/spring-petclinic-customers-service:latest
+    container_name: customers-service
+    depends_on: [discovery-server, keycloak]
+    environment:
+      <<: *java-env
+      SPRING_PROFILES_ACTIVE: docker,tls,prod
+      SERVER_PORT: 8081
+      EUREKA_INSTANCE_HOSTNAME: customers-service
+      SPRING_DATASOURCE_URL: ${DB_URL_CUSTOMERS}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+  visits-service:
+    <<: *java
+    image: ${ECR}/petclinic/spring-petclinic-visits-service:latest
+    container_name: visits-service
+    depends_on: [discovery-server, keycloak]
+    environment:
+      <<: *java-env
+      SPRING_PROFILES_ACTIVE: docker,tls,prod
+      SERVER_PORT: 8082
+      EUREKA_INSTANCE_HOSTNAME: visits-service
+      SPRING_DATASOURCE_URL: ${DB_URL_VISITS}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+  vets-service:
+    <<: *java
+    image: ${ECR}/petclinic/spring-petclinic-vets-service:latest
+    container_name: vets-service
+    depends_on: [discovery-server, keycloak]
+    environment:
+      <<: *java-env
+      # "production" active le cache Caffeine (@Profile("production"))
+      SPRING_PROFILES_ACTIVE: docker,tls,production,prod
+      SERVER_PORT: 8083
+      EUREKA_INSTANCE_HOSTNAME: vets-service
+      SPRING_DATASOURCE_URL: ${DB_URL_VETS}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+  api-gateway:
+    <<: *java
+    image: ${ECR}/petclinic/spring-petclinic-api-gateway:latest
+    container_name: api-gateway
+    depends_on: [discovery-server, keycloak]
+    networks: [internal, edge]
+    environment:
+      <<: *java-env
+      SPRING_PROFILES_ACTIVE: docker,tls
+      JWT_ISSUER_URI: http://keycloak:8080/realms/petclinic
+    ports:
+      - "8080:8080"   # seul port applicatif publié
+
+networks:
+  internal:
+    internal: true
+  edge: {}

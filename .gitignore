@@ -32,6 +32,7 @@ generated/
 .keystore
 .env
 .env.*
+!.env.example
 secrets/
 /pki/
 docs/preuves/**/*.har
