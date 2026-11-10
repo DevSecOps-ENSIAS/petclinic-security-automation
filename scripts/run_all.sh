@@ -5,15 +5,16 @@ set -o errtrace
 set -o nounset
 set -o pipefail
 
+# Identifiants de l annuaire Eureka (protégé depuis la phase 10)
+export EUREKA_USER="${EUREKA_USER:-eureka}"
+export EUREKA_PASSWORD="${EUREKA_PASSWORD:-eureka-pass}"
+
 usage() {
-  echo "Usage: $0 [--chaos-monkey]"
-  echo "  --chaos-monkey  Start all apps with the chaos-monkey Spring profile enabled (default: disabled)"
+  echo "Usage: $0"
 }
 
-CHAOS_MONKEY="no"
 for arg in "$@"; do
   case "${arg}" in
-    --chaos-monkey) CHAOS_MONKEY="yes" ;;
     -h|--help) usage; exit 0 ;;
     *)
       echo "Unknown option: ${arg}" >&2
@@ -76,12 +77,7 @@ docker compose down --remove-orphans || echo "No docker containers are running"
 docker rm --force "${INFRA_SERVICES[@]}" > /dev/null 2>&1 || true
 
 PROFILE_ARG=""
-if [[ "${CHAOS_MONKEY}" == "yes" ]]; then
-  echo "Chaos Monkey activé (profil chaos-monkey)"
-  PROFILE_ARG="--spring.profiles.active=chaos-monkey"
-else
-  echo "Chaos Monkey désactivé"
-fi
+
 
 echo "Running infra"
 docker compose up -d "${INFRA_SERVICES[@]}"

@@ -147,7 +147,11 @@ Fichier `.github/workflows/deploy.yml` (remplace/étend `maven-build.yml`) :
 
 ---
 
-## Phase D — Données et infrastructure (TP04) — 2 jours
+## Phase D — Données et infrastructure (TP04) — ❌ SUPPRIMÉE le 10/11/2026
+
+> **Hors périmètre du guide v2** : l'énoncé officiel ne demande pas AWS, et « HSQLDB en mémoire suffit ».
+> Cette section et ses étapes D.1 à D.3 ne sont plus à réaliser ; les artefacts correspondants
+> (`application-prod.yml`, preuves RDS) ont été retirés du dépôt. Conservée comme trace historique.
 
 ### Étape D.1 ⬜ Instance RDS MySQL (reproduction du TP)
 - MySQL 8, `db.t3.micro` (free tier), **privée**, Security Group limité au groupe applicatif, chiffrement au repos, sauvegardes automatiques.
