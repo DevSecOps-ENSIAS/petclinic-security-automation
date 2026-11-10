@@ -46,29 +46,24 @@ Contrôle final : `pdfinfo rapport/main.pdf | grep Pages`.
 | 2 | idem | `localhost:8081/owners` **sans passer par le gateway** | `p02-menace/03-contournement-gateway.png` | 5 |
 | 2 | idem | `localhost:8761` (Eureka, aucune connexion) | `p02-menace/04-eureka-ouvert.png` | 5 |
 | 2 | Grafana démarré | `localhost:3030` sans authentification | `p02-menace/05-grafana-anonyme.png` | 5 |
-| 3 | PR ouverte, checks en cours/terminés | checks verts (JDK 17 + 21) | `p03-ci/01-pr-checks.png` | 5 |
-| 3 | onglet Actions, run terminé | détail du run + matrice | `p03-ci/02-run-actions.png` | 5 |
-| 3 | après `clean verify` | `target/site/jacoco/index.html` (par module) | `p03-ci/03-jacoco.png` | 5 |
-| 3 | Settings → Branches | règle de protection de `main` | `p03-ci/04-protection-main.png` | 5 |
-| 4 | SonarCloud, analyse terminée | tableau de bord + Quality Gate | `p04-qualite/01-sonar-dashboard.png` | 5 |
-| 4 | Sonar, onglet Issues | problèmes fiabilité/sécurité + couverture | `p04-qualite/02-sonar-issues.png` | 5 |
-| 4 | logs du run | tableau Trivy (CVE) | `p04-qualite/03-trivy.png` | 5 |
-| 4 | GitHub → Security | alertes Dependabot | `p04-qualite/04-dependabot.png` | 5 |
-| 4 | terminal / CI | sortie TruffleHog ou gitleaks | `p04-qualite/05-secrets.png` | 5 |
-| 5 (B) | après génération PKI | chaîne CA → serveur (`openssl verify`, `keytool -list`) | `p05-pki/01-chaine.png` | 6 |
-| 6 (B) | Keycloak configuré | realm + client + utilisateur | `p06-jwt/01-keycloak.png` | 7 |
-| 6 (B) | test écriture | **401 sans jeton** | `p06-jwt/02-401.png` | 7 |
-| 6 (B) | test écriture | **201 avec jeton** | `p06-jwt/03-201.png` | 7 |
-| 6 (B) | jwt.io (sans signature) | `sub`, `aud`, `scope` visibles | `p06-jwt/04-jwt-decode.png` | 7 |
-| 7 (B) | TLS activé | 200 avec `--cacert`, échec sans | `p07-tls/01-tls.png` | 7 |
-| 7 (B) | mTLS strict | handshake refusé sans certificat client, accepté avec | `p07-tls/02-mtls.png` | 7 |
-| 7 (B) | Eureka | instances en `https` | `p07-tls/03-eureka-https.png` | 7 |
-| 4 bis | run CI vert (B, PR #44) | artefact `sbom-cyclonedx` + Semgrep et Trivy bloquants | `p04bis-chaine/01-run.png` | 5 |
-| 9 | build + push | images construites / poussées | `p09-deploy/01-images.png` | 9 |
-| 9 | ECR | 5 dépôts + *Scan on push* | `p09-deploy/02-ecr.png` | 9 |
-| 9 | EC2 | `docker compose ps` sur l'instance | `p09-deploy/03-ec2.png` | 9 |
-| 9 | navigateur | application via l'URL EC2 | `p09-deploy/04-url.png` | 9 |
-| 9 | terminal | `whoami` dans le conteneur = `spring` | `p09-deploy/05-nonroot.png` | 9 |
+| 3 | PR ouverte, checks en cours/terminés | checks verts (JDK 17 + 21) | `bonus-ci/01-pr-checks.png` | 5 |
+| 3 | onglet Actions, run terminé | détail du run + matrice | `bonus-ci/02-run-actions.png` | 5 |
+| 3 | après `clean verify` | `target/site/jacoco/index.html` (par module) | `bonus-ci/03-jacoco.png` | 5 |
+| 3 | Settings → Branches | règle de protection de `main` | `bonus-ci/04-protection-main.png` | 5 |
+| 4 | SonarCloud, analyse terminée | tableau de bord + Quality Gate | `bonus-qualite-sca/01-sonar-dashboard.png` | 5 |
+| 4 | Sonar, onglet Issues | problèmes fiabilité/sécurité + couverture | `bonus-qualite-sca/02-sonar-issues.png` | 5 |
+| 4 | logs du run | tableau Trivy (CVE) | `bonus-qualite-sca/03-trivy.png` | 5 |
+| 4 | GitHub → Security | alertes Dependabot | `bonus-qualite-sca/04-dependabot.png` | 5 |
+| 4 | terminal / CI | sortie TruffleHog ou gitleaks | `bonus-qualite-sca/05-secrets.png` | 5 |
+| 5 (B) | après génération PKI | chaîne CA → serveur (`openssl verify`, `keytool -list`) | `p03-pki/01-chaine.png` | 6 |
+| 6 (B) | Keycloak configuré | realm + client + utilisateur | `p05-jwt-rbac/01-keycloak.png` | 7 |
+| 6 (B) | test écriture | **401 sans jeton** | `p05-jwt-rbac/02-401.png` | 7 |
+| 6 (B) | test écriture | **201 avec jeton** | `p05-jwt-rbac/03-201.png` | 7 |
+| 6 (B) | jwt.io (sans signature) | `sub`, `aud`, `scope` visibles | `p05-jwt-rbac/04-jwt-decode.png` | 7 |
+| 7 (B) | TLS activé | 200 avec `--cacert`, échec sans | `p06-mtls/01-tls.png` | 7 |
+| 7 (B) | mTLS strict | handshake refusé sans certificat client, accepté avec | `p06-mtls/02-mtls.png` | 7 |
+| 7 (B) | Eureka | instances en `https` | `p06-mtls/03-eureka-https.png` | 7 |
+| 4 bis | run CI vert (B, PR #44) | artefact `sbom-cyclonedx` + Semgrep et Trivy bloquants | `bonus-chaine/01-run.png` | 5 |
 | 10 (P8) | Actuator réduit | `actuator/env` = **404**, `actuator/health` = **200** | `p08-durcissement/01-actuator.png` | 7 |
 | 10 (P8) | Eureka protégé | `eureka/apps` : **401** sans identifiants, **200** avec `-u` | `p08-durcissement/02-eureka-auth.png` | 7 |
 | 10 (P8) | services toujours enregistrés | instance `UP`, `registration status: 204` | `p08-durcissement/03-services-up.png` | 7 |
@@ -114,7 +109,7 @@ Contrôle final : `pdfinfo rapport/main.pdf | grep Pages`.
 - **Couverture mesurée** (lignes) : `customers` **67,9 %** · `vets` **64,7 %** · `visits` **84,8 %** · `gateway` **73,9 %** · `discovery` exclu (peu de code).
 - **Tests** : 27 au total (customers 10, vets 2, visits 4, discovery 1, gateway 10).
 - **Commande locale** : `./mvnw -B -P quality clean verify` → `BUILD SUCCESS`.
-- **Captures** : `p03-ci/01-pr-checks` (2 checks verts), `02-run-actions`, `03-jacoco`, `04-protection-main`.
+- **Captures** : `bonus-ci/01-pr-checks` (2 checks verts), `02-run-actions`, `03-jacoco`, `04-protection-main`.
 - **Figures** : schéma du pipeline (jobs → steps), PR verte, rapport JaCoCo.
 - **Chapitre** : 5.
 - **À retenir** : la couverture est une **mesure**, pas une opinion ; elle est reproductible par `-P quality` et bloquante en CI.
@@ -163,7 +158,10 @@ Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le t
 ## Phases 5-7 — binôme (B)
 
 - **Fait** : PKI (PR #29), JWT (PR #30), TLS puis mTLS (PR #38).
-- **Captures** : `docs/preuves/p05-pki/`, `p06-jwt/`, `p07-tls/`.
+- **Captures** : `docs/preuves/p03-pki/`, `p05-jwt-rbac/`, `p06-mtls/`.
+  ⚠️ **Au 10/11/2026, ces trois dossiers ne sont pas dans le dépôt** : les captures existent sur la machine de B,
+  elles doivent être committées avant la rédaction (P10) sinon le rapport les citera sans pouvoir. Seuls les paliers
+  1 et 2 de P6 sont couverts ; le palier 3 (liste blanche, `rogue-client` → 403) reste à capturer.
 - **Chapitres** : 6, 7.
 - **À compléter par B** : chiffres exacts (handshake, 401/201), figures.
 
@@ -172,10 +170,11 @@ Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le t
 La v2 place AWS hors périmètre (« HSQLDB en mémoire suffit »). Le travail avait été réalisé, mais ses artefacts ont été **retirés du dépôt** pour que l'état du projet corresponde au guide : `application-prod.yml` (×3), `docs/preuves/p08-rds/` et le profil `prod` n'existent plus. Les dépendances `mysql-connector-j` et les scripts `db/mysql/*.sql` viennent du premier commit (amont) : ils restent en place, non activés.
 - **Chapitre** : aucun — le chapitre « données » du rapport disparaît de la grille (voir les 9 chapitres de la v2).
 
-## Phase 9 — Docker, ECR, EC2
+## Phase 9 — Docker, ECR, EC2 — ❌ SUPPRIMÉE le 10/11/2026
 
-- **À remplir** : Dockerfile non-root, images, scan ECR, déploiement, URL de démonstration.
-- **Chapitre** : 9.
+La v2 remplace le déploiement cloud par l'exécution locale + IntelliJ, et ne garde Docker que pour Keycloak.
+Le dossier `docs/preuves/p09-deploy/` a été supprimé (il n'était pas suivi par Git). Seule trace conservée :
+le durcissement du `Dockerfile` (utilisateur non-root, commit `b2cb853`), cité dans la chaîne logicielle.
 
 ## Phase 10 — Durcissement (= P8 de la v2) — ✅ FAIT le 10/11/2026
 
@@ -187,13 +186,15 @@ La v2 place AWS hors périmètre (« HSQLDB en mémoire suffit »). Le travail a
 - **Captures** : `p08-durcissement/01-actuator`, `02-eureka-auth`, `03-services-up`.
 - **Chapitre** : 7 (et tableau avant/après).
 
-## Phase 11 — Observabilité
+## Phase 11 — Observabilité — ❌ SUPPRIMÉE le 10/11/2026
 
-- **À remplir** : dashboards, alertes, trace gateway → service, runbook.
-- **Chapitre** : 10.
+Hors périmètre de l'énoncé (Prometheus, Grafana, alertes). Rien à produire. Les traces Zipkin restent actives
+et suffisent à illustrer le chapitre « fonctionnement des composants ».
 
-## Phases 12-13 — Rapport et soutenance
+## Phases 12-13 — Rapport et soutenance (= P10 et P12)
 
+- **P10** : suivre le plan en 9 chapitres du guide v2 (§8.1) ; ce fichier fournit les preuves et les chiffres.
+- **P12** : dérouler `scripts/security-smoke.sh` puis les 5 cas de la démonstration.
 - **À remplir** : nombre de pages final, liste des figures, bibliographie, plan de démo.
 
 ---
