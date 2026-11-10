@@ -5,6 +5,10 @@ set -o errtrace
 set -o nounset
 set -o pipefail
 
+# Identifiants de l annuaire Eureka (protégé depuis la phase 10)
+export EUREKA_USER="${EUREKA_USER:-eureka}"
+export EUREKA_PASSWORD="${EUREKA_PASSWORD:-eureka-pass}"
+
 usage() {
   echo "Usage: $0"
 }

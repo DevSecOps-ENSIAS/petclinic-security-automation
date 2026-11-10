@@ -21,13 +21,13 @@ déjà réalisées avec leurs preuves, puis renvoie à **`guide/GuideV2!!!.md`**
 | 2 | Modèle de menace | ✅ terminée | à raccourcir dans le rapport (**P2**) |
 | 3 | CI + JaCoCo | ✅ terminée | conservée telle quelle (bonus) |
 | 4 | SonarCloud, SCA, secrets | ✅ terminée | conservée telle quelle (bonus) |
-| 4 bis | Sécurité de la chaîne (SBOM, SAST, SHA) | ⬜ non faite | **reportée en bonus** (hors périmètre) |
+| 4 bis | Sécurité de la chaîne (SBOM, SAST, SHA) | ✅ terminée (B, PR #44) | conservée telle quelle |
 | 5 | PKI avec OpenSSL | ✅ terminée | à compléter par `rogue-client` (**P3**) |
 | 6 | JWT en bordure | ✅ terminée | **à durcir** : vérification dans chaque service (**P5**) |
 | 7 | TLS puis mTLS | ✅ terminée | à compléter : liste blanche de CN (**P6**) |
 | 8 | RDS MySQL + profil `prod` | ❌ **supprimée** | hors périmètre v2 (HSQLDB en mémoire suffit) |
 | 9 | Docker, ECR, EC2 | ❌ **supprimée** | remplacée par l'exécution locale + IntelliJ |
-| 10 | Durcissement | ♻️ réduite | **P8** (Actuator + Eureka uniquement) |
+| 10 | Durcissement | ✅ **faite** le 10/11/2026 | devenue **P8** (Actuator + Eureka) |
 | 11 | Observabilité et alertes | ❌ **supprimée** | bonus éventuel |
 | 12 | Rapport | ♻️ remplacée | **P10** (plan en 9 chapitres de l'énoncé) |
 | 13 | Soutenance | ♻️ remplacée | **P12** (présentation) |
@@ -455,7 +455,7 @@ Dans `deploy.yml`, à la fin du job `build` :
           exit-code: '0'
           format: table
 ```
-Épingler une version précise (vérifier la dernière sur la page de l'action dans le Marketplace GitHub). `exit-code: '0'` informe sans bloquer ; vous passerez à `'1'` quand les CVE critiques seront traitées (bonus 4 bis ; la v2 ne le demande pas).
+Épingler une version précise (vérifier la dernière sur la page de l'action dans le Marketplace GitHub). `exit-code: '0'` informe sans bloquer ; vous passerez à `'1'` une fois les CVE critiques traitées — c'est ce que fait la phase 4 bis, désormais livrée.
 
 ### 4.6 Détection de secrets
 ```yaml
@@ -494,7 +494,7 @@ Pour chaque indicateur, noter valeur, note (A à E) et décision :
 ---
 
 
-## PHASE 4 bis — Sécurité de la chaîne logicielle (🅰️) — ⬜ REPORTÉE EN BONUS (hors périmètre v2)
+## PHASE 4 bis — Sécurité de la chaîne logicielle (🅱️, PR #44) — ✅ TERMINÉE
 
 > **But** : passer d'un pipeline « qui mesure » à un pipeline « qui bloque ».
 > **Dépend de** : phase 4 (Sonar, Trivy, Dependabot).
@@ -1126,7 +1126,7 @@ L'énoncé officiel ne demande **ni AWS, ni SonarCloud, ni observabilité**. Les
 
 | Ancienne phase | Ce qu'elle faisait | Décision v2 | Raison |
 |---|---|---|---|
-| 4 bis — Sécurité de la chaîne | SBOM, Semgrep, Trivy bloquant, épinglage SHA | ⬜ **reportée en bonus** | hors périmètre ; à reprendre seulement si tout le reste est fini |
+| 4 bis — Sécurité de la chaîne | SBOM, Semgrep, Trivy bloquant, épinglage SHA | ✅ **faite (B, PR #44)** | livrée : sans coût de maintenance, elle reste en place |
 | 8 — RDS MySQL + profil `prod` | RDS, schémas, secrets GitHub | ❌ **supprimée** | « HSQLDB en mémoire suffit » (v2 §2.2) |
 | 9 — Docker, ECR, EC2 | images, registry, déploiement | ❌ **supprimée** | « remplacé par exécution locale + IntelliJ ; Docker réservé à Keycloak » (v2 §2.2) |
 | 10 — Durcissement | Actuator, Eureka, en-têtes, Grafana, ZAP | ♻️ **réduite** → **P8** | seuls Actuator et Eureka renforcent l'authentification interservices |
@@ -1134,9 +1134,10 @@ L'énoncé officiel ne demande **ni AWS, ni SonarCloud, ni observabilité**. Les
 | 12 — Rapport LaTeX 30-40 p. | rapport | ♻️ **P10** | plan réaligné sur les 9 chapitres exigés par l'énoncé |
 | 13 — Soutenance | démo | ♻️ **P12** | conservée |
 
-**Fichiers de la partie 1 devenus hors périmètre** — à laisser dans l'historique Git, à ne **pas** merger dans `main` :
-`application-prod.yml` (×3), `scripts/tagImages.sh`, `scripts/pushImages.sh`, `docker-compose.prod.yml`,
-le durcissement du `docker/Dockerfile`, les preuves `docs/preuves/p08-rds/` et `docs/preuves/p09-deploy/`.
+**Ménage effectué le 10/11/2026** : les artefacts de la phase 8 ont été purgés du dépôt — `application-prod.yml` (×3),
+`docs/preuves/p08-rds/` et le profil `prod`. Les dépendances MySQL et `db/mysql/*.sql` viennent du premier commit (amont)
+et restent en place, non activées. Restent hors périmètre, à ne **pas** merger :
+`scripts/tagImages.sh`, `scripts/pushImages.sh`, `docker-compose.prod.yml` et `docs/preuves/p09-deploy/`.
 
 **Ce qui est récupérable** (déjà dans le dépôt, à adapter et non à refaire) :
 
@@ -1172,6 +1173,9 @@ le durcissement du `docker/Dockerfile`, les preuves `docs/preuves/p08-rds/` et `
 
 Dépôt Moodle : **mardi 24 novembre 2026 avant minuit** — viser le **23 au soir**.
 Date de rédaction de cette partie : **mardi 10 novembre 2026**, soit 14 jours.
+
+**État au 10/11/2026 (soir)** : 4 bis ✅ (B, PR #44) · **P8 ✅** (A, durcissement livré et vérifié) · la phase 8 (RDS) a été purgée du dépôt.
+Il reste donc **P3** (complément `rogue-client`), **P4**, **P5**, **P6**, **P7**, **P9**, **P10**, **P11**, **P12**.
 
 | Jour | A (identité utilisateur) | B (identité des services) |
 |---|---|---|
@@ -1296,16 +1300,35 @@ curl -i -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/customer/own
 
 ---
 
-## P8 — Durcissement minimal (🅱️, 1 j) — ⬜
+## P8 — Durcissement minimal (🅰️, 30 min) — ✅ FAIT le 10/11/2026
 
-Uniquement ce qui renforce l'authentification interservices (v2 §P8) :
-- **Actuator** : `management.endpoints.web.exposure.include: health,info` et `show-details: never` (conserver `tracing`/`zipkin`) → `curl -i http://localhost:8080/actuator/env` = 404 ou 403 ;
-- **Eureka protégé** : `spring-boot-starter-security` dans `discovery-server`, `EurekaSecurityConfig` (CSRF ignoré sur `/eureka/**`, `httpBasic`), `EUREKA_PASSWORD` défini pour **tous** les processus, `defaultZone` avec identifiants.
+Seul ce qui renforce l'authentification interservices a été fait (v2 §P8) :
 
-**✅** `curl -i http://localhost:8761/eureka/apps` → 401 ; avec `-u eureka:$EUREKA_PASSWORD` → 200 ; les services restent enregistrés.
-**⛔** Services disparus d'Eureka : `EUREKA_PASSWORD` manquant sur un seul processus, ou CSRF non exclu.
-À assumer dans le rapport : l'authentification basique de l'annuaire est une protection **faible** (identifiants statiques).
-📸 `docs/preuves/p08-durcissement/` : `/actuator/env` avant/après, Eureka 401/200.
+1. **Actuator** : `management.endpoints.web.exposure.include: health,info` + `management.endpoint.health.show-details: never`
+   sur les **cinq** applications (gateway, customers, vets, visits, discovery) ; `tracing`/`zipkin` conservé.
+2. **Annuaire protégé** : dépendance `spring-boot-starter-security` et classe `EurekaSecurityConfig` dans `discovery-server`
+   (CSRF ignoré sur `/eureka/**`, `httpBasic`, `/actuator/health` et `/actuator/info` publics), identifiants
+   `EUREKA_USER` / `EUREKA_PASSWORD` (défaut `eureka` / `eureka-pass`) intégrés au `defaultZone` des quatre applications
+   et de leurs blocs `docker`.
+3. `scripts/dev-start.sh` et `scripts/run_all.sh` exportent ces identifiants : **tous** les processus en héritent.
+
+**Mesures du 10/11/2026** (discovery sur 8761, customers sur 8081) :
+
+| Test | Résultat attendu | Obtenu |
+|---|---|---|
+| `curl -i http://localhost:8761/eureka/apps` | accès refusé | **401** |
+| `curl -u eureka:eureka-pass …/eureka/apps` | lecture autorisée | **200** |
+| `curl -u eureka:faux …/eureka/apps` | mot de passe refusé | **401** |
+| `curl -i http://localhost:8761/` (console Eureka) | accès refusé | **401** |
+| `curl …/actuator/health` | public (scripts) | **200** |
+| `curl …/actuator/env` et `/actuator/prometheus` | masqué | **404** |
+| Enregistrement de `customers` | toujours enregistré | `registration status: 204`, instance `UP` |
+| `./mvnw -pl spring-petclinic-discovery-server test` | vert | 1 test, **0 échec** |
+
+**⛔** Services disparus d'Eureka : `EUREKA_PASSWORD` manquant sur un seul processus, ou CSRF non exclu de `/eureka/**`.
+**⛔** Conséquence assumée : Prometheus/Grafana (hors périmètre v2) ne peuvent plus scraper `/actuator/prometheus`.
+À écrire dans le rapport : l'authentification basique de l'annuaire reste une protection **faible** (identifiants statiques, sans rotation, sans TLS en local).
+📸 `docs/preuves/p08-durcissement/` : les lignes du tableau ci-dessus (à capturer avant la démonstration).
 
 ---
 

@@ -55,13 +55,16 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URL:http://${EUREKA_USER:eureka}:${EUREKA_PASSWORD:eureka-pass}@localhost:8761/eureka/}
 
 management:
   endpoints:
     web:
       exposure:
-        include: '*'
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
   metrics:
   tracing:
     sampling:
@@ -80,7 +83,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://discovery-server:8761/eureka/
+      defaultZone: http://${EUREKA_USER:eureka}:${EUREKA_PASSWORD:eureka-pass}@discovery-server:8761/eureka/
 
 management:
   tracing:
