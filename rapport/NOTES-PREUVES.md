@@ -160,11 +160,29 @@ La capture `02-sonar-dashboard.png` prise le 08/11 montre **Security D** et **1 
 Le texte du rapport affirme **Security A** et **0 issue** : la figure doit correspondre à l'état final, sinon le jury voit une contradiction.
 Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le tableau avant/après), et refaire `02-sonar-dashboard.png` après la réanalyse de `main`.
 
-## Phases 5-8 — binôme (B)
+## Phase 4 bis — Sécurité de la chaîne (A)
 
-- **À remplir par B** : PKI (chaîne de certification), JWT (401/201), TLS/mTLS (handshake refusé/accepté), RDS (avant/après, persistance).
-- **Figures** : schéma PKI, handshake, Keycloak, RDS avant/après.
-- **Chapitres** : 6, 7, 8.
+- **À faire** : SBOM CycloneDX, Semgrep (SAST), Trivy bloquant, épinglage de toutes les actions en SHA, TruffleHog.
+- **Chapitre** : 5.
+
+## Phases 5-7 — binôme (B)
+
+- **Fait** : PKI (PR #29), JWT (PR #30), TLS puis mTLS (PR #38).
+- **Captures** : `docs/preuves/p05-pki/`, `p06-jwt/`, `p07-tls/`.
+- **Chapitres** : 6, 7.
+- **À compléter par B** : chiffres exacts (handshake, 401/201), figures.
+
+## Phase 8 — RDS MySQL (A)
+
+- **Fait** : instance RDS MySQL 8, `db.t3.micro`, région `us-east-1`, endpoint `petclinic-db.chciaky805n5.us-east-1.rds.amazonaws.com`.
+- **Durcissement** : chiffrement activé, backups 7 jours, SG restreint, accès public désactivé.
+- **Schémas** : `petclinic_customers`, `petclinic_vets`, `petclinic_visits` ; utilisateur `petclinic_app` (droits limités + `REFERENCES`).
+- **Profil** : `application-prod.yml` ×3, URL par `${SPRING_DATASOURCE_URL}`.
+- **Persistance** : après redémarrage, l'owner id 11 « Test Persistance » est toujours présent ; **11** owners (10 + 1), sans doublon (`INSERT IGNORE`).
+- **Avant/après** : public + non chiffré + sans backup (TP4) → privé + chiffré + backups.
+- **Captures** : `01a-avant-configuration`, `01b-avant-reseau`, `02-apres`, `02b-apres-prive`, `03-schemas`, `04-persistance`, `05-secrets`.
+- **Chapitre** : 8.
+- **Incident rencontré** : `Access denied` puis `REFERENCES command denied` — corrigés par réinitialisation du mot de passe maître et ajout du privilège `REFERENCES` à `petclinic_app`.
 
 ## Phase 9 — Docker, ECR, EC2
 
@@ -199,8 +217,9 @@ Conserver l'ancienne sous `02b-sonar-avant.png` (preuve du « avant » dans le t
 | Grafana | anonyme Admin (C6) | connexion obligatoire | phase 10 |
 | Conteneurs | root (C7) | non-root | phase 9 |
 | Retry | POST rejoué (C9) | GET seulement | phase 6 |
-| Base | HSQLDB mémoire | RDS chiffrée, 3 schémas | phase 8 |
+| Base | HSQLDB mémoire | RDS chiffrée, 3 schémas, 11 owners persistés | phase 8 |
 | Qualité | build seul | JaCoCo, Sonar, Trivy, Dependabot | phases 3-4 |
+| Chaîne logicielle | scans non bloquants | SBOM, Semgrep, Trivy bloquant, SHA pins | phase 4 bis |
 | Gouvernance | main ouverte | PR + checks | phase 3 |
 
 ## Références à intégrer (liste courante)

@@ -25,4 +25,8 @@ RUN true
 COPY --from=builder application/snapshot-dependencies/ ./
 RUN true
 COPY --from=builder application/application/ ./
+
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
