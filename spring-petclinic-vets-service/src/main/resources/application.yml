@@ -18,7 +18,11 @@ spring:
       data-locations: classpath*:db/hsqldb/data.sql
   profiles:
     active: production
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/petclinic}
 # 0 = port aléatoire en local (découverte via Eureka), surchargeable par SERVER_PORT
 server:
   port: ${SERVER_PORT:0}

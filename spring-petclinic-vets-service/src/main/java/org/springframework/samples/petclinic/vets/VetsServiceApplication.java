@@ -19,12 +19,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Import;
 import org.springframework.samples.petclinic.vets.system.VetsProperties;
 
 /**
  * @author Maciej Szarlinski
  */
 @EnableDiscoveryClient
+@Import(org.springframework.samples.petclinic.security.ServletSecurityConfiguration.class)
 @SpringBootApplication
 @EnableConfigurationProperties(VetsProperties.class)
 public class VetsServiceApplication {

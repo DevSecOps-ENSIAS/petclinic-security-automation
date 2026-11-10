@@ -27,6 +27,7 @@
           - spring-petclinic-admin-server   : Jolokia (accès JMX distant) + Chaos Monkey.
     -->
     <modules>
+        <module>spring-petclinic-security</module>
         <module>spring-petclinic-customers-service</module>
         <module>spring-petclinic-vets-service</module>
         <module>spring-petclinic-visits-service</module>
