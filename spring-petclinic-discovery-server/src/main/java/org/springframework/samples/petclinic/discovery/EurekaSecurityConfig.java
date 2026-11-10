@@ -20,20 +20,27 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Protège l'annuaire Eureka : les clients doivent s'authentifier en HTTP Basic pour lire ou publier
  * le registre. Le jeton CSRF est ignoré sur /eureka/** car les clients Eureka parlent par requêtes
- * REST (verbes POST, PUT, DELETE) sans formulaire.
+ * REST (verbes POST, PUT, DELETE) sans formulaire, et la chaîne de filtres est sans session : sans
+ * cookie de session, il n'existe pas de requête « ambiante » à rejouer depuis un navigateur.
+ *
+ * <p>La règle Sonar {@code java:S4502} est neutralisée volontairement : elle vise les applications
+ * à session et à cookie, ce que cette chaîne de filtres n'est plus.
  */
 @Configuration
 @EnableWebSecurity
+@SuppressWarnings("java:S4502")
 public class EurekaSecurityConfig {
 
 	@Bean
 	SecurityFilterChain eurekaSecurityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.ignoringRequestMatchers("/eureka/**"))
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(requests -> requests
 				.requestMatchers("/actuator/health", "/actuator/info")
 				.permitAll()
