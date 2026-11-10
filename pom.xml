@@ -143,6 +143,7 @@
                         <configuration>
                             <outputFormat>json</outputFormat>
                             <outputName>bom</outputName>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
                         </configuration>
                         <executions>
                             <execution>
