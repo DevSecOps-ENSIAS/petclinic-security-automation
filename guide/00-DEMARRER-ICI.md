@@ -1,147 +1,167 @@
-# Guide A→Z — Sécurité de la communication entre microservices (PetClinic)
+# Guide de démarrage — pas à pas, clic par clic (aligné sur le guide v2)
 
-Guide écrit **pour votre dépôt réel** (`petclinic-security-automation`). Il garde la trace des phases **0 à 7**,
-déjà réalisées avec leurs preuves, puis renvoie à **`guide/GuideV2!!!.md`** pour toute la suite.
+**Version du 10 novembre 2026.** Ce fichier remplace intégralement la version précédente.
+Il suit la numérotation du guide officiel de référence : **`guide/GuideV2!!!.md`**, qui fait foi
+(il est lui-même aligné sur l'énoncé de l'encadrant : *Authentification et autorisation interservices*, A.U. 2026/2027).
 
-> ## ⚠️ La suite du projet est régie par `guide/GuideV2!!!.md`
->
-> Depuis le **9 novembre 2026**, `GuideV2!!!.md` remplace ce guide pour l'exécution : il suit à 100 % l'énoncé officiel
-> (*Authentification et autorisation interservices*). L'énoncé ne demande **ni AWS (RDS, ECR, EC2), ni SonarCloud,
-> ni JaCoCo, ni observabilité, ni Docker de production** : les anciennes phases 8, 9 et 11 sont donc supprimées,
-> et les phases 10 à 13 sont remplacées par les phases v2 (P8, P10, P11, P12).
->
-> **Dépôt Moodle : mardi 24 novembre 2026 avant minuit — viser le 23 au soir.**
+> **Dépôt Moodle : mardi 24 novembre 2026 avant minuit — déposer le lundi 23 au soir.**
+> Aujourd'hui : mardi 10 novembre 2026. Il reste 14 jours.
 
-### État des phases de ce guide
+**Légende**
 
-| Phase | Contenu | État | Suite |
-|---|---|---|---|
-| 0 | Préparation (outils) | ✅ terminée | — |
-| 1 | Dépôt, branches, hygiène des secrets | ✅ terminée | — |
-| 2 | Modèle de menace | ✅ terminée | à raccourcir dans le rapport (**P2**) |
-| 3 | CI + JaCoCo | ✅ terminée | conservée telle quelle (bonus) |
-| 4 | SonarCloud, SCA, secrets | ✅ terminée | conservée telle quelle (bonus) |
-| 4 bis | Sécurité de la chaîne (SBOM, SAST, SHA) | ✅ terminée (B, PR #44) | conservée telle quelle |
-| 5 | PKI avec OpenSSL | ✅ terminée | à compléter par `rogue-client` (**P3**) |
-| 6 | JWT en bordure | ✅ terminée | **à durcir** : vérification dans chaque service (**P5**) |
-| 7 | TLS puis mTLS | ✅ terminée | à compléter : liste blanche de CN (**P6**) |
-| 8 | RDS MySQL + profil `prod` | ❌ **supprimée** | hors périmètre v2 (HSQLDB en mémoire suffit) |
-| 9 | Docker, ECR, EC2 | ❌ **supprimée** | remplacée par l'exécution locale + IntelliJ |
-| 10 | Durcissement | ✅ **faite** le 10/11/2026 | devenue **P8** (Actuator + Eureka) |
-| 11 | Observabilité et alertes | ❌ **supprimée** | bonus éventuel |
-| 12 | Rapport | ♻️ remplacée | **P10** (plan en 9 chapitres de l'énoncé) |
-| 13 | Soutenance | ♻️ remplacée | **P12** (présentation) |
-
-➡️ **Les phases restantes (P2, P4, P5, P6, P7, P8, P9, P10, P11, P12) sont en PARTIE 2 de ce fichier**,
-avec l'ordre, les livrables, les critères de sortie et les pièges. Le détail d'implémentation (code, YAML, commandes)
-est dans `GuideV2!!!.md` : c'est **la** référence à suivre.
-
----
-
-## 0. Ce que contient réellement votre projet (état d'origine, avant toute modification)
-
-| Élément | État réel dans le dépôt |
+| Symbole | Sens |
 |---|---|
-| Modules Maven | 5 : `customers`, `vets`, `visits`, `discovery-server` (Eureka), `api-gateway` |
-| Versions | Spring Boot **4.0.1**, Spring Cloud 2025.1.0, `java.version` = **17** (JDK 21 OK) |
-| Gateway | **WebFlux** (Spring Cloud Gateway). Sert aussi le front Vue. Routes `/api/customer/**`, `/api/visit/**`, `/api/vet/**` (`StripPrefix=2`, `lb://`). Il appelle aussi les services via `RestTemplate`/`WebClient` `@LoadBalanced` (endpoint `/api/gateway/owners/{id}`) |
-| Services métier | **Spring MVC**. Port `0` (aléatoire) en local ; ports fixes 8081/8082/8083 avec le profil `docker` |
-| Données | HSQLDB **en mémoire** — c'est la cible retenue par la v2 (les scripts `db/mysql/*.sql` et le profil `prod` relèvent de l'ancienne phase 8, supprimée) |
-| Sécurité (origine) | **Aucune** dépendance Spring Security. Actuator `include: '*'` partout. Eureka ouvert |
-| Docker | `docker/Dockerfile` unique, `eclipse-temurin:17`, **root**. Docker ne sert plus qu'à **Keycloak** (v2) |
-| Tests | Existants : `OwnerResourceTest`, `PetResourceTest`, `VetResourceTest`, `VisitResourceTest`, tests gateway et discovery |
-| CI | `maven-build.yml` (Java 17 seul, `mvn`) + `check-pr-template.yml` (**hérité du projet amont**, voir phase 1) |
-| Rapport | `rapport/main.tex` **vide** ; `PLAN-PROJET.tex/.md` existent |
-
-Trois pièges propres à ce dépôt, tous repris dans la v2 (§6.0) :
-
-1. Les services s'enregistrent dans Eureka avec `prefer-ip-address: true` → le gateway se connecte à une **IP**,
-   et un certificat TLS sans SAN IP échoue : il faut enregistrer par **nom d'hôte** avec port sécurisé (**P6**).
-2. Le service `vets` active le profil `production` (cache) dans son YAML ; définir `SPRING_PROFILES_ACTIVE`
-   **remplace** ce profil → lancer `vets` avec `production,tls` (**P6**).
-3. Les services écoutent sur un port aléatoire (`port: 0`) → fixer 8081/8082/8083 via `SERVER_PORT` (**P6**).
+| ✅ **TERMINÉ** | fait, avec preuves ; ne pas refaire |
+| 🟨 **PARTIEL** | une partie existe dans le dépôt, il reste des étapes listées |
+| ⬜ **À FAIRE** | rien n'existe encore |
+| 📸 | capture d'écran à produire (chemin exact donné) |
+| ⛔ | piège déjà rencontré sur ce projet |
 
 ---
 
-## 1. Organisation de l'équipe
+## 0. Ce qui a changé depuis l'ancien guide
 
-### 1.1 Rôles (répartition v2)
+Trois phases de l'ancien guide ne sont **plus au programme** (l'énoncé ne les demande pas) et trois autres
+ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » : ce ne sont pas les mêmes travaux.
 
-| | 🅰️ **Membre A — Identité de l'utilisateur** | 🅱️ **Membre B — Identité des services** |
+| Ancien guide | Guide v2 | Décision |
 |---|---|---|
-| Phases restantes | **P2**, **P4** (OIDC, jetons), **P5** (JWT + RBAC), **P7** (endpoint `dossier`) | **P3** (PKI), **P6** (TLS/mTLS + liste blanche), **P8** (durcissement), **P7** (client mTLS) |
-| Fichiers propres | `spring-petclinic-security/**` (sauf `ServiceIdentityFilter`), `SecurityConfig` du gateway, `keycloak/**`, `docker-compose.security.yml` | `scripts/pki/**`, blocs `tls` des `application.yml`, `ServiceIdentityFilter`, `EurekaSecurityConfig` |
-| Comptes à créer | **GitHub uniquement** (plus d'AWS ni de SonarCloud) | — (Keycloak tourne en local, dans Docker) |
-| Chapitres du rapport | OAuth2/OIDC, JWT, RBAC, scénario `dossier` | PKI, TLS/mTLS, Eureka, durcissement |
-| En commun | **P9** (tests), **P10** (rapport), **P11** (archive), **P12** (présentation) | idem |
-
-**Pourquoi cette séparation de fichiers :** elle évite 90 % des conflits Git. Si l'un doit modifier un fichier de l'autre, il ouvre une PR et l'autre la relit.
-
-### 1.2 Règles de travail
-
-1. Branches : `main` (protégée) ← `dev` ← `feature/<phase>-<sujet>` (ex. `feature/p4-keycloak`).
-2. **Jamais de push direct sur `main` ni `dev`.** Toute PR est relue et approuvée par **l'autre** membre.
-3. Messages de commit : `ci:`, `sec:`, `feat:`, `fix:`, `docs:`, `chore:`.
-4. **Aucun secret dans Git** (mot de passe, token, `.pem`, `.p12`, `.key`, `.env`, `secrets/`). Vérification finale : `git log -p | grep -iE "password|PRIVATE KEY"`.
-5. Toujours `./mvnw` (pas `mvn`). Après chaque changement de `pom.xml` ou Java : `./mvnw -B -DskipTests package` → `BUILD SUCCESS`.
-6. Après chaque changement de `application.yml` : redémarrer le service concerné.
-7. Synchronisation de 10 minutes à la fin de chaque phase (qui a fait quoi, qu'est-ce qui bloque).
-8. Chaque phase se termine par des **preuves** (captures, sorties de commandes) rangées dans `docs/preuves/pXX-…/` (images committées, jamais de secret visible). Ces preuves nourrissent directement le rapport.
-
-### 1.3 Planning
-
-Le planning à jour (du mardi 10 novembre au dépôt du 23, avec la répartition A / B) est en **PARTIE 2, section B.3** :
-c'est la seule version à utiliser. Les anciennes phases 8 à 13 ne sont plus planifiées.
+| 0 Outils | **P0** | ✅ conservé |
+| 1 Dépôt, branches, secrets | **P1** | ✅ conservé |
+| 2 Modèle de menace | **P2** | ✅ conservé (sert le chapitre 1 du rapport) |
+| 3 CI + JaCoCo | — | conservé tel quel (gratuit, ne bloque rien) |
+| 4 SonarCloud, SCA, secrets | — | ✅ fait (bonus, conservé) |
+| 4 bis Chaîne logicielle | — | ✅ fait par B (PR #44), conservé |
+| 5 PKI OpenSSL | **P3** | ✅ fait, **sauf** le certificat `rogue-client` |
+| 6 JWT en bordure | **P5** | 🟨 le gateway valide un jeton, **pas** les services |
+| 7 TLS puis mTLS | **P6** | 🟨 HTTPS et mTLS en place, **pas** la liste blanche de CN |
+| 8 RDS MySQL | ❌ supprimée | HSQLDB en mémoire suffit ; artefacts retirés du dépôt |
+| 9 Docker, ECR, EC2 | ❌ supprimée | exécution locale + IntelliJ ; Docker **uniquement** pour Keycloak |
+| 10 Durcissement | **P8** | ✅ fait le 10/11/2026 (Actuator + Eureka seulement) |
+| 11 Observabilité | ❌ supprimée | bonus éventuel |
+| 12 Rapport | **P10** | ⬜ plan réaligné sur les 9 chapitres de l'énoncé |
+| 13 Soutenance | **P12** | ⬜ conservée |
 
 ---
-## PHASE 0 — Préparation (A + B, chacun sur sa machine) — ✅ TERMINÉE
 
-### 0.1 Outils
-Ouvrir **Git Bash** (pas cmd.exe) à la racine du projet (le dossier qui contient `pom.xml`).
+## 1. Tableau de bord : où en est le projet
+
+| Phase | Titre | État | Resp. | Preuves |
+|---|---|---|---|---|
+| **P0** | Outils et build de référence | ✅ TERMINÉ | A + B | — |
+| **P1** | Dépôt, branches, hygiène des secrets | ✅ TERMINÉ | A | `docs/preuves/p01-depot/` |
+| **P2** | Modèle de menace (constats « avant ») | ✅ TERMINÉ | A | `docs/preuves/p02-menace/` |
+| **P3** | PKI OpenSSL (CA + certificats) | 🟨 PARTIEL — reste `rogue-client` | B | `docs/preuves/p03-pki/` |
+| **P4** | Keycloak : émission de jetons OIDC | ⬜ À FAIRE | A | `docs/preuves/p04-keycloak/` |
+| **P5** | Module `spring-petclinic-security` : JWT + RBAC partout | ⬜ À FAIRE | A | `docs/preuves/p05-jwt-rbac/` |
+| **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — paliers 1-2 faits | B | `docs/preuves/p06-mtls/` |
+| **P7** | Scénario `dossier` à 3 microservices | ⬜ À FAIRE | A (gateway) + B (client mTLS) | `docs/preuves/p07-dossier/` |
+| **P8** | Durcissement (Actuator + Eureka) | ✅ TERMINÉ le 10/11/2026 | A | `docs/preuves/p08-durcissement/` |
+| **P9** | Tests automatisés et `security-smoke.sh` | ⬜ À FAIRE | A + B | `docs/preuves/p09-tests/` |
+| **P10** | Rapport (9 chapitres) | ⬜ À FAIRE | A + B | — |
+| **P11** | Archive importable + test à froid IntelliJ | ⬜ À FAIRE | A + B | — |
+| **P12** | Présentation (10 min) | ⬜ À FAIRE | A + B | — |
+
+### Où sont les preuves (état au 10/11/2026)
+
+| Dossier | Phase v2 | Contenu attendu | État |
+|---|---|---|---|
+| `p01-depot/` | P1 | PR fusionnée, branches, protection de `main` | ❌ à créer |
+| `p02-menace/` | P2 | les 5 constats « avant » + README | ✅ **présent** |
+| `p03-pki/` | P3 | CA, sortie `openssl verify`, keystore | ❌ **absent du dépôt** (captures chez B) |
+| `p05-jwt-rbac/` | P5 | matrice 401/403/200/403/201 | ❌ à créer |
+| `p06-mtls/` | P6 | les 5 tests du palier 3 + Eureka en `https` | ❌ **absent du dépôt** (paliers 1-2 chez B) |
+| `p07-dossier/` | P7 | `dossier` 200/401/403 + diagramme de séquence | ❌ à créer |
+| `p08-durcissement/` | P8 | `actuator/env` 404, `eureka/apps` 401, service `UP` | 🟨 dossier créé, **captures à prendre** |
+| `p09-tests/` | P9 | sortie du smoke, `mvn test`, JUnit de sécurité | ❌ à créer |
+| `bonus-ci/` | ancienne phase 3 | JaCoCo, run Actions, protection de `main` | ✅ présent (hors périmètre v2) |
+| `bonus-qualite-sca/` | ancienne phase 4 | Sonar, Trivy, Dependabot | ✅ présent (hors périmètre v2) |
+
+> Les dossiers `p03-pki/` et `p06-mtls/` sont **référencés mais absents** : les captures ont été prises par B
+> sans être committées. À récupérer avant P10, sinon le rapport citera des figures inexistantes.
+
+**Chemin critique** : P4 → P5 → P7 → P9 → P10. P3 et P6 avancent en parallèle côté B, mais **P7 a besoin de P6**
+(le gateway doit présenter son certificat pour appeler `vets`).
+
+---
+
+## 2. Conventions à respecter dans toutes les phases
+
+1. **Branches** : `main` (protégée) ← `dev` ← `feature/<phase>-<sujet>`. Jamais de push direct sur `main` ni `dev`.
+2. **Chaque PR** est relue et approuvée par l'autre membre.
+3. **Messages de commit** : `feat:`, `fix:`, `sec:`, `docs:`, `chore:`, `ci:`.
+4. **Aucun secret dans Git** : `*.p12`, `*.pem`, `*.key`, `.env`, `secrets/` (déjà dans `.gitignore`).
+   Contrôle final : `git log -p | grep -iE "password|PRIVATE KEY"`.
+5. **Toujours `./mvnw`**, jamais `mvn`. Après tout changement de `pom.xml` ou de code Java :
+   `./mvnw -B -DskipTests package` doit afficher `BUILD SUCCESS`.
+6. **Après un changement de `application.yml`** : redémarrer le service concerné.
+7. **Chaque phase finit par des preuves** : captures et sorties de commandes dans `docs/preuves/pXX-…/`,
+   committées avec la PR de la phase. **Jamais** de mot de passe, de jeton réel ou de clé sur une capture.
+8. **Variables d'environnement** utilisées partout (à exporter dans le terminal avant de démarrer) :
+
 ```bash
-java -version      # 17 ou 21
-./mvnw -v          # Maven 3.9.x
-docker version     # client ET serveur (Docker Desktop lancé)
-git --version
-openssl version    # fourni par Git for Windows
-keytool -help | head -3
+export PKI_PASS='demo-local'                      # mot de passe des keystores (jamais committé)
+export PKI_DIR="$(pwd)/secrets"                   # chemin ABSOLU, avec des / (IntelliJ inclus)
+export EUREKA_USER=eureka
+export EUREKA_PASSWORD='demo-eureka'              # exigé depuis P8, par TOUS les processus
+export JWT_ISSUER_URI='http://localhost:8180/realms/petclinic'
 ```
-Si `java` est introuvable :
+
+**Ordre de démarrage (toujours le même)** : Keycloak → `discovery-server` → les 3 services → le gateway.
+
+---
+
+## P0 — Outils et build de référence · ✅ TERMINÉ
+
+**But** : partir d'une base qui compile et dont les tests passent, pour distinguer plus tard une vraie
+régression d'un problème d'environnement.
+
+### Étapes (déjà faites — à refaire seulement sur une nouvelle machine)
+
+1. **Installer Git for Windows** (fournit *Git Bash*, `openssl`, `keytool`) → https://git-scm.com/download/win
+2. **Installer un JDK 17 ou 21** (Temurin) → https://adoptium.net
+3. **Installer Docker Desktop** et **le lancer** (icône baleine dans la barre des tâches, état « Engine running »).
+   Nécessaire uniquement pour Keycloak en P4.
+4. **Installer IntelliJ IDEA Community** → https://www.jetbrains.com/idea/download
+5. **Ouvrir Git Bash à la racine du projet** (le dossier qui contient `pom.xml`) et lancer les contrôles :
+
+```bash
+java -version          # 17 ou 21
+./mvnw -v              # Maven 3.9.x
+docker version         # client ET serveur répondent (Docker Desktop démarré)
+git --version
+openssl version
+./mvnw -B clean verify # BUILD SUCCESS, tests verts
+```
+
+6. Si `java` n'est pas trouvé dans Git Bash :
+
 ```bash
 export JAVA_HOME="/c/Program Files/Eclipse Adoptium/jdk-21.0.11.10-hotspot"
 export PATH="$JAVA_HOME/bin:$PATH"
 ```
-Installer en plus (B) : **MySQL Workbench** (TP4) et un client REST (Postman) ; (A) AWS CLI (`aws --version`).
 
-### 0.2 Comptes
-| Compte | Qui | Remarque |
-|---|---|---|
-| GitHub | A (propriétaire), B (collaborateur) | Activer l'authentification à deux facteurs |
-| SonarCloud | A | Connexion avec GitHub |
-| AWS | A et B (ou un compte partagé) | Activer une alerte de budget (AWS Budgets) dès le début |
-| Docker Hub | optionnel | Non nécessaire : Docker ne sert plus qu'à Keycloak (P4) |
+7. **Ouvrir le projet dans IntelliJ** : `File → Open…` → sélectionner **`pom.xml`** → *Open as Project* →
+   attendre la fin de l'import Maven (barre de progression en bas à droite).
+   Dans `Settings → Build, Execution, Deployment → Build Tools → Maven`, vérifier que le JDK du projet
+   est celui installé (pas « No SDK »).
 
-### 0.3 Vérifier que le projet compile et que les tests passent
-```bash
-./mvnw -B clean verify
-```
-**✅** `BUILD SUCCESS` pour les 5 modules, tests verts.
-**⛔** Si un test gateway échoue, noter lequel et lire `spring-petclinic-api-gateway/target/surefire-reports/` avant de continuer ; ne pas avancer sur un build rouge.
+### Critère de sortie
+
+**✅** `BUILD SUCCESS` sur 5 modules, `docker version` répond, projet importé sans erreur rouge dans IntelliJ.
+**⛔** Ne jamais enchaîner sur P4 avec un build rouge ou un Docker arrêté.
 
 ---
 
-## PHASE 1 — Dépôt, branches, nettoyage (🅰️, TP2 étapes 2-3) — ✅ TERMINÉE
+## P1 — Dépôt, branches et hygiène des secrets · ✅ TERMINÉ
 
-### 1.1 Initialiser Git
-Le zip ne contient pas de dossier `.git`. Vérifier : `ls -a | grep "^\.git$"`.
-```bash
-git init -b main
-git config --local user.name  "Prénom A"
-git config --local user.email "a@exemple.com"
-```
+**But** : garantir qu'aucun secret ne peut entrer dans l'historique, et que `main` n'accepte que des PR relues.
 
-### 1.2 Compléter `.gitignore` (obligatoire avant toute génération de clé)
-Ajouter à la fin de `.gitignore` :
+### Étapes (déjà faites)
+
+1. **Dépôt distant** créé : `DevSecOps-ENSIAS/petclinic-security-automation`.
+2. **`.gitignore`** enrichi **avant** toute génération de clé :
+
 ```gitignore
 # Secrets et cryptographie : JAMAIS dans Git
 *.pem
@@ -150,1249 +170,926 @@ Ajouter à la fin de `.gitignore` :
 *.jks
 *.csr
 *.srl
-.keystore
+*.ext
 .env
 .env.*
 secrets/
-pki/
-docs/preuves/**/*.har
+logs/
 ```
 
-### 1.3 Supprimer les fichiers hérités du projet amont
+3. **Workflow hérité du projet amont retiré** (il fermait les PR automatiquement) :
+
 ```bash
 git rm -f .github/workflows/check-pr-template.yml .github/PULL_REQUEST_TEMPLATE.md
 ```
-**Pourquoi :** `check-pr-template.yml` a été écrit pour le dépôt officiel Spring PetClinic. Il se déclenche sur `pull_request_target` avec des droits d'écriture et contient une logique qui **ferme automatiquement** des PR jugées « devoirs d'étudiants ». Dans votre dépôt, il risquerait de fermer ou d'étiqueter vos propres PR, et `pull_request_target` est un déclencheur sensible. (Je n'ai pas analysé en détail toute sa logique de détection ; le supprimer est la solution la plus sûre.)
-Supprimer aussi l'ancien workflow qui sera remplacé en phase 3 :
-```bash
-git rm -f .github/workflows/maven-build.yml
-```
-(A le remplace par `deploy.yml` en phase 3. Faites ce `git rm` dans la même PR que le nouveau workflow pour ne pas rester sans CI.)
 
-### 1.4 Premier commit et dépôt distant
-```bash
-git add -A
-git status               # vérifier qu'aucun fichier target/ ni .p12 n'apparaît
-git commit -m "chore: initial import of PetClinic security project"
-```
-Sur https://github.com/new : nom `petclinic-security-automation`, **Private**, **aucune** case cochée (ni README, ni .gitignore, ni licence).
-```bash
-git remote add origin https://github.com/COMPTE_A/petclinic-security-automation.git
-git push -u origin main
-```
-**⛔** Authentification refusée : créer un *Personal Access Token (classic)* avec la portée `repo` (GitHub → Settings → Developer settings) et l'utiliser comme mot de passe.
+4. **Branche `dev` créée** et poussée ; **B invité** : `Settings → Collaborators → Add people`.
 
-### 1.5 Branches (TP2 étape 3 : `feature/dev`)
+⚠️ **Reste à faire (2 min)** : la règle `logs/` manque encore dans `.gitignore` et cinq journaux sont suivis
+par Git (`logs/*.log`, issus de `dev-start.sh`). Les retirer sans les supprimer du disque :
+
 ```bash
-git checkout -b dev && git push -u origin dev
-git checkout -b feature/p1-cleanup && git push -u origin feature/p1-cleanup
+git rm --cached logs/*.log
+echo "logs/" >> .gitignore
+git add .gitignore && git commit -m "chore: ignore les journaux générés"
 ```
-Les suppressions de 1.3 sont committées sur `feature/p1-cleanup`, puis PR vers `dev` (voir phase 3.6 pour la procédure PR).
+5. **Protection de `main`** : `Settings → Branches → Add branch protection rule` → nom `main` →
+   cocher *Require a pull request before merging*, *Require approvals: 1*, *Require status checks to pass*
+   (choisir le job `build`), *Do not allow bypassing the above settings* → **Create**.
+6. **Première PR** de démonstration fusionnée (prouve que le circuit fonctionne).
 
-### 1.6 Inviter B
-GitHub → Settings → Collaborators → Add people. B accepte, clone, configure son identité :
-```bash
-git clone https://github.com/COMPTE_A/petclinic-security-automation.git
-cd petclinic-security-automation
-git config --local user.name "Prénom B"; git config --local user.email "b@exemple.com"
-git checkout dev
-```
+### Captures 📸 (`docs/preuves/p01-depot/`)
 
-### 1.7 Protection de `main` (après que le premier pipeline a tourné, voir phase 3.7)
+| Fichier | Quand | Quoi |
+|---|---|---|
+| `01-pr-mergee.png` | onglet *Pull requests*, filtre *Closed* | la PR avec le badge violet **Merged** |
+| `02-branches.png` | page d'accueil du dépôt | sélecteur de branches montrant `main` et `dev` |
+| `03-protection-main.png` | `Settings → Branches` | la règle de protection active |
 
-**✅ Fin de phase :** les deux membres ont le dépôt, `main` et `dev` existent sur GitHub, aucun fichier secret suivi (`git ls-files | grep -E "\.(pem|p12|key)$"` ne renvoie rien).
-**📸 Preuves :** page GitHub du dépôt avec les branches.
+### Critère de sortie
+
+**✅** `git ls-files | grep -E "\.(pem|p12|key)$"` ne renvoie **rien** ; une PR ne peut pas être fusionnée sans revue.
 
 ---
 
-## PHASE 2 — Modèle de menace (🅰️ seul, 1 h) — ✅ TERMINÉE (à raccourcir en P2)
+## P2 — Modèle de menace et constats « avant » · ✅ TERMINÉ
 
-> **Exception à la répartition A/B** : cette phase est réalisée **entièrement par A**. Les tâches
-> initialement attribuées à B (captures, relecture) sont reprises par A. **Une seule personne suffit** :
-> les constats sont des commandes, les captures des écrans, et le tableau est déjà rédigé. Seule la règle
-> GitHub « PR approuvée » impose un second compte pour le clic *Approve*.
+**But** : produire l'« avant » du tableau avant/après du rapport et **justifier le Zero Trust** (chapitre 1).
+Ce n'est pas un document décoratif : chaque ligne devient une exigence de P5/P6/P8.
 
-Le fichier `SECURITE-modele-de-menace.md` est fourni dans `guide/` (constats C1 à C14, tableau STRIDE par flux F1 à F9).
+### Les 5 constats à conserver (avec leur commande)
 
-1. **A** le copie à la racine du dépôt (branche `feature/p2-threat-model`) :
-   ```bash
-   git checkout dev && git pull
-   git checkout -b feature/p2-threat-model
-   cp guide/SECURITE-modele-de-menace.md .
-   ```
-2. **A** relit les sections 3 et 4 et exécute les commandes de la colonne « Où le vérifier ».
-3. **A** produit les captures « avant » :
-   - `grep -l security spring-petclinic-*/pom.xml pom.xml` (aucun résultat) ;
-   - `curl http://localhost:8080/actuator/env` (réponse JSON complète) ;
-   - Grafana ouvert sur http://localhost:3030 **sans mot de passe** ;
-   - `curl http://localhost:8081/owners` en contournant le gateway (si compose lancé).
-4. **A** ajoute au moins 2 menaces propres (F10, F11) et confirme gravités et priorités.
-5. PR vers `dev`. **Approbation** : le binôme clique *Approve* (aucune production de sa part), ou un second
-   compte ; à défaut, fusionner et documenter la revue comme simulée.
+| Constat | Commande | Résultat « avant » |
+|---|---|---|
+| Aucune authentification | `curl -i http://localhost:8080/api/customer/owners` | `200` sans jeton |
+| Contournement du gateway | `SERVER_PORT=8081 …` puis `curl -i http://localhost:8081/owners` | `200` en direct |
+| Trafic interne en clair | `curl -s http://localhost:8761/eureka/apps \| grep -o 'http://[^<]*'` | instances en `http://` |
+| Annuaire Eureka ouvert | `curl -i http://localhost:8761/eureka/apps` | `200` sans identifiants |
+| Actuator exposé | `curl http://localhost:8080/actuator/env` | JSON complet (variables d'environnement !) |
 
-**✅ Fin de phase :** fichier mergé dans `dev`, ≥ 3 captures « avant ».
-Cette phase alimente le chapitre « Analyse de risque » du rapport.
-
----
-
-## PHASE 3 — Intégration continue et couverture (🅰️, TP2 étapes 4-9) — ✅ TERMINÉE
-
-### 3.1 Mesurer la couverture en local (profil `quality`)
-Dans le `pom.xml` racine, **juste après** la ligne `<profiles>`, coller :
-```xml
-        <profile>
-            <id>quality</id>
-            <properties>
-                <jacoco.version>0.8.12</jacoco.version>
-                <jacoco.minimum>0.40</jacoco.minimum>
-                <jacoco.check.skip>false</jacoco.check.skip>
-                <sonar.projectKey>REMPLACER_PROJECT_KEY</sonar.projectKey>
-                <sonar.organization>REMPLACER_ORGANISATION</sonar.organization>
-                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-                <sonar.coverage.jacoco.xmlReportPaths>**/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-                <sonar.exclusions>**/static/**,**/*.scss,**/webjars/**</sonar.exclusions>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>${jacoco.version}</version>
-                        <executions>
-                            <execution>
-                                <id>prepare-agent</id>
-                                <goals><goal>prepare-agent</goal></goals>
-                            </execution>
-                            <execution>
-                                <id>report</id>
-                                <phase>verify</phase>
-                                <goals><goal>report</goal></goals>
-                            </execution>
-                            <execution>
-                                <id>check</id>
-                                <phase>verify</phase>
-                                <goals><goal>check</goal></goals>
-                                <configuration>
-                                    <skip>${jacoco.check.skip}</skip>
-                                    <rules>
-                                        <rule>
-                                            <element>BUNDLE</element>
-                                            <limits>
-                                                <limit>
-                                                    <counter>LINE</counter>
-                                                    <value>COVEREDRATIO</value>
-                                                    <minimum>${jacoco.minimum}</minimum>
-                                                </limit>
-                                            </limits>
-                                        </rule>
-                                    </rules>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-```
-Le TP utilise JaCoCo 0.8.15 (pour Java 25) ; avec JDK 17/21, 0.8.12 convient. Si votre encadrant exige la version du TP, changer `jacoco.version`.
-
-Dans `spring-petclinic-discovery-server/pom.xml`, ajouter dans `<properties>` (le module n'a presque aucun code à couvrir) :
-```xml
-<jacoco.check.skip>true</jacoco.check.skip>
-```
-```bash
-./mvnw -B -P quality clean verify
-```
-**✅** `BUILD SUCCESS` et `spring-petclinic-<module>/target/site/jacoco/index.html` pour chaque module.
-Ouvrir chaque `index.html`, noter le pourcentage de lignes : c'est la **mesure de départ**.
-
-**⛔** `Rule violated for bundle … lines covered ratio is 0.xx, but expected minimum is 0.40` : un module est sous le seuil. Solutions, dans l'ordre : (1) **B ajoute des tests** (modèle : `VetResourceTest.java`) ; (2) à défaut, baisser temporairement `jacoco.minimum` pour ce module (dans son `pom.xml`) et le remonter plus tard. Ne jamais laisser `0.00` dans le rendu final. Objectif du plan : 60 %.
-**📸** Capture de chaque rapport JaCoCo.
-
-### 3.2 Workflow `.github/workflows/deploy.yml` (nom du TP)
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [ main, dev ]
-  pull_request:
-    branches: [ main, dev ]
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        java: [ '17', '21' ]
-    steps:
-      - name: Vérification du code source
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: temurin
-          cache: maven
-
-      - name: Wrapper exécutable
-        run: chmod +x mvnw
-
-      - name: Build, tests et couverture
-        run: ./mvnw -B -P quality clean verify
-
-      - name: Publier les rapports JaCoCo
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-java-${{ matrix.java }}
-          path: '**/target/site/jacoco/'
-```
-`permissions: contents: read` applique le moindre privilège (la CI par défaut a plus de droits que nécessaire).
-
-### 3.3 Corriger les scripts et le build Docker plus tard
-Rien à faire ici : le build Docker n'est plus au programme (seul Keycloak tourne en conteneur — voir **P4**).
-
-### 3.4 Branche, PR, revue (TP2 étape 8-9)
-```bash
-git checkout dev && git pull
-git checkout -b feature/p3-ci
-git add -A
-git commit -m "ci: add quality profile (JaCoCo) and GitHub Actions workflow"
-git push -u origin feature/p3-ci
-```
-GitHub → **Compare & pull request** : base `dev` ← compare `feature/p3-ci`. Renseigner une description. **B relit** (onglet *Files changed*, commentaire ou « Approve »), puis **Merge**.
-Ensuite PR `dev` → `main`, même procédure.
-
-### 3.5 Lire le résultat
-Onglet **Actions** → run `CI` → job `build` (Java 17 et Java 21) → étapes.
-**✅** Deux jobs verts ; artefacts `jacoco-java-17` et `jacoco-java-21` téléchargeables.
-**⛔** `./mvnw: Permission denied` → l'étape `chmod +x mvnw` doit précéder le build. Échec de téléchargement Maven → relancer le job (*Re-run jobs*).
-
-### 3.6 Protéger `main` (TP2 étape 8, une fois que le check `build` existe)
-GitHub → Settings → Branches → **Add branch protection rule** : pattern `main` ; cocher *Require a pull request before merging* (1 approbation), *Require status checks to pass* (chercher `build`), *Do not allow bypassing*.
-**✅** Un `git push origin main` direct est refusé.
-
-**📸 Preuves :** PR avec checks verts + approbation de l'autre membre ; règle de protection ; onglet Actions.
-
----
-
-## PHASE 4 — SonarCloud, SCA et détection de secrets (🅰️, TP5) — ✅ TERMINÉE
-
-### 4.1 Créer le projet SonarCloud (TP5 étapes 1-3)
-1. https://sonarcloud.io/login → **With GitHub**.
-2. **+** (en haut à droite) → **Analyze new project** → sélectionner `petclinic-security-automation` → **Set Up**.
-3. Menu gauche **Project Information** : noter **Project Key** et **Organization Key**.
-4. *Administration → Analysis Method* : **désactiver « Automatic Analysis »** (sinon conflit avec l'analyse faite par le workflow).
-
-### 4.2 Renseigner le `pom.xml` (TP5 étapes 5-6)
-Dans le profil `quality`, remplacer `REMPLACER_PROJECT_KEY` et `REMPLACER_ORGANISATION` par les valeurs notées. Ajouter dans `<plugins>` du profil, après le plugin JaCoCo :
-```xml
-                    <plugin>
-                        <groupId>org.sonarsource.scanner.maven</groupId>
-                        <artifactId>sonar-maven-plugin</artifactId>
-                        <version>5.0.0.4389</version>
-                    </plugin>
-```
-(Le TP indique `3.10.0.2594`. Si la version choisie n'est pas résolue, utiliser celle du TP.)
-`sonar.exclusions` (déjà dans le profil) évite d'analyser le front (JS, SCSS, webjars) du gateway, qui fausserait la duplication et la couverture.
-
-### 4.3 Token et secret (TP5 étapes 8-10)
-1. SonarCloud → avatar → **My Account** → **Security** (ou *Access Tokens*) → nom `petclinic` → durée → **Generate Token** → **copier tout de suite**.
-2. GitHub → Settings → **Secrets and variables → Actions → New repository secret** : nom `SONAR_TOKEN`.
-3. ⚠️ Le token ne va dans **aucun** fichier, capture ou message. Les tokens ont une date d'expiration (30 jours par défaut) : noter la date pour le renouveler avant la soutenance. Le token qui apparaît en clair dans l'énoncé du TP5 est à considérer comme compromis.
-
-### 4.4 Étape d'analyse dans le workflow (TP5 étape 7)
-Ajouter dans le job `build`, après « Build, tests et couverture » :
-```yaml
-      - name: Analyse SonarCloud
-        if: matrix.java == '21'
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw -B -P quality sonar:sonar
-```
-Le scanner lit `SONAR_TOKEN` dans l'environnement : pas besoin de `-Dsonar.token=…` (le secret n'apparaît pas dans la ligne de commande).
-
-### 4.5 SCA : Dependabot et Trivy
-`.github/dependabot.yml` :
-```yaml
-version: 2
-updates:
-  - package-ecosystem: maven
-    directory: "/"
-    schedule:
-      interval: weekly
-  - package-ecosystem: github-actions
-    directory: "/"
-    schedule:
-      interval: weekly
-  - package-ecosystem: docker
-    directory: "/docker"
-    schedule:
-      interval: weekly
-```
-Dans `deploy.yml`, à la fin du job `build` :
-```yaml
-      - name: Scan Trivy (dépendances et configuration)
-        if: matrix.java == '21'
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          scanners: vuln,secret,misconfig
-          severity: CRITICAL,HIGH
-          exit-code: '0'
-          format: table
-```
-Épingler une version précise (vérifier la dernière sur la page de l'action dans le Marketplace GitHub). `exit-code: '0'` informe sans bloquer ; vous passerez à `'1'` une fois les CVE critiques traitées — c'est ce que fait la phase 4 bis, désormais livrée.
-
-### 4.6 Détection de secrets
-```yaml
-      - name: Gitleaks
-        if: matrix.java == '21'
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
-(Gratuit pour un compte personnel ; une organisation GitHub demande une licence : dans ce cas remplacer par l'étape Trivy `secret` déjà activée ci-dessus.)
-
-### 4.7 Lancer et interpréter (TP5 étapes 11-12)
-```bash
-git checkout dev && git pull && git checkout -b feature/p4-sonar
-git add -A && git commit -m "ci: add SonarCloud, Dependabot, Trivy and gitleaks"
-git push -u origin feature/p4-sonar
-```
-PR → `dev` (B relit) → merge → PR `dev` → `main`.
-
-**✅** Run vert ; tableau de bord SonarCloud avec *Quality Gate*, couverture, duplications, hotspots ; onglet *Security → Dependabot alerts* ; tableau Trivy dans les logs.
-
-### 4.8 Rédiger l'interprétation (exigée par le TP : « Interprétez le rapport »)
-Pour chaque indicateur, noter valeur, note (A à E) et décision :
-
-| Indicateur Sonar | Valeur obtenue | Note | Action décidée |
-|---|---|---|---|
-| Security / Reliability / Maintainability | | | corriger / accepter + justification |
-| Coverage | | | tests ajoutés par B |
-| Duplications | | | |
-| Security Hotspots | | | |
-| Dependency risks | | | |
-| Quality Gate | Passed / Failed | | |
-
-**📸 Preuves :** dashboard Sonar, tableau Trivy, onglet Dependabot, tableau ci-dessus.
-
----
-
-
-## PHASE 4 bis — Sécurité de la chaîne logicielle (🅱️, PR #44) — ✅ TERMINÉE
-
-> **But** : passer d'un pipeline « qui mesure » à un pipeline « qui bloque ».
-> **Dépend de** : phase 4 (Sonar, Trivy, Dependabot).
-> **Durée** : ~1 jour. **Reportée en bonus** : sans incidence sur les phases v2 (P4 à P12).
-> **Chapitre du rapport** : 5 (CI/CD, qualité, supply chain).
-
-Les TP s'arrêtent à JaCoCo + Sonar + RDS. Un projet DevSecOps ajoute quatre contrôles :
-SBOM, SAST dédié, politique de blocage, épinglage des actions. Cette phase les met en place.
-
----
-
-### 4bis.0 — Réduire d'abord la surface de dépendances
-
-Avant de rendre Trivy bloquant, supprimer les dépendances inutiles. Depuis le retrait d'`admin-server`,
-`jolokia-core` (pont JMX) et `chaos-monkey` ne servent plus à rien et sont une surface d'attaque.
-
-Dans les 4 `pom.xml` (`customers`, `vets`, `visits`, `api-gateway`), supprimer :
-
-```xml
-<dependency>
-    <groupId>org.jolokia</groupId>
-    <artifactId>jolokia-core</artifactId>
-</dependency>
-<dependency>
-    <groupId>de.codecentric</groupId>
-    <artifactId>chaos-monkey-spring-boot</artifactId>
-</dependency>
-```
-
-Puis :
+⚠️ **Ces constats ne sont plus reproductibles sur `HEAD`** : P5, P6 et P8 ont fermé ces portes — c'est le but.
+Pour les rejouer (par exemple pour refaire une capture), utiliser l'état d'origine :
 
 ```bash
-./mvnw -B -P quality clean verify
+git stash list                                  # sécurité : rien en cours
+git worktree add ../petclinic-avant e5e1b8d      # ancien état, dossier séparé
+cd ../petclinic-avant && ./mvnw -B -DskipTests package
+./scripts/run_all.sh
+# … refaire les 5 curl ci-dessus, puis :
+cd - && git worktree remove ../petclinic-avant
 ```
 
-**✅** Build vert. Si le profil `chaos-monkey` de `run_all.sh` n'est plus utilisé, le retirer aussi.
+### Étapes (déjà faites)
 
-**Preuve** : tableau Trivy avant/après (nombre de CVE).
+1. Tableau **STRIDE** réduit aux flux utiles : client → gateway, gateway → services, services → Eureka.
+2. Cotation **DREAD** des menaces retenues (F1 à F9), avec la priorité qui en découle.
+3. Rédaction de `SECURITE-modele-de-menace.md` (racine du dépôt).
+4. **5 captures « avant »** prises au moment où les portes étaient encore ouvertes.
 
-> Si un besoin de démonstration Chaos Monkey subsiste, le conserver uniquement en profil Maven `chaos`
-> et le documenter. Par défaut, il ne doit pas être dans le jar de production.
+### Captures 📸 (`docs/preuves/p02-menace/`)
+
+`01-constats-code.png` (les commandes et leurs sorties) · `02-actuator-env.png` (JSON, barre d'URL visible) ·
+`03-contournement-gateway.png` (accès direct au port 8081) · `04-eureka-ouvert.png` (console sans connexion) ·
+`05-grafana-anonyme.png` (Grafana sans authentification, hors périmètre mais constaté).
+
+### Ce qui reste à en faire
+
+Rien à coder. Dans le rapport (P10, chapitre 1), **résumer** : garder les constats et la cotation,
+supprimer le détail des menaces non traitées. C'est la seule « remise à niveau » demandée.
+
+### Critère de sortie
+
+**✅** Les 5 constats sont capturés, le tableau STRIDE et la cotation DREAD existent, et chaque constat
+est relié à la phase qui le corrige (F4-a → P8, F1-a → P5, F7 → P6, F6 → P5+P6).
 
 ---
 
-### 4bis.1 — SBOM CycloneDX
+## P3 — PKI avec OpenSSL (CA + certificats) · 🟨 PARTIEL
 
-### Plugin
+**But** : disposer d'une autorité de certification de projet et de certificats pour les 4 applications,
+plus un certificat volontairement **non autorisé** (`rogue-client`) qui servira à prouver le refus en P6.
 
-Dans le `pom.xml` racine, profil `quality`, ajouter dans `<plugins>` :
+**Ce qui existe déjà** : `scripts/pki/generate.sh` génère la CA (`PetClinic-CA`), les certificats serveur
+`customers`, `vets`, `visits`, le certificat client `api-gateway` et le `truststore.p12`.
+**Ce qui manque** : le certificat `rogue-client` et sa vérification dans la sortie du script.
 
-```xml
-<plugin>
-    <groupId>org.cyclonedx</groupId>
-    <artifactId>cyclonedx-maven-plugin</artifactId>
-    <version>2.9.1</version>
-    <executions>
-        <execution>
-            <phase>package</phase>
-            <goals><goal>makeAggregateBom</goal></goals>
-        </execution>
-    </executions>
-</plugin>
-```
+### 3.1 Ateliers de cryptographie (à garder pour le rapport, chapitre 5)
 
-```bash
-./mvnw -B -P quality -DskipTests package
-ls target/bom.json
-```
-
-**✅** `target/bom.json` contient les composants (nom, version, licence, hash).
-
-### Publication en CI
-
-Dans `deploy.yml`, après l'upload JaCoCo :
-
-```yaml
-      - name: Publier le SBOM
-        if: matrix.java == '21'
-        uses: actions/upload-artifact@<SHA>
-        with:
-          name: sbom-cyclonedx
-          path: target/bom.json
-```
-
-**Preuve** : artefact `sbom-cyclonedx` téléchargeable ; capture de `bom.json` (premières lignes).
-
----
-
-### 4bis.2 — SAST dédié : Semgrep
-
-Sonar est un SAST « généraliste » ; Semgrep apporte des règles Spring/Java ciblées.
-
-### Local
-
-```bash
-docker run --rm -v "$(pwd):/src" semgrep/semgrep \
-  semgrep --config=p/java --config=p/spring --severity=ERROR /src
-```
-
-### CI
-
-```yaml
-      - name: Semgrep (SAST)
-        if: matrix.java == '21'
-        run: |
-          docker run --rm -v "$PWD:/src" semgrep/semgrep \
-            semgrep --config=p/java --config=p/spring --severity=ERROR --error /src
-```
-
-`--error` fait échouer l'étape dès qu'une règle de sévérité ERROR est trouvée.
-
-**Démarche** :
-1. premier run : noter les findings ;
-2. corriger les vrais positifs ;
-3. ajouter `.semgrepignore` pour les faux positifs **avec un commentaire** ;
-4. conserver l'étape bloquante.
-
-**Preuve** : sortie Semgrep avant/après, capture des règles déclenchées.
-
----
-
-### 4bis.3 — Trivy bloquant (politique)
-
-Aujourd'hui `exit-code: '0'` : Trivy informe mais ne bloque pas. On passe à une politique explicite.
-
-#### 4bis.3.1 — Ignorer les CVE sans correctif
-
-```yaml
-      - name: Scan Trivy (dépendances, secrets, configuration)
-        if: matrix.java == '21'
-        uses: aquasecurity/trivy-action@<SHA>   # v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          scanners: vuln,secret,misconfig
-          severity: CRITICAL
-          ignore-unfixed: true
-          exit-code: '1'
-          format: table
-```
-
-#### 4bis.3.2 — Exceptions justifiées
-
-Créer `.trivyignore` à la racine :
-
-```text
-# CVE-2024-XXXXX — dépendance transitive de <paquet>, pas de correctif amont,
-# non exploitable dans notre contexte (pas d'exposition réseau). Revue le 2026-11-09.
-CVE-2024-XXXXX
-```
-
-Chaque ligne doit avoir une justification et une date de revue.
-
-#### 4bis.3.3 — Périmètre
-
-Ajouter `skip-dirs` pour les modules hors build (sinon le scan compte 3 fois) :
-
-```yaml
-          skip-dirs: '.git,**/target,spring-petclinic-config-server,spring-petclinic-genai-service,spring-petclinic-admin-server'
-```
-
-**Preuve** : un run rouge provoqué volontairement par une CVE critique (ou un secret factice), puis vert après correction/exception.
-
-> Sans cette étape, le rapport ne peut pas affirmer que « le pipeline bloque » : il ne fait qu'afficher.
-
----
-
-### 4bis.4 — Épingler toutes les actions par SHA
-
-Règle Sonar `S7637`. Les tags (`@v4`) sont mobiles ; un SHA est immuable.
-
-### Récupérer les SHA
-
-```bash
-for repo in actions/checkout actions/setup-java actions/upload-artifact; do
-  echo -n "$repo: "
-  curl -s "https://api.github.com/repos/$repo/git/ref/tags/v4" | grep -m1 '"sha"' | cut -d'"' -f4
-done
-```
-
-(Adapter `v4` à la version majeure réellement utilisée.)
-
-### Remplacer dans `deploy.yml`
-
-```yaml
-- uses: actions/checkout@<sha>          # v4.x
-- uses: actions/setup-java@<sha>        # v4.x
-- uses: actions/upload-artifact@<sha>   # v4.x
-```
-
-Conserver le commentaire de version : Dependabot sait mettre à jour un pin SHA commenté.
-
-**Preuve** : `grep -n "uses:" deploy.yml` ne montre plus aucun tag.
-
----
-
-### 4bis.5 — Détection de secrets sur tout l'historique
-
-Trivy `secret` scanne les fichiers actuels ; il faut aussi l'historique Git.
-
-```bash
-docker run --rm -v "$(pwd):/p" trufflesecurity/trufflehog:latest \
-  git file:///p --only-verified
-```
-
-En CI (facultatif, l'action nécessite parfois une licence selon l'organisation) :
-
-```yaml
-      - name: TruffleHog
-        if: matrix.java == '21'
-        uses: trufflesecurity/trufflehog@<SHA>
-        with:
-          path: ./
-          extra_args: --only-verified
-```
-
-**Attendu** : `0 verified secrets`. Sinon : révoquer la clé, puis nettoyer l'historique (`git filter-repo`).
-
-**Preuve** : sortie « 0 verified secrets » + `git log -p | grep -iE "ghp_|sqp_|AKIA|PRIVATE KEY"` propre.
-
----
-
-### 4bis.6 — Récapitulatif de la politique
-
-À écrire dans le rapport (une page) :
-
-| Contrôle | Outil | Seuil | Comportement |
-|---|---|---|---|
-| Couverture | JaCoCo | < 60 % | **bloquant** |
-| Qualité/sécurité | Sonar Quality Gate | gate projet | **bloquant** |
-| SAST | Semgrep | règle ERROR | **bloquant** |
-| SCA | Trivy | CRITICAL corrigeable | **bloquant** |
-| Secrets | Trivy + TruffleHog | secret vérifié | **bloquant** |
-| IaC | Trivy config | erreur | avertissement puis bloquant |
-| Mises à jour | Dependabot | hebdomadaire | PR, revue humaine |
-
-C'est cette table qui transforme un « pipeline de TP » en **politique DevSecOps**.
-
----
-
-## Checkpoint phase 4 bis
-
-- [ ] `jolokia-core` et `chaos-monkey` retirés des 4 poms
-- [ ] `target/bom.json` généré et publié en artefact
-- [ ] Semgrep exécuté, findings traités, étape bloquante
-- [ ] Trivy en `exit-code: 1`, `ignore-unfixed`, `.trivyignore` justifié
-- [ ] Toutes les actions épinglées par SHA
-- [ ] TruffleHog sur l'historique : 0 secret
-- [ ] Tableau de politique ajouté au rapport
-- [ ] PR fusionnée dans `dev`
-
-## Effort
-
-| Tâche | Durée |
-|---|---|
-| 4bis.0 suppression dépendances | 1 h |
-| 4bis.1 SBOM | 1 h |
-| 4bis.2 Semgrep | 2 h |
-| 4bis.3 Trivy bloquant | 1 h |
-| 4bis.4 SHA pins | 30 min |
-| 4bis.5 TruffleHog | 30 min |
-| 4bis.6 rédaction | 30 min |
-| **Total** | **~1 jour** |
-
-## PHASE 5 — PKI avec OpenSSL (🅱️, TP1) — ✅ TERMINÉE (compléter par `rogue-client` en P3)
-
-Tout se fait dans `secrets/` à la racine (**ignoré par Git**) pour ne jamais committer une clé. Seul le script `scripts/pki/generate.sh` est committé.
-
-### 5.1 Atelier 1 — Clés RSA, chiffrement (TP1)
 ```bash
 mkdir -p secrets/tp1 && cd secrets/tp1
-openssl genrsa -out laClePv.pem 2048                       # TP : 1024 bits, insuffisant aujourd'hui
-openssl genrsa -aes256 -out laClePvCrypte.pem 2048         # TP : -des3, protégée par passphrase
-openssl rsa -in laClePv.pem -pubout -out laClePu.pem       # clé publique
+openssl genrsa -out laClePv.pem 2048
+openssl rsa -in laClePv.pem -pubout -out laClePu.pem
 echo "message secret" > data.txt
 openssl pkeyutl -encrypt -pubin -inkey laClePu.pem -in data.txt -out dataChiffre.bin
-openssl pkeyutl -decrypt -inkey laClePv.pem -in dataChiffre.bin -out dataClair.txt
-cat dataClair.txt
-```
-**✅** `message secret`. **📝** Rapport : pourquoi 1024 bits est faible et 2048 recommandé (NIST SP 800-57).
-
-### 5.2 Atelier 2 — Empreinte et signature
-```bash
-openssl dgst -sha256 -out dataEmpreinte.txt data.txt
+openssl pkeyutl -decrypt -inkey laClePv.pem -in dataChiffre.bin -out dataClair.txt && cat dataClair.txt
 openssl dgst -sha256 -sign laClePv.pem -out signature.sig data.txt
-openssl dgst -sha256 -verify laClePu.pem -signature signature.sig data.txt     # Verified OK
+openssl dgst -sha256 -verify laClePu.pem -signature signature.sig data.txt   # Verified OK
 cp data.txt data2.txt && echo "x" >> data2.txt
-openssl dgst -sha256 -verify laClePu.pem -signature signature.sig data2.txt    # Verification Failure
+openssl dgst -sha256 -verify laClePu.pem -signature signature.sig data2.txt  # Verification Failure
 cd ../..
 ```
-**📸** Les deux résultats (OK puis Failure) illustrent intégrité et authenticité.
 
-### 5.3 Atelier 3 — Autorité de certification et certificats (script)
-Créer `scripts/pki/generate.sh` :
+📸 Les deux sorties (OK puis Failure) : elles prouvent intégrité et authenticité dans le rapport.
+
+### 3.2 Ajouter `rogue-client` (≈ 30 min) — **à faire**
+
+Ouvrir `scripts/pki/generate.sh` et vérifier que la boucle d'émission contient bien les **cinq** lignes :
+
 ```bash
-#!/usr/bin/env bash
-# Génère une CA, un certificat serveur par service et un certificat client pour le gateway.
-# Usage : PKI_PASS='mot-de-passe-fort' ./scripts/pki/generate.sh
-set -euo pipefail
-: "${PKI_PASS:?définir PKI_PASS}"
-OUT="${1:-secrets}"
-mkdir -p "$OUT" && cd "$OUT"
-
-# 1. CA (TP1 : req -x509 -days 365 -new -key ...)
-openssl genrsa -out ca.key 2048
-openssl req -x509 -new -key ca.key -days 365 -sha256 -out ca.pem \
-  -subj "/C=MA/ST=Maroc/L=Rabat/O=ensias/OU=info/CN=PetClinic-CA"
-
-issue() {  # issue <nom> <usage: serverAuth|clientAuth> <SAN>
-  local name="$1" eku="$2" san="$3"
-  openssl genrsa -out "$name.key" 2048
-  openssl req -new -key "$name.key" -out "$name.csr" \
-    -subj "/C=MA/ST=Maroc/L=Casa/O=ensias/OU=petclinic/CN=$name"
-  printf "subjectAltName=%s\nextendedKeyUsage=%s\nbasicConstraints=CA:FALSE\nkeyUsage=digitalSignature,keyEncipherment\n" \
-    "$san" "$eku" > "$name.ext"
-  openssl x509 -req -in "$name.csr" -CA ca.pem -CAkey ca.key -CAcreateserial \
-    -days 365 -sha256 -extfile "$name.ext" -out "$name.crt"
-  openssl pkcs12 -export -in "$name.crt" -inkey "$name.key" -certfile ca.pem \
-    -name "$name" -out "$name.p12" -passout "pass:$PKI_PASS"
-}
-
 for svc in customers vets visits; do
   issue "$svc" serverAuth "DNS:localhost,DNS:$svc-service,IP:127.0.0.1"
 done
-issue api-gateway clientAuth "DNS:localhost,DNS:api-gateway"
-
-# 2. Truststore Java contenant la CA
-keytool -importcert -noprompt -alias petclinic-ca -file ca.pem \
-  -keystore truststore.p12 -storetype PKCS12 -storepass "$PKI_PASS"
-
-# 3. Contrôles
-for f in customers vets visits api-gateway; do openssl verify -CAfile ca.pem "$f.crt"; done
+issue api-gateway  clientAuth "DNS:localhost,DNS:api-gateway"
+issue rogue-client clientAuth "DNS:localhost"        # ← LA ligne à ajouter
 ```
+
+Puis, à la fin du script, la vérification doit couvrir les cinq certificats :
+
 ```bash
-chmod +x scripts/pki/generate.sh
-export PKI_PASS='un-mot-de-passe-fort-local'     # ne pas le committer ni l'écrire dans un fichier suivi
+for f in customers vets visits api-gateway rogue-client; do openssl verify -CAfile ca.pem "$f.crt"; done
+```
+
+Exécuter :
+
+```bash
+export PKI_PASS='demo-local'
 ./scripts/pki/generate.sh
 ```
-**✅** Quatre lignes `…crt: OK`. Fichiers créés dans `secrets/` (`ca.pem`, `*.p12`, `truststore.p12`).
-Points clés expliqués (à reprendre dans le rapport) :
-- **SAN** (`subjectAltName`) : Java et `curl` vérifient le nom contre le SAN, pas contre le CN.
-- **EKU** : `serverAuth` pour les services, `clientAuth` pour le gateway (requis par mTLS).
-- **PKCS12** : format directement lu par Spring Boot (le TP utilise `keytool -genkey … -keystore .keystore`).
 
-### 5.4 Démonstration du TP3 à la lettre (pour la capture)
-```bash
-keytool -genkey -alias tomcat -keyalg RSA -keystore secrets/.keystore -keysize 2048
-```
-Montrer en capture l'avertissement du navigateur (certificat auto-signé, pas de CA reconnue) et expliquer la différence avec une CA que **vous** faites approuver au client (truststore).
+### Critère de sortie
 
-### 5.5 Partage des fichiers entre A et B
-Les fichiers de `secrets/` se transmettent **hors Git** (clé USB, ou service de partage chiffré). Alternative sans partage : A exécute lui aussi `generate.sh` avec **sa propre** CA pour ses tests locaux, mais une seule CA doit servir pour la démo finale.
+**✅** Cinq lignes `…crt: OK`, et dans `secrets/` : `ca.pem`, `ca.key`, `customers.p12`, `vets.p12`,
+`visits.p12`, `api-gateway.p12`, `rogue-client.p12`, `truststore.p12`.
+**⛔** Un sujet `C=/C=MA/...` déformé sous Git Bash → `export MSYS_NO_PATHCONV=1` (déjà dans le script).
+**⛔** `secrets/` ne doit **jamais** être committé : les fichiers se transmettent entre A et B hors Git,
+et **une seule CA** doit servir pour la démonstration finale.
 
-**📸 Preuves :** captures atelier 1, atelier 2, `openssl x509 -in secrets/ca.pem -noout -text | head -20`, `openssl verify`.
+### Captures 📸 (`docs/preuves/p03-pki/`)
+
+| Fichier | Commande / écran |
+|---|---|
+| `01-chaine.png` | `openssl x509 -in secrets/ca.pem -noout -text \| head -20` |
+| `02-verify.png` | la sortie complète des cinq `openssl verify` |
+| `03-keystore.png` | `keytool -list -keystore secrets/truststore.p12 -storepass "$PKI_PASS"` |
 
 ---
 
-## PHASE 6 — Authentification JWT en bordure (🅱️) — ✅ TERMINÉE (à durcir en P5 : vérification dans chaque service)
+## P4 — Keycloak : émission de jetons OIDC · ⬜ À FAIRE (0,5 j, 🅰️)
 
-Objectif : sans jeton → 401 ; jeton valide sans le bon rôle → 403 ; jeton valide avec rôle → succès, **sur les écritures** (POST, PUT, DELETE). Les lectures (GET) restent publiques pour que le front fonctionne en consultation.
+**But** : un émetteur de jetons **reproductible** — le realm est importé au démarrage, aucun clic n'est
+nécessaire pour le recréer. C'est la brique qui rend P5 possible.
 
-### 6.1 Lancer Keycloak (développement)
-```bash
-docker run -d --name keycloak -p 8180:8080 \
-  -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
-  -e KC_BOOTSTRAP_ADMIN_PASSWORD="$KC_ADMIN_PASS" \
-  quay.io/keycloak/keycloak:26.0 start-dev
+### 4.1 Créer le fichier Compose
+
+Créer **`docker-compose.security.yml`** à la racine :
+
+```yaml
+name: petclinic-security
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASS:-admin-dev-only}
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/petclinic-realm.json:/opt/keycloak/data/import/petclinic-realm.json:ro
 ```
-(Définir `KC_ADMIN_PASS` dans votre shell, sans l'écrire dans un fichier suivi.) Console : http://localhost:8180.
 
-### 6.2 Configurer Keycloak (interface)
-1. Menu realm → **Create realm** : `petclinic`.
-2. **Clients → Create client** : ID `petclinic-cli`, *Client authentication* **Off** (client public), cocher **Direct access grants**. Enregistrer.
-3. **Realm roles → Create role** : `staff`.
-4. **Users → Create user** : `alice` (+ mot de passe dans l'onglet *Credentials*, *Temporary* Off) → onglet *Role mapping* → **Assign role** `staff`.
-5. Créer un second utilisateur `bob` **sans** rôle (pour tester le 403).
-6. Les rôles apparaissent dans le jeton sous `realm_access.roles`.
+### 4.2 Créer le realm
 
-### 6.3 Obtenir un jeton
+Créer **`keycloak/petclinic-realm.json`** (mots de passe **de démonstration uniquement**) :
+realm `petclinic`, `accessTokenLifespan: 300`, rôles `staff` et `viewer`, client public `petclinic-cli`
+avec `directAccessGrantsEnabled: true`, et trois utilisateurs :
+
+| Utilisateur | Mot de passe | Rôle | Sert à prouver |
+|---|---|---|---|
+| `alice` | `alice-pass` | `staff` | GET **et** écritures autorisés (201) |
+| `bob` | `bob-pass` | `viewer` | GET 200, mais POST **403** |
+| `carol` | `carol-pass` | aucun | **403** partout |
+
+> Chaque utilisateur doit avoir `firstName`, `lastName` et `email` : depuis Keycloak 24, un compte
+> incomplet provoque `Account is not fully set up` au moment de demander un jeton.
+
+### 4.3 Démarrer et obtenir un jeton
+
+```bash
+docker compose -f docker-compose.security.yml up -d
+docker compose -f docker-compose.security.yml logs -f keycloak   # attendre "started"
+```
+
+Puis (dans un autre terminal) :
+
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:8180/realms/petclinic/protocol/openid-connect/token \
-  -d grant_type=password -d client_id=petclinic-cli -d username=alice -d password='LE_MDP' \
+  -d grant_type=password -d client_id=petclinic-cli \
+  -d username=alice -d password=alice-pass \
   | sed -E 's/.*"access_token":"([^"]+)".*/\1/')
-echo "${TOKEN:0:30}..."
+echo "${TOKEN:0:30}..."      # doit afficher eyJ...
 ```
-**✅** Une chaîne qui commence par `eyJ`. Décoder le contenu sur https://jwt.io avec un jeton **de test** uniquement.
 
-### 6.4 Dépendances du gateway
-Dans `spring-petclinic-api-gateway/pom.xml` :
+Répéter pour `bob` et `carol` (`TOKEN_BOB`, `TOKEN_CAROL`) : ils serviront à toute la matrice de P5 et P9.
+
+### 4.4 Vérifier dans la console (clic par clic)
+
+1. Ouvrir **http://localhost:8180** → *Administration Console*.
+2. Se connecter avec `admin` / `admin-dev-only` (ou la valeur de `KC_ADMIN_PASS`).
+3. En haut à gauche, le sélecteur de realm doit afficher **petclinic** (sinon : *master* → choisir `petclinic`).
+4. `Realm roles` (menu de gauche) → vérifier la présence de **staff** et **viewer**.
+5. `Users` → `alice` → onglet **Role mapping** → `staff` doit être dans *Assigned roles*.
+6. `Clients` → `petclinic-cli` → onglet **Settings** → *Direct access grants* = **On**, *Client authentication* = **Off**.
+7. Coller un jeton **de test** sur https://jwt.io : le bloc `realm_access.roles` doit contenir le rôle attendu.
+
+### Captures 📸 (`docs/preuves/p04-keycloak/`)
+
+| Fichier | Écran |
+|---|---|
+| `01-realm.png` | console, realm `petclinic` sélectionné + liste des rôles |
+| `02-users.png` | `Users` avec alice / bob / carol |
+| `03-roles-alice.png` | `alice` → *Role mapping* → `staff` assigné |
+| `04-jeton.png` | jwt.io, claims `sub`, `iss`, `realm_access.roles` (jeton **de test**) |
+
+### Critère de sortie
+
+**✅** `echo "${TOKEN:0:30}..."` affiche `eyJ…` ; les rôles apparaissent dans `realm_access.roles`.
+**⛔** `Account is not fully set up` → prénom/nom/e-mail manquants.
+**⛔** `invalid_grant` → mauvais mot de passe **ou** *Direct access grants* désactivé sur le client.
+**⛔** Un seul utilisateur ne suffit pas : sans `bob` et `carol`, la matrice RBAC n'est pas démontrable.
+**⛔** Toujours utiliser `localhost` (jamais `127.0.0.1`) pour obtenir le jeton **et** dans `issuer-uri`,
+sinon P5 renverra 401 avec un jeton pourtant valide.
+
+---
+
+## P5 — Module `spring-petclinic-security` : JWT + RBAC dans **chaque** service · ⬜ À FAIRE (1,5 j, 🅰️)
+
+**But** : c'est le « module d'authentification/autorisation » exigé par l'énoncé (E1, E2). Un module Maven
+unique, réutilisé par les 3 services **et** le gateway, qui vérifie le JWT et applique le RBAC — localement,
+sans appeler Keycloak à chaque requête.
+
+> Ce qui existe déjà : le gateway sait valider un jeton (`SecurityConfig` + `SecurityConfigTest`, phase 6).
+> Ce qui change : les **3 services** doivent aussi valider, et les GET ne sont plus publics.
+
+### 5.1 Créer le module (10 min)
+
+1. `pom.xml` **racine** : ajouter le module **en premier** dans `<modules>` :
+
 ```xml
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-        </dependency>
+<module>spring-petclinic-security</module>
 ```
-**⛔** Spring Boot 4 a réorganisé ses starters. Si Maven ne résout pas ce nom, essayer `spring-boot-starter-security-oauth2-resource-server` (rechercher sur Maven Central « spring-boot-starter » + « resource-server » pour la version 4.0.1). Le gateway étant **WebFlux**, on utilise `ServerHttpSecurity`, pas `HttpSecurity`.
 
-### 6.5 Configuration de sécurité du gateway
-`spring-petclinic-api-gateway/src/main/resources/application.yml`, ajouter sous `spring:` (à côté de `cloud:`) :
+2. Créer `spring-petclinic-security/pom.xml` avec le parent `spring-petclinic-microservices` (4.0.1),
+   `artifactId` = `spring-petclinic-security`, et deux dépendances :
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+</dependency>
+<dependency>
+    <groupId>jakarta.servlet</groupId>
+    <artifactId>jakarta.servlet-api</artifactId>
+    <scope>provided</scope>
+</dependency>
+```
+
+> Spring Boot 4 a renommé le starter : `spring-boot-starter-security-oauth2-resource-server`
+> (l'ancien nom `spring-boot-starter-oauth2-resource-server` est déprécié). Si Maven ne résout pas
+> `jakarta.servlet-api`, le remplacer par `spring-boot-starter-webmvc` en scope `provided`.
+
+### 5.2 Trois classes (package `org.springframework.samples.petclinic.security`)
+
+- **`KeycloakRoles`** — traduit le claim `realm_access.roles` en autorités Spring `ROLE_xxx`.
+  Utilisée par le gateway **et** les services : c'est ce qui rend la matrice RBAC identique partout.
+- **`ServletSecurityConfiguration`** — pour les services MVC :
+  `csrf` désactivé, `STATELESS`, `denyAll()` par défaut,
+  `GET /**` → `hasAnyRole("viewer","staff")`,
+  `POST/PUT/PATCH/DELETE` → `hasRole("staff")`,
+  `/actuator/health/**` → `permitAll()`,
+  et branchement du filtre d'identité de service **avant** `BearerTokenAuthenticationFilter`.
+- **`ServiceIdentityFilter`** — propriété de **B**, mais la classe doit exister pour compiler :
+  lit le CN du certificat client, `401` si aucun certificat et `mtls-required=true`,
+  `403` si le CN n'est pas dans `allowed-callers`, laisse passer sinon.
+
+Le code exact des trois classes est dans **`GuideV2!!!.md` §5.2** : le recopier tel quel plutôt que de le réécrire.
+
+### 5.3 Brancher les 3 services
+
+Pour **chacun** de `customers`, `visits`, `vets` :
+
+1. `pom.xml` — ajouter la dépendance au module :
+
+```xml
+<dependency>
+    <groupId>org.springframework.samples.petclinic.client</groupId>
+    <artifactId>spring-petclinic-security</artifactId>
+    <version>${project.version}</version>
+</dependency>
+```
+
+2. Classe `…ServiceApplication` — ajouter au-dessus de la classe :
+
+```java
+@Import(org.springframework.samples.petclinic.security.ServletSecurityConfiguration.class)
+```
+
+3. `application.yml` — **obligatoire**, sinon le service refuse de démarrer (aucun `JwtDecoder`) :
+
 ```yaml
+spring:
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/petclinic}
 ```
-Nouvelle classe `…/petclinic/api/config/SecurityConfig.java` :
+
+4. **Tests métier existants** (`OwnerResourceTest`, `PetResourceTest`, `VetResourceTest`, `VisitResourceTest`) :
+   ils testent la logique, pas la sécurité, et vont échouer en 401/403.
+   Ajouter sur la classe de test : `@AutoConfigureMockMvc(addFilters = false)`.
+   *(Les tests **de sécurité** de P9, eux, gardent les filtres actifs — c'est tout l'intérêt.)*
+
+```bash
+./mvnw -B -DskipTests package     # doit passer avant d'aller plus loin
+```
+
+### 5.4 Brancher le gateway (WebFlux)
+
+1. `spring-petclinic-api-gateway/pom.xml` : dépendance au module `spring-petclinic-security`
+   (pour `KeycloakRoles`) **et** au starter `spring-boot-starter-security-oauth2-resource-server`.
+2. `application.yml` du gateway : le même bloc `security.oauth2.resourceserver.jwt.issuer-uri` qu'au §5.3.
+3. Réécrire `…/api/config/SecurityConfig.java` selon **`GuideV2!!!.md` §5.4** (`ServerHttpSecurity` →
+   `SecurityWebFilterChain`) : `/actuator/health/**` et `/fallback` publics, `GET /api/**` → `viewer` ou `staff`,
+   le reste de `/api/**` → `staff`, `GET /**` public (fichiers statiques du front), `anyExchange().denyAll()`.
+4. Le gateway **transmet** l'en-tête `Authorization` : chaque service revalide. C'est la défense en profondeur.
+
+### 5.5 Test de la phase
+
+Démarrer dans l'ordre : Keycloak, `discovery-server`, les 3 services, le gateway
+(`./scripts/dev-start.sh` ou `./scripts/run_all.sh`, qui exportent déjà les identifiants Eureka).
+
+```bash
+# sans jeton → 401
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/api/vet/vets
+# carol (aucun rôle) → 403
+curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer $TOKEN_CAROL" http://localhost:8080/api/vet/vets
+# bob (viewer) en lecture → 200
+curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer $TOKEN_BOB" http://localhost:8080/api/vet/vets
+# bob en écriture → 403
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:8080/api/customer/owners \
+  -H "Authorization: Bearer $TOKEN_BOB" -H "Content-Type: application/json" \
+  -d '{"firstName":"Test","lastName":"User","address":"1 rue X","city":"Rabat","telephone":"0612345678"}'
+# alice (staff) en écriture → 201
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:8080/api/customer/owners \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"firstName":"Test","lastName":"User","address":"1 rue X","city":"Rabat","telephone":"0612345678"}'
+```
+
+**Résultat attendu** : `401` · `403` · `200` · `403` · `201`.
+
+**Bonus résilience (§5.6)** : dans le `application.yml` du gateway, le filtre `Retry` doit avoir
+`methods: GET` et **non** `POST` — rejouer un POST peut créer deux fois la ressource.
+
+### Captures 📸 (`docs/preuves/p05-jwt-rbac/`)
+
+| Fichier | Quoi |
+|---|---|
+| `01-matrice.png` | les cinq codes dans l'ordre 401/403/200/403/201 |
+| `02-servlet-security.png` | extrait de `ServletSecurityConfiguration` (règles + `denyAll`) |
+| `03-gateway-security.png` | extrait de `SecurityConfig` du gateway |
+| `04-jwt-claims.png` | jeton décodé montrant `realm_access.roles` |
+
+### Critère de sortie
+
+**✅** La matrice du §3 du guide v2 est respectée, `./mvnw -B verify` est vert.
+**⛔** `401` avec un jeton valide → `iss` différent de `issuer-uri` (utiliser `localhost` partout).
+**⛔** `ConnectException` au démarrage → Keycloak n'est pas lancé (l'émetteur est contacté au premier appel).
+**⛔** Le front Vue ne peut plus lire les données : c'est **voulu** (Zero Trust). La démo passe par `curl`.
+
+---
+
+## P6 — mTLS strict + autorisation par identité de service · 🟨 PARTIEL (3 j, 🅱️)
+
+**But** : prouver **quel service appelle** (mTLS) puis **si ce service a le droit** (liste blanche de CN).
+C'est la partie « droits du service » du Zero Trust, distincte de l'identité de l'utilisateur (P5).
+
+**Ce qui existe déjà** : profils `tls` dans les 4 applications, HTTPS, mTLS `client-auth: want`,
+gateway faisant confiance à la CA, Eureka enregistré par nom d'hôte avec port sécurisé.
+
+### 6.0 Les cinq pièges de ce dépôt (déjà rencontrés)
+
+1. Les services écoutent sur un port aléatoire (`port: 0`) → fixer 8081/8082/8083 via `SERVER_PORT`.
+2. Eureka enregistre par **IP** (`prefer-ip-address: true`) → un certificat sans SAN IP échoue.
+   D'où `prefer-ip-address: false` + `hostname` dans le profil `tls`.
+3. Pour que `lb://` produise du `https://` : `secure-port-enabled: true` et `non-secure-port-enabled: false`.
+4. `vets` active le profil `production` (cache) dans son YAML ; `SPRING_PROFILES_ACTIVE` le **remplace** →
+   lancer vets avec `production,tls`.
+5. `PKI_DIR` doit être un **chemin absolu avec des `/`** (`C:/Users/.../secrets`) : le répertoire de travail
+   d'IntelliJ n'est pas toujours la racine du projet.
+
+### 6.1 Rendre la rigueur mTLS paramétrable (≈ 20 min) — **à faire**
+
+Dans le profil `tls` des trois services, remplacer la valeur figée :
+
+```yaml
+    client-auth: want                    # AVANT
+    client-auth: ${CLIENT_AUTH:need}     # APRÈS
+```
+
+et ajouter le bloc de politique de service (utilisé par `ServiceIdentityFilter` de P5) :
+
+```yaml
+petclinic:
+  security:
+    mtls-required: ${MTLS_REQUIRED:true}
+    allowed-callers: api-gateway        # CN autorisés, séparés par des virgules
+```
+
+Ainsi un seul profil sert aux trois paliers, sans réécrire le YAML : `CLIENT_AUTH=none MTLS_REQUIRED=false`
+(palier 1), `want`/`false` (palier 2), valeurs par défaut (palier 3).
+
+### 6.2 Palier 1 — HTTPS côté serveur (déjà fait, à rejouer pour les captures)
+
+```bash
+export PKI_PASS='demo-local' PKI_DIR="$(pwd)/secrets"
+./mvnw -B -DskipTests package
+
+CLIENT_AUTH=none MTLS_REQUIRED=false SPRING_PROFILES_ACTIVE=tls SERVER_PORT=8081 \
+  java -jar spring-petclinic-customers-service/target/spring-petclinic-customers-service-4.0.1.jar
+```
+
+```bash
+curl --cacert secrets/ca.pem -i https://localhost:8081/owners   # 401 (TLS ok, jeton absent)
+curl -i https://localhost:8081/owners                           # échec : certificat non reconnu
+curl -i http://localhost:8081/owners                            # échec : le port parle TLS
+```
+
+Puis, dans le navigateur : ouvrir `https://localhost:8081` → avertissement de certificat (capture `01`),
+puis importer `secrets/ca.pem` dans les autorités de confiance de Windows → recharger → cadenas valide (capture `02`).
+
+### 6.3 Palier 2 — le gateway fait confiance à la CA (déjà fait)
+
+Le bloc de profil `tls` du gateway contient `trusted-x509-certificates: ${PKI_DIR:secrets}/ca.pem`
+et le keystore `api-gateway.p12`. Lancer toute la pile avec `tls` et vérifier :
+
+```bash
+curl -i http://localhost:8761/eureka/apps -u eureka:"$EUREKA_PASSWORD" | grep -o 'https\?://[^<]*' | head
+curl -i -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/customer/owners    # 200
+```
+
+Dans http://localhost:8761, les instances doivent apparaître en **`https`** avec un **nom d'hôte**.
+
+### 6.4 Palier 3 — mTLS strict + liste blanche (le cœur du travail restant)
+
+Relancer les services **sans** `CLIENT_AUTH` ni `MTLS_REQUIRED` (donc `need` / `true`), puis les cinq tests :
+
+```bash
+# 1. Aucun certificat client → handshake refusé
+curl --cacert secrets/ca.pem -i https://localhost:8081/owners
+
+# 2. Certificat du gateway, sans jeton → TLS accepté, JWT absent → 401
+curl --cacert secrets/ca.pem --cert secrets/api-gateway.crt --key secrets/api-gateway.key \
+  -i https://localhost:8081/owners
+
+# 3. Certificat du gateway + jeton alice → 200
+curl --cacert secrets/ca.pem --cert secrets/api-gateway.crt --key secrets/api-gateway.key \
+  -H "Authorization: Bearer $TOKEN" -i https://localhost:8081/owners
+
+# 4. Certificat « intrus » (CA valide, CN non autorisé) + jeton alice → 403
+curl --cacert secrets/ca.pem --cert secrets/rogue-client.crt --key secrets/rogue-client.key \
+  -H "Authorization: Bearer $TOKEN" -i https://localhost:8081/owners
+
+# 5. Via le gateway → 200
+curl -i -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/customer/owners
+```
+
+**Résultat attendu** : échec de handshake · `401` · `200` · `403` · `200`.
+Les cas 3 et 4 sont **la** démonstration à montrer au jury : mTLS **authentifie** le service,
+la liste blanche de CN l'**autorise**.
+
+### Captures 📸 (`docs/preuves/p06-mtls/`)
+
+| Fichier | Quoi |
+|---|---|
+| `01-tls.png` | `curl --cacert` qui répond, puis échec sans la CA |
+| `02-mtls.png` | les cinq commandes du palier 3 avec leurs codes |
+| `03-eureka-https.png` | console Eureka, instances en `https` avec nom d'hôte |
+| `04-rogue-403.png` | le cas 4 : CN refusé, journal `Appelant refuse : CN=rogue-client` |
+
+### Critère de sortie
+
+**✅** Les 5 codes du palier 3 sont conformes, et le journal du service affiche le refus de `rogue-client`.
+**⛔** `PKIX path building failed` → la CA n'est pas dans le truststore du client qui échoue.
+**⛔** `403` alors que le certificat du gateway est présenté → `allowed-callers` ne contient pas `api-gateway`.
+**⛔** `handshake_failure` → certificat client absent ou mauvaise CA.
+**⛔** Si le palier 3 bloque plus d'une journée : le documenter comme limite (l'agrégation reste en TLS simple)
+plutôt que d'y passer le week-end.
+
+---
+
+## P7 — Scénario `dossier` à 3 microservices · ⬜ À FAIRE (1 j, 🅰️ gateway + 🅱️ client mTLS)
+
+**But** : l'exigence E3 de l'énoncé — une requête cliente fait collaborer **les trois** services métier.
+Le `GET /api/gateway/owners/{id}/dossier` interroge `customers` (propriétaire + animaux), `visits` (visites)
+**et** `vets`, puis assemble la réponse. Chaque appel porte **le certificat du gateway** (identité du service)
+et **le jeton de l'utilisateur** (identité et rôles).
+
+### 7.1 Client mTLS du gateway (🅱️, ~2 h)
+
+1. Créer `…/api/config/MtlsHttpClientFactory.java` (code dans `GuideV2!!!.md` §7.1) : construit un
+   `HttpClient` Reactor qui présente `api-gateway.p12` et fait confiance à `truststore.p12` ;
+   si la propriété `petclinic.mtls.key-store` est vide, il renvoie un client standard (utile hors TLS).
+2. Ajouter au `application.yml` du gateway, dans le profil `tls` :
+
+```yaml
+petclinic:
+  mtls:
+    key-store: ${PKI_DIR:secrets}/api-gateway.p12
+    trust-store: ${PKI_DIR:secrets}/truststore.p12
+    password: ${PKI_PASS}
+```
+
+3. Dans `ApiGatewayApplication`, **remplacer** le bean `loadBalancedWebClientBuilder` par la version qui
+   utilise `MtlsHttpClientFactory` **et** le filtre `ServerBearerExchangeFilterFunction` — c'est ce filtre
+   qui relaie le jeton de l'utilisateur vers les services (sinon les services répondent 401).
+
+### 7.2 Endpoint du scénario (🅰️, ~3 h)
+
+1. `…/api/application/VetsServiceClient.java` — `WebClient` `@LoadBalanced` appelant `http://vets-service/vets`.
+2. `…/api/dto/OwnerDossier.java` — `record OwnerDossier(OwnerDetails owner, List<Map<String,Object>> vets)`.
+3. `…/api/boundary/web/DossierController.java` — **classe distincte** (sinon `ApiGatewayControllerTest` casse) :
+
 ```java
-package org.springframework.samples.petclinic.api.config;
+@RestController
+@RequestMapping("/api/gateway")
+public class DossierController {
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
-import org.springframework.security.web.server.SecurityWebFilterChain;
-import reactor.core.publisher.Mono;
+    private final ApiGatewayController owners;
+    private final VetsServiceClient vets;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-@Configuration
-@EnableWebFluxSecurity
-public class SecurityConfig {
-
-    @Bean
-    SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        return http
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)   // API sans session : jeton Bearer
-            .authorizeExchange(auth -> auth
-                .pathMatchers("/actuator/health/**", "/actuator/info", "/actuator/prometheus").permitAll()
-                .pathMatchers(HttpMethod.GET, "/**").permitAll()           // front + lectures
-                .pathMatchers(HttpMethod.POST, "/api/**").hasRole("staff")
-                .pathMatchers(HttpMethod.PUT, "/api/**").hasRole("staff")
-                .pathMatchers(HttpMethod.DELETE, "/api/**").hasRole("staff")
-                .anyExchange().denyAll())
-            .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
-                jwt.jwtAuthenticationConverter(keycloakRoleConverter())))
-            .build();
+    public DossierController(ApiGatewayController owners, VetsServiceClient vets) {
+        this.owners = owners;
+        this.vets = vets;
     }
 
-    /** Traduit realm_access.roles (Keycloak) en autorités ROLE_xxx. */
-    private Converter<Jwt, Mono<AbstractAuthenticationToken>> keycloakRoleConverter() {
-        return new ReactiveJwtAuthenticationConverterAdapter(jwt -> {
-            Map<String, Object> realm = jwt.getClaimAsMap("realm_access");
-            Collection<GrantedAuthority> authorities = List.of();
-            if (realm != null && realm.get("roles") instanceof Collection<?> roles) {
-                authorities = roles.stream()
-                    .map(r -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + r))
-                    .toList();
-            }
-            return new JwtAuthenticationToken(jwt, authorities);
-        });
+    @GetMapping("owners/{ownerId}/dossier")
+    public Mono<OwnerDossier> dossier(@PathVariable int ownerId) {
+        return Mono.zip(owners.getOwnerDetails(ownerId), vets.getVets(), OwnerDossier::new);
     }
 }
 ```
-`anyExchange().denyAll()` : tout ce qui n'est pas explicitement autorisé est refusé (principe du refus par défaut). Les actuator autres que `health/info/prometheus` seront bloqués ici ET retirés de l'exposition en **P8**.
 
-### 6.6 Corriger le retry sur POST (constat C9)
-Dans `api-gateway/application.yml`, filtre `Retry` : remplacer `methods: POST` par `methods: GET`.
-Raison : rejouer un POST peut créer deux fois la même ressource ; seuls les GET (idempotents) se rejouent.
+L'agrégation existante (`ApiGatewayController.getOwnerDetails`) appelle déjà `customers` **et** `visits` :
+en ajoutant `vets`, la requête fait collaborer les trois services.
 
-### 6.7 Tests
+### 7.3 Vérification
+
 ```bash
-./mvnw -B -DskipTests package
-# Démarrer discovery, les 3 services, puis le gateway (voir scripts/run_all.sh ou README)
-curl -i -X POST http://localhost:8080/api/customer/owners \
-  -H "Content-Type: application/json" \
-  -d '{"firstName":"Test","lastName":"User","address":"1 rue X","city":"Rabat","telephone":"0612345678"}'
-# 401
-TOKEN_BOB=...   # jeton de bob (sans rôle)  -> même requête avec -H "Authorization: Bearer $TOKEN_BOB" : 403
-curl -i -X POST http://localhost:8080/api/customer/owners \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"firstName":"Test","lastName":"User","address":"1 rue X","city":"Rabat","telephone":"0612345678"}'
-# 201
-curl -i http://localhost:8080/api/customer/owners        # 200 sans jeton (GET public)
-```
-**✅** 401 sans jeton ; 403 pour `bob` ; 201 pour `alice` ; 200 en GET.
-**⛔** `401` malgré un jeton valide : l'`issuer` du jeton ne correspond pas à `issuer-uri` (le nom d'hôte utilisé pour obtenir le jeton doit être identique). `ConnectException` au démarrage : Keycloak non lancé (le gateway contacte l'issuer au premier appel).
-
-### 6.8 Limite à assumer dans le rapport
-⚠️ **Le guide v2 va plus loin** : *toutes* les requêtes `/api/**` exigent un jeton (Zero Trust, « toujours vérifier »). Le front Vue n'a pas d'écran de connexion : il ne peut donc **ni lire ni écrire** les données, et la démonstration passe entièrement par `curl`/Postman. Le front reste une **perspective** du rapport (gateway en client OAuth2 : `oauth2Login` + `TokenRelay`).
-
-### 6.9 Défense en profondeur — ⚠️ devenu **obligatoire** en P5
-Les services valident aussi le JWT (dépendances `spring-boot-starter-oauth2-resource-server`, `SecurityFilterChain` MVC, `@PreAuthorize`). Cela couvre le cas où l'on contourne le gateway (menace F6), en complément de mTLS. En v2, ce n'est plus une option : c'est le cœur de **P5** (module `spring-petclinic-security`), parce que l'énoncé exige que *chaque* microservice prouve identité et droits.
-
-**📸 Preuves :** les 4 réponses curl (401/403/201/200) ; capture Keycloak (realm, rôle, utilisateur) ; extrait de `SecurityConfig`.
-
----
-
-## PHASE 7 — TLS puis mTLS (🅱️, TP3) — ✅ TERMINÉE (compléter par la liste blanche de CN en P6)
-
-On avance en **trois paliers**. Valider chaque palier avant le suivant ; si le palier 3 bloque plus d'une journée, le documenter comme limite.
-
-### 7.0 Principe et pièges propres à votre projet
-- Les services écoutent sur **un port aléatoire** (`port: 0`) hors profil `docker`. Pour le TLS, fixer les ports : 8081/8082/8083 via `SERVER_PORT`.
-- Eureka enregistre par **IP** (`prefer-ip-address: true`). Le gateway tenterait `https://172.x.x.x:8081` ; votre certificat est valable pour des **noms**. On enregistre donc par **nom d'hôte** (`prefer-ip-address: false`, `hostname` = nom du conteneur ou `localhost`) et on déclare le port **sécurisé** à Eureka.
-- Pour que `lb://` produise du `https://`, l'instance doit s'enregistrer avec `secure-port-enabled: true` et `non-secure-port-enabled: false`.
-- Séparer le port **management** (Actuator) du port applicatif : le port applicatif exige un certificat client, pas Prometheus.
-
-### 7.1 Palier 1 — HTTPS côté serveur sur un service (customers)
-Dans `customers-service/src/main/resources/application.yml`, ajouter un document de profil à la fin :
-```yaml
----
-spring:
-  config:
-    activate:
-      on-profile: tls
-server:
-  port: ${SERVER_PORT:8081}
-  ssl:
-    enabled: true
-    key-store: file:${PKI_DIR:secrets}/customers.p12
-    key-store-type: PKCS12
-    key-store-password: ${PKI_PASS}
-    key-alias: customers
-management:
-  server:
-    port: 8091
-eureka:
-  instance:
-    hostname: ${EUREKA_INSTANCE_HOSTNAME:localhost}
-    prefer-ip-address: false
-    secure-port-enabled: true
-    non-secure-port-enabled: false
-    secure-port: ${server.port}
-```
-```bash
-export PKI_PASS='…'
-./mvnw -B -DskipTests package
-SPRING_PROFILES_ACTIVE=tls java -jar spring-petclinic-customers-service/target/*.jar
-```
-Test (dans un autre terminal) :
-```bash
-curl --cacert secrets/ca.pem https://localhost:8081/owners      # 200
-curl https://localhost:8081/owners                              # échec : certificat non reconnu
-curl http://localhost:8081/owners                               # échec : port TLS
-```
-**✅** Succès avec `--cacert`, échec sans. **📸** Navigateur sur `https://localhost:8081` (avertissement) puis après import de `ca.pem` dans le magasin de confiance : cadenas valide.
-Reproduire pour `vets` (8083, alias `vets`, management 8093) et `visits` (8082, alias `visits`, management 8092).
-**⛔ `vets` :** son YAML active le profil `production` (cache). Définir `SPRING_PROFILES_ACTIVE` le **remplace**. Lancer vets avec `SPRING_PROFILES_ACTIVE=production,tls`. (Dans Docker, `ENV SPRING_PROFILES_ACTIVE=docker` écrase déjà ce profil : le cache n'y est donc pas actif ; à noter dans le rapport.)
-
-### 7.2 Palier 2 — Le gateway fait confiance à la CA
-Dans `api-gateway/application.yml`, document de profil :
-```yaml
----
-spring:
-  config:
-    activate:
-      on-profile: tls
-  cloud:
-    gateway:
-      server:
-        webflux:
-          httpclient:
-            ssl:
-              trustedX509Certificates:
-                - file:${PKI_DIR:secrets}/ca.pem
-```
-Lancer discovery, les 3 services (`tls`) puis le gateway (`tls`). Les routes `lb://` doivent résoudre en `https://`.
-```bash
-curl -i http://localhost:8080/api/customer/owners      # 200 via gateway, canal interne chiffré
-```
-**⛔** `PKIX path building failed` / `unable to find valid certification path` : la CA n'est pas approuvée par le client qui échoue. **Remarque :** le préfixe des propriétés Gateway dans votre version est `spring.cloud.gateway.server.webflux.*` (vu dans votre YAML) ; si la clé `httpclient.ssl.*` n'est pas reconnue, consulter la documentation Spring Cloud Gateway 2025.1 pour le nom exact.
-**⛔** `No instances available` ou http au lieu de https : les services ne s'enregistrent pas avec le port sécurisé ; vérifier dans http://localhost:8761 les URL des instances (elles doivent être en `https`, avec un nom d'hôte).
-
-L'endpoint d'agrégation `/api/gateway/owners/{id}` utilise `RestTemplate`/`WebClient` : ils ne lisent pas la configuration ci-dessus. Pour ce palier, lancer le gateway avec la truststore JVM :
-```bash
-JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStore=secrets/truststore.p12 -Djavax.net.ssl.trustStoreType=PKCS12 -Djavax.net.ssl.trustStorePassword=$PKI_PASS" \
-SPRING_PROFILES_ACTIVE=tls java -jar spring-petclinic-api-gateway/target/*.jar
-curl -i http://localhost:8080/api/gateway/owners/1
+curl -i -H "Authorization: Bearer $TOKEN"       http://localhost:8080/api/gateway/owners/1/dossier  # 200
+curl -i                                          http://localhost:8080/api/gateway/owners/1/dossier  # 401
+curl -i -H "Authorization: Bearer $TOKEN_CAROL"  http://localhost:8080/api/gateway/owners/1/dossier  # 403
 ```
 
-### 7.3 Palier 3 — mTLS (le serveur exige un certificat client)
-Services, dans le bloc `server.ssl` du profil `tls` :
-```yaml
-    client-auth: need
-    trust-store: file:${PKI_DIR:secrets}/truststore.p12
-    trust-store-type: PKCS12
-    trust-store-password: ${PKI_PASS}
-```
-Gateway, dans `httpclient.ssl` :
-```yaml
-              key-store: ${PKI_DIR:secrets}/api-gateway.p12
-              key-store-type: PKCS12
-              key-store-password: ${PKI_PASS}
-              key-password: ${PKI_PASS}
-```
-Tests :
-```bash
-# Sans certificat client : handshake refusé
-curl --cacert secrets/ca.pem https://localhost:8081/owners
-# Avec le certificat du gateway : accepté
-curl --cacert secrets/ca.pem --cert secrets/api-gateway.crt --key secrets/api-gateway.key https://localhost:8081/owners
-# Via le gateway
-curl -i http://localhost:8080/api/customer/owners
-```
-**✅** `curl` sans certificat échoue (`alert certificate required` / `handshake failure`) ; avec certificat → 200 ; via le gateway → 200.
-**Point délicat :** les clients `RestTemplate`/`WebClient` de l'endpoint d'agrégation ne présentent **pas** de certificat client par défaut (Netty ne lit pas `javax.net.ssl.keyStore`). Deux solutions : (a) configurer un **SSL bundle** Spring Boot (`spring.ssl.bundle.pem`/`jks`) et construire ces clients avec `WebClientSsl` / `RestTemplateBuilder.sslBundle(...)` ; (b) si le temps manque, **documenter** que l'endpoint d'agrégation reste en TLS simple et que les 3 routes principales sont en mTLS. Cette limite est acceptable et honnête dans le rapport (voir « Risques » du plan).
+Contrôler aussi **les journaux des trois services** : l'appel doit arriver en HTTPS avec le CN `api-gateway`.
 
-### 7.4 Eureka
-Eureka reste en HTTP dans cette phase (annuaire interne) ; sa protection (authentification basique) est en **P8**.
+### Captures 📸 (`docs/preuves/p07-dossier/`)
 
-**📸 Preuves :** les `curl` des trois paliers (succès et échecs), liste Eureka avec instances `https`, extrait des YAML (sans mot de passe), capture du navigateur avec/sans la CA.
-
----
-
-# PARTIE 2 — Travaux restants, alignés sur le guide v2
-
-> **À partir d'ici, `guide/GuideV2!!!.md` fait foi.** Il suit à 100 % l'énoncé officiel
-> (*Projet Ingénierie des Systèmes Sécurisés — Authentification et autorisation interservices*, A.U. 2026/2027).
-> La partie 1 de ce guide garde la trace des phases 0 à 7, déjà faites, avec leurs preuves.
-> Cette partie 2 remplace les anciennes phases 8 à 13 par la numérotation v2.
->
-> **Répartition du travail** : ce fichier donne l'ordre, les livrables, les critères de sortie et les pièges.
-> Le code, les YAML et les commandes exactes sont dans `GuideV2!!!.md` (sections P2 à P12) — ne pas les réécrire ici.
-
-## B.1 Ce qui change par rapport aux phases 8 à 13 de ce guide
-
-L'énoncé officiel ne demande **ni AWS, ni SonarCloud, ni observabilité**. Les phases qui les traitaient sont donc supprimées :
-
-| Ancienne phase | Ce qu'elle faisait | Décision v2 | Raison |
-|---|---|---|---|
-| 4 bis — Sécurité de la chaîne | SBOM, Semgrep, Trivy bloquant, épinglage SHA | ✅ **faite (B, PR #44)** | livrée : sans coût de maintenance, elle reste en place |
-| 8 — RDS MySQL + profil `prod` | RDS, schémas, secrets GitHub | ❌ **supprimée** | « HSQLDB en mémoire suffit » (v2 §2.2) |
-| 9 — Docker, ECR, EC2 | images, registry, déploiement | ❌ **supprimée** | « remplacé par exécution locale + IntelliJ ; Docker réservé à Keycloak » (v2 §2.2) |
-| 10 — Durcissement | Actuator, Eureka, en-têtes, Grafana, ZAP | ♻️ **réduite** → **P8** | seuls Actuator et Eureka renforcent l'authentification interservices |
-| 11 — Observabilité | Prometheus, Grafana, alertes | ❌ **supprimée** | hors périmètre (bonus éventuel) |
-| 12 — Rapport LaTeX 30-40 p. | rapport | ♻️ **P10** | plan réaligné sur les 9 chapitres exigés par l'énoncé |
-| 13 — Soutenance | démo | ♻️ **P12** | conservée |
-
-**Ménage effectué le 10/11/2026** : les artefacts de la phase 8 ont été purgés du dépôt — `application-prod.yml` (×3),
-`docs/preuves/p08-rds/` et le profil `prod`. Les dépendances MySQL et `db/mysql/*.sql` viennent du premier commit (amont)
-et restent en place, non activées. Restent hors périmètre, à ne **pas** merger :
-`scripts/tagImages.sh`, `scripts/pushImages.sh`, `docker-compose.prod.yml` et `docs/preuves/p09-deploy/`.
-
-**Ce qui est récupérable** (déjà dans le dépôt, à adapter et non à refaire) :
-
-| Existant | Réutilisé en | Adaptation nécessaire |
-|---|---|---|
-| `scripts/pki/generate.sh` (CA + 3 certificats serveur + `api-gateway`) | P3 / P6 | ajouter le certificat **`rogue-client`** (CN non autorisé) : sans lui, pas de preuve 403 |
-| `spring-petclinic-api-gateway/.../config/SecurityConfig.java` | P5.4 | réécrire selon le modèle v2 (WebFlux + `KeycloakRoles` + refus par défaut) |
-| `docker/keycloak/realm-petclinic.json` | P4 | remplacer l'utilisateur `demo` et le client `petclinic-ui` par `alice`/`bob`/`carol`, rôles `staff`/`viewer`, client `petclinic-cli` |
-| Profils `tls` des `application.yml` | P6 | compléter par `mtls-required`, `allowed-callers`, `secure-port-enabled` |
-
-## B.2 Correspondance ancienne numérotation → v2
-
-| Ancienne | Nouvelle | État | Responsable |
-|---|---|---|---|
-| 0 Préparation | **P0** | ✅ fait | A + B |
-| 1 Dépôt, branches, secrets | **P1** | ✅ fait | A |
-| 2 Modèle de menace | **P2** | ✅ fait (à raccourcir dans le rapport) | A |
-| 3 CI + JaCoCo | — | ✅ fait, conservé tel quel | A |
-| 4 Sonar + SCA + secrets | — | ✅ fait, hors périmètre mais sans coût | A |
-| 5 PKI OpenSSL | **P3** | ✅ fait (manque `rogue-client`) | B |
-| 6 JWT en bordure | **P5** | 🟨 partiel : le JWT n'est vérifié **qu'au gateway** | A |
-| 7 TLS puis mTLS | **P6** | 🟨 partiel : HTTPS et mTLS en place, **liste blanche de CN absente** | B |
-| — | **P4** Keycloak (realm v2 + jetons) | ⬜ à faire | A |
-| — | **P5** module `spring-petclinic-security` | ⬜ à faire (le cœur du livrable) | A |
-| — | **P7** scénario `dossier` à 3 services | ⬜ à faire | A (gateway) + B (client mTLS) |
-| 10 (réduite) | **P8** Actuator + Eureka | ⬜ à faire | B |
-| — | **P9** `security-smoke.sh` + tests JUnit | ⬜ à faire | A + B |
-| 12 | **P10** Rapport | ⬜ à faire | A + B |
-| — | **P11** Archive importable IntelliJ | ⬜ à faire | A + B |
-| 13 | **P12** Présentation | ⬜ à faire | A + B |
-
-## B.3 Planning restant
-
-Dépôt Moodle : **mardi 24 novembre 2026 avant minuit** — viser le **23 au soir**.
-Date de rédaction de cette partie : **mardi 10 novembre 2026**, soit 14 jours.
-
-**État au 10/11/2026 (soir)** : 4 bis ✅ (B, PR #44) · **P8 ✅** (A, durcissement livré et vérifié) · la phase 8 (RDS) a été purgée du dépôt.
-Il reste donc **P3** (complément `rogue-client`), **P4**, **P5**, **P6**, **P7**, **P9**, **P10**, **P11**, **P12**.
-
-| Jour | A (identité utilisateur) | B (identité des services) |
-|---|---|---|
-| Mar 10 | **P4** Keycloak + jeton `eyJ…` | **P3** : ajouter `rogue-client` à `generate.sh`, vérifier les 5 certificats |
-| Mer 11 | **P5** module + branchement des 3 services | **P6** palier 1 (HTTPS sur customers) |
-| Jeu 12 | **P5** gateway | **P6** palier 1 sur les 3 services + palier 2 |
-| Ven 13 | **P7** endpoint `dossier` | **P6** palier 3 (mTLS strict + liste blanche) |
-| Sam 14 – Dim 15 | tampon, corrections, P2 dans le rapport | tampon, corrections, **P8** |
-| Lun 16 | **P9** tests automatisés | **P9** `security-smoke.sh` |
-| Mar 17 → Sam 21 | **P10** rapport (ch. 1-5 puis relecture) | **P10** rapport (ch. 6-9) |
-| Dim 22 | **P11** archive testée à froid | relecture croisée |
-| Lun 23 | présentation + **dépôt Moodle** | idem |
-
----
-
-## P2 — Modèle de menace court (🅰️) — ✅ fait, à réaligner
-
-Le travail de la phase 2 est acquis (`SECURITE-modele-de-menace.md`, preuves `docs/preuves/p02-menace/`).
-La v2 n'en attend qu'une chose : **le tableau « avant » du rapport** (chapitre 1 et 7), c'est-à-dire les constats
-mesurés sur le code d'origine, avec leur commande de preuve.
-
-| Constat avant | Commande |
+| Fichier | Quoi |
 |---|---|
-| Aucune authentification | `curl -i http://localhost:8080/api/customer/owners` → 200 sans jeton |
-| Contournement du gateway | `curl -i http://localhost:8081/owners` (`SERVER_PORT=8081`) → 200 |
-| Trafic interne en clair | `http://` visible dans Eureka |
-| Annuaire Eureka ouvert | `curl -i http://localhost:8761/eureka/apps` → 200 |
-| Actuator exposé | `curl http://localhost:8080/actuator/env` → JSON complet |
+| `01-dossier-200.png` | la réponse JSON complète (owner + animaux + visites + vets) |
+| `02-sans-jeton.png` | `401` sur le même appel |
+| `03-carol-403.png` | `403` avec `carol` |
+| `04-journaux.png` | les trois services recevant l'appel (CN `api-gateway`) |
+| `05-sequence.png` | diagramme de séquence client → gateway → customers/visits/vets (schéma central du rapport) |
 
-**✅** Les cinq constats sont capturés (idéalement sur `main` d'origine, avant les modifications de P4-P8).
-**⛔** Ne pas refaire la phase 2 : réutiliser les captures existantes, seul le classement STRIDE est à raccourcir.
-📸 `docs/preuves/p02-menace/`.
+### Critère de sortie
+
+**✅** `200` avec les données des **trois** services, `401` sans jeton, `403` avec `carol`.
+**⛔** `200` mais `vets` vide → la route `vets` n'est pas en `https` (revoir P6.3).
+**⛔** Tests du gateway cassés → la nouvelle classe `DossierController` doit rester séparée de
+`ApiGatewayController`, et les tests existants doivent recevoir un `mockJwt()`.
 
 ---
 
-## P4 — Keycloak : émission de jetons OIDC (🅰️, 0,5 j) — ⬜
+## P8 — Durcissement (Actuator + Eureka) · ✅ TERMINÉ le 10/11/2026
 
-**But** : disposer d'un émetteur de jetons reproductible, importé automatiquement (aucun clic dans la console).
+**But** : fermer les deux portes qui permettaient de lire l'infrastructure sans s'authentifier.
+Seul ce qui renforce l'authentification interservices a été fait ; Grafana, ZAP et la publication des ports
+Docker sont hors périmètre v2.
 
-À produire :
-- `docker-compose.security.yml` à la racine : image `quay.io/keycloak/keycloak:26.0`, `start-dev --import-realm`, port **8180**, volume du realm en lecture seule ;
-- `keycloak/petclinic-realm.json` : realm `petclinic`, `accessTokenLifespan: 300`, rôles `staff` et `viewer`, client public `petclinic-cli` avec `directAccessGrantsEnabled: true`, et **trois** utilisateurs — `alice` (staff), `bob` (viewer), `carol` (aucun rôle) — chacun avec prénom, nom et e-mail.
+### Ce qui a été fait (à reproduire seulement sur une nouvelle machine)
 
-```bash
-docker compose -f docker-compose.security.yml up -d
-TOKEN=$(curl -s -X POST http://localhost:8180/realms/petclinic/protocol/openid-connect/token \
-  -d grant_type=password -d client_id=petclinic-cli -d username=alice -d password=alice-pass \
-  | sed -E 's/.*"access_token":"([^"]+)".*/\1/')
-echo "${TOKEN:0:30}..."   # eyJ...
+**1. Actuator réduit** — sur les **cinq** applications (gateway, customers, vets, visits, discovery),
+le bloc `management:` contient désormais :
+
+```yaml
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
 ```
 
-**✅** Une chaîne commençant par `eyJ` ; les rôles apparaissent dans `realm_access.roles` du jeton décodé.
-**⛔** `Account is not fully set up` : prénom/nom/e-mail manquants (obligatoires depuis Keycloak 24).
-**⛔** Un seul compte ne suffit pas : sans `bob` (viewer) et `carol` (sans rôle), la matrice RBAC de P5 n'est pas démontrable.
-📸 `docs/preuves/p04-keycloak/` : console (realm, rôles, utilisateurs), jeton **de test** décodé.
+(`discovery-server` n'avait aucun bloc `management:` : il a été ajouté.)
 
----
+**2. Annuaire Eureka protégé** — `spring-boot-starter-security` ajouté au `discovery-server`, plus la classe
+`EurekaSecurityConfig` : CSRF ignoré sur `/eureka/**` (les clients Eureka n'envoient pas de jeton CSRF),
+`/actuator/health` et `/actuator/info` publics (les scripts de démarrage attendent ce endpoint),
+`anyRequest().authenticated()` + HTTP Basic.
 
-## P5 — Module `spring-petclinic-security` : JWT + RBAC dans chaque service (🅰️, 1,5 j) — ⬜
+**3. Identifiants** — `spring.security.user.name/password` lus depuis `EUREKA_USER` / `EUREKA_PASSWORD`
+(valeurs par défaut `eureka` / `eureka-pass`), et `defaultZone` de chaque client devenu :
 
-**C'est le module d'authentification/autorisation exigé par l'énoncé** (E1, E2). Tout le détail est en v2 §5.1 à §5.6.
+```yaml
+defaultZone: ${EUREKA_URL:http://${EUREKA_USER:eureka}:${EUREKA_PASSWORD:eureka-pass}@localhost:8761/eureka/}
+```
 
-Livrables :
-1. module Maven `spring-petclinic-security`, déclaré **en premier** dans `<modules>` du `pom.xml` racine ;
-2. `KeycloakRoles` (traduction `realm_access.roles` → `ROLE_xxx`, partagée par le gateway réactif et les services MVC) ;
-3. `ServletSecurityConfiguration` : `csrf` désactivé, `STATELESS`, `denyAll()` par défaut, GET → `viewer` **ou** `staff`, écritures → `staff` ;
-4. `ServiceIdentityFilter` (propriété de B, mais nécessaire pour compiler) : lit le CN du certificat client, refuse 401 sans certificat si `mtls-required`, 403 si CN hors liste blanche ;
-5. branchement des **3 services** : dépendance + `@Import(ServletSecurityConfiguration.class)` + bloc `spring.security.oauth2.resourceserver.jwt.issuer-uri` (obligatoire, sinon le service ne démarre pas) ;
-6. gateway : `SecurityConfig` WebFlux réécrit sur le modèle v2 (le gateway transmet `Authorization`, chaque service revalide).
+(et la même chose dans le bloc `on-profile: docker`). `scripts/dev-start.sh` et `scripts/run_all.sh`
+exportent ces deux variables pour que **tous** les processus en héritent.
+
+### Vérification (rejouable en 2 minutes)
 
 ```bash
 ./mvnw -B -DskipTests package
-# matrice attendue (TOKEN = alice, TOKEN_BOB, TOKEN_CAROL)
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/api/vet/vets                              # 401
-curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer $TOKEN_CAROL" http://localhost:8080/api/vet/vets  # 403
-curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer $TOKEN_BOB"   http://localhost:8080/api/vet/vets  # 200
+EUREKA_USER=eureka EUREKA_PASSWORD=eureka-pass \
+  java -jar spring-petclinic-discovery-server/target/spring-petclinic-discovery-server-4.0.1.jar
 ```
 
-**✅** La matrice RBAC du §3 de la v2 est respectée (401 / 403 / 200 / 403 / 201) et `BUILD SUCCESS`.
-**⛔** Les GET ne sont plus publics : c'est voulu (v2 §2.3, écart 2), le front ne peut plus lire les données — la démo passe par `curl`.
-**⛔** `401` avec un jeton valide = `issuer` différent : utiliser **le même nom d'hôte** (`localhost`) pour obtenir le jeton et configurer `issuer-uri`.
-**⛔** Tests `@WebMvcTest` existants en 401/403 : ajouter `@AutoConfigureMockMvc(addFilters = false)` sur les tests **métier**.
-📸 `docs/preuves/p05-jwt-rbac/` : les cinq codes, extrait de `ServletSecurityConfiguration` et de `SecurityConfig`.
+Puis, dans un second terminal :
+
+| Commande | Attendu | Mesuré le 10/11 |
+|---|---|---|
+| `curl -i http://localhost:8761/eureka/apps` | refusé | **401** |
+| `curl -i -u eureka:eureka-pass http://localhost:8761/eureka/apps` | autorisé | **200** |
+| `curl -i -u eureka:faux http://localhost:8761/eureka/apps` | refusé | **401** |
+| `curl -i http://localhost:8761/` (console) | refusé | **401** |
+| `curl -i http://localhost:8761/actuator/health` | public | **200** |
+| `curl -i -u eureka:eureka-pass http://localhost:8761/actuator/env` | masqué | **404** |
+
+Puis démarrer `customers` et vérifier qu'il **s'enregistre toujours** :
+`registration status: 204` dans son log, et dans le log du discovery
+`Registered instance CUSTOMERS-SERVICE/… with status UP`.
+`curl -i http://localhost:8081/actuator/env` → **404**, `/actuator/health` → **200**.
+
+**Non-régression** : `./mvnw -B verify` → `BUILD SUCCESS` (32 tests, 0 échec).
+
+### Captures 📸 (`docs/preuves/p08-durcissement/`) — **à prendre**
+
+| Fichier | Quoi |
+|---|---|
+| `01-actuator.png` | `actuator/env` = 404 à côté de `actuator/health` = 200 |
+| `02-eureka-auth.png` | `eureka/apps` 401 sans identifiants, 200 avec |
+| `03-services-up.png` | le service toujours `UP` dans la console Eureka |
+
+### Pièges et limite à assumer
+
+**⛔** Les services disparaissent d'Eureka → `EUREKA_PASSWORD` non défini pour **un seul** processus,
+ou CSRF non exclu de `/eureka/**`.
+**⛔** Conséquence assumée : Prometheus/Grafana (hors périmètre) ne peuvent plus scraper `/actuator/prometheus`.
+**À écrire dans le rapport** : HTTP Basic sur l'annuaire reste une protection **faible** (identifiants statiques,
+sans rotation, sans TLS en local) ; l'idéal serait mTLS vers Eureka.
 
 ---
 
-## P6 — TLS, mTLS et autorisation par identité de service (🅱️, 3 j) — 🟨 partiel
+## P9 — Tests automatisés et script de contrôle · ⬜ À FAIRE (1 j, 🅰️ + 🅱️)
 
-Acquis de la phase 7 : profil `tls`, HTTPS, gateway faisant confiance à la CA, mTLS `client-auth: need`.
-Reste, en v2 §6.2 à §6.5 :
-1. un certificat **`rogue-client`** dans `scripts/pki/generate.sh` (CA valide, CN non autorisé) ;
-2. l'enregistrement Eureka par **nom d'hôte** avec port sécurisé (`prefer-ip-address: false`, `secure-port-enabled: true`, `non-secure-port-enabled: false`) ;
-3. `petclinic.security.mtls-required` et `allowed-callers: api-gateway` dans les blocs `tls` ;
-4. les **cinq** tests du palier 3 :
+**But** : transformer la matrice de vérification en **preuve reproductible**, utilisable en démonstration
+et par le correcteur.
+
+### 9.1 `scripts/security-smoke.sh`
+
+Créer le script (contenu complet dans `GuideV2!!!.md` §9.1). Il vérifie douze points et **sort en code non nul**
+si une ligne échoue :
+
+| Groupe | Vérifications |
+|---|---|
+| RBAC via le gateway | 401 sans jeton · 403 `carol` · 200 `bob` · 403 POST `bob` · 201 POST `alice` |
+| Scénario P7 | `dossier` 200 avec `alice`, 401 sans jeton |
+| Durcissement P8 | `/actuator/env` = 404 |
+| mTLS direct | sans certificat → `000` · certificat gateway sans jeton → 401 · avec jeton → 200 · `rogue-client` → **403** |
 
 ```bash
-curl --cacert secrets/ca.pem -i https://localhost:8081/owners                                  # (1) handshake refusé
-curl --cacert secrets/ca.pem --cert secrets/api-gateway.crt --key secrets/api-gateway.key -i https://localhost:8081/owners          # (2) 401
-curl ... --cert secrets/api-gateway.crt --key secrets/api-gateway.key -H "Authorization: Bearer $TOKEN" -i https://localhost:8081/owners  # (3) 200
-curl ... --cert secrets/rogue-client.crt  --key secrets/rogue-client.key  -H "Authorization: Bearer $TOKEN" -i https://localhost:8081/owners  # (4) 403
-curl -i -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/customer/owners            # (5) 200
+chmod +x scripts/security-smoke.sh
+export PKI_DIR="$(pwd)/secrets"
+./scripts/security-smoke.sh; echo "code de sortie : $?"
 ```
 
-**✅** Les cas (3) et (4) montrent la différence entre **authentifier** un service (mTLS) et **l'autoriser** (liste blanche de CN).
-**⛔** `lb://` appelle `http://` : l'instance s'est enregistrée sans port sécurisé.
-**⛔** `PKIX path building failed` : la CA n'est pas dans le truststore du client qui échoue.
-📸 `docs/preuves/p06-mtls/` : les cinq commandes, liste Eureka en `https`.
+Lecture du résultat : chaque ligne `OK ...` est une preuve ; toute ligne `FAIL` indique la valeur attendue
+et la valeur obtenue. `000` signifie « pas de réponse HTTP » : c'est le refus de handshake, donc un succès du test.
+
+### 9.2 Tests JUnit de sécurité (au moins un par service)
+
+Ajouter `spring-boot-starter-security-test` en scope `test` (Spring Boot 4), puis, dans un
+`@SpringBootTest` + `@AutoConfigureMockMvc` **avec filtres actifs** (contrairement aux tests métier de P5.3) :
+
+```java
+mockMvc.perform(get("/owners")).andExpect(status().isUnauthorized());
+mockMvc.perform(get("/owners").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_viewer"))))
+       .andExpect(status().isOk());
+mockMvc.perform(post("/owners").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_viewer")))
+       .contentType(APPLICATION_JSON).content(json)).andExpect(status().isForbidden());
+```
+
+> Ne jamais réutiliser un test `addFilters = false` pour « prouver » la sécurité : il ne teste rien des filtres.
+
+### Captures 📸 (`docs/preuves/p09-tests/`)
+
+| Fichier | Quoi |
+|---|---|
+| `01-smoke.png` | le script entièrement `OK` (les 12 lignes visibles) |
+| `02-mvn-test.png` | `Tests run: …` + `BUILD SUCCESS` |
+| `03-junit-securite.png` | extrait d'un test de sécurité (401/200/403) |
+
+### Critère de sortie
+
+**✅** `./mvnw -B test` vert **et** `security-smoke.sh` sans aucun `FAIL` (code de sortie 0).
 
 ---
 
-## P7 — Scénario `dossier` à 3 microservices (🅰️ gateway + 🅱️ client mTLS, 1 j) — ⬜
+## P10 — Rapport · ⬜ À FAIRE (17 → 22/11, 🅰️ + 🅱️)
 
-**Exigence E3 de l'énoncé** : une requête cliente fait collaborer **les trois** services.
+**But** : livrable 1 de l'énoncé (E5). **Neuf chapitres**, exactement ceux qui sont demandés — pas les
+douze chapitres de l'ancien plan.
 
-`GET /api/gateway/owners/{id}/dossier` → le gateway interroge `customers` (propriétaire + animaux), `visits` (visites) **et** `vets`, puis assemble la réponse. Chaque appel porte le certificat du gateway (identité de service) **et** le jeton de l'utilisateur (identité + rôles).
+| # | Chapitre | Contenu | Rédige |
+|---|---|---|---|
+| 1 | Introduction et problématique | authentification **vs** autorisation, Zero Trust, constats « avant » de P2 | A |
+| 2 | **Solutions existantes** | mTLS, JWT, OAuth2/OIDC, API keys, service mesh/SPIFFE ; RBAC, ABAC, PBAC, ReBAC ; produits (Keycloak, Spring Authorization Server, Auth0, Cognito, Istio, SPIRE, OPA, Cerbos, OpenFGA, SpiceDB) | A + B |
+| 3 | **Critères de décision et comparaison** | les tableaux de `GuideV2!!!.md` §8.3, **vérifiés, complétés et sourcés** | A + B |
+| 4 | **Architecture du module** | schéma de P6/P7, diagramme de séquence du `dossier`, découpage `spring-petclinic-security` | A |
+| 5 | **Fonctionnement des composants** | Keycloak, validation JWT, filtre d'identité de service, PKI, gateway, Eureka | A (identité) / B (transport) |
+| 6 | **Installation et configuration** | le pas-à-pas reproductible de P3 à P9 (c'est le cœur de « mise en place ») | B |
+| 7 | **Validation** | tableaux 401/403/200, mTLS accepté/refusé, sortie du script | A + B |
+| 8 | **Avantages et inconvénients** | performance (double validation), complexité, limites | A + B |
+| 9 | Conclusion et perspectives | — | A + B |
 
-À produire (v2 §7.1 et §7.2) : `VetsServiceClient`, `OwnerDossier`, `DossierController` (classe distincte pour ne pas casser `ApiGatewayControllerTest`), `MtlsHttpClientFactory` + bean `loadBalancedWebClientBuilder` avec `ServerBearerExchangeFilterFunction`.
+### Méthode de travail (4 jours)
 
-**✅** `200` avec les données des trois services ; `401` sans jeton ; `403` avec `carol` ; les journaux des services montrent l'appel en HTTPS avec CN `api-gateway`.
-**⛔** `vets` vide : la route `vets` n'est pas passée en `https` (voir P6).
-📸 `docs/preuves/p07-dossier/` : réponse JSON, journaux des trois services, diagramme de séquence (schéma central du rapport).
+1. **Jour 1** : chapitres 1, 2, 3 (état de l'art et comparaisons) — ce sont les plus longs, commencer par eux.
+2. **Jour 2** : chapitres 4 et 5 en s'appuyant sur les figures déjà capturées.
+3. **Jour 3** : chapitre 6 (installation) en **rejouant** le pas-à-pas depuis un dossier propre : ce qui manque
+   est un bug de la procédure, donc une correction à reporter dans le dépôt.
+4. **Jour 4** : chapitre 7 (validation), 8, 9, références, relecture croisée.
+
+### Règles de preuve
+
+- Chaque affirmation de sécurité renvoie à **une figure ou une sortie de commande**.
+- Figures **numérotées, légendées et citées** dans le texte.
+- **Aucune capture** ne montre un mot de passe, un jeton réel ou une clé (flouter avec `Win + Maj + S` → éditeur).
+- Tableau avant/après de `GuideV2!!!.md` §8.2 à reprendre tel quel : c'est le cœur du chapitre 7.
+- Limites à assumer (§8.4) : front sans écran de connexion, Keycloak en mode dev, CA auto-signée sans révocation,
+  jetons relayés sans contrôle d'audience, Eureka en Basic.
+
+### Critère de sortie
+
+**✅** Les 9 chapitres existent, chaque affirmation renvoie à une preuve, les deux noms et le nom du module
+figurent en page de garde.
 
 ---
 
-## P8 — Durcissement minimal (🅰️, 30 min) — ✅ FAIT le 10/11/2026
+## P11 — Archive importable dans IntelliJ · ⬜ À FAIRE (22/11, 🅰️ + 🅱️)
 
-Seul ce qui renforce l'authentification interservices a été fait (v2 §P8) :
+**But** : livrable 2 (E6) — une archive Java que le correcteur ouvre et fait tourner **sans vous**.
 
-1. **Actuator** : `management.endpoints.web.exposure.include: health,info` + `management.endpoint.health.show-details: never`
-   sur les **cinq** applications (gateway, customers, vets, visits, discovery) ; `tracing`/`zipkin` conservé.
-2. **Annuaire protégé** : dépendance `spring-boot-starter-security` et classe `EurekaSecurityConfig` dans `discovery-server`
-   (CSRF ignoré sur `/eureka/**`, `httpBasic`, `/actuator/health` et `/actuator/info` publics), identifiants
-   `EUREKA_USER` / `EUREKA_PASSWORD` (défaut `eureka` / `eureka-pass`) intégrés au `defaultZone` des quatre applications
-   et de leurs blocs `docker`.
-3. `scripts/dev-start.sh` et `scripts/run_all.sh` exportent ces identifiants : **tous** les processus en héritent.
+### 11.1 Produire l'archive
 
-**Mesures du 10/11/2026** (discovery sur 8761, customers sur 8081) :
+```bash
+git switch main && git pull
+git archive --format=zip --prefix=petclinic-secure/ -o petclinic-secure-NOM1-NOM2.zip HEAD
+```
 
-| Test | Résultat attendu | Obtenu |
+`git archive` n'exporte que les fichiers **suivis** : ni `target/`, ni `secrets/`, ni `.idea/`.
+Les modules hors build (config-server, genai, admin) sont exclus par les règles `export-ignore` de P1.
+
+### 11.2 Ajouter `LISEZMOI-RENDU.md` et `scripts/run-secure.sh`
+
+Le `LISEZMOI-RENDU.md` (à la racine, inclus dans le ZIP) doit contenir, dans cet ordre :
+
+```bash
+# 1. Importer dans IntelliJ : File > Open > pom.xml > Open as Project
+# 2. Construire
+./mvnw -B -DskipTests package
+# 3. Certificats de démonstration
+export PKI_PASS='demo-local'; ./scripts/pki/generate.sh
+# 4. Keycloak (realm importé automatiquement)
+docker compose -f docker-compose.security.yml up -d
+# 5. Pile sécurisée + contrôles
+export PKI_DIR="$(pwd)/secrets" EUREKA_PASSWORD='demo-eureka'
+./scripts/run-secure.sh
+./scripts/security-smoke.sh
+```
+
+Comptes : `alice` / `alice-pass` (staff), `bob` / `bob-pass` (viewer), `carol` / `carol-pass` (aucun rôle).
+
+`scripts/run-secure.sh` (contenu dans `GuideV2!!!.md` §9.3) démarre : discovery, puis les 3 services en `tls`
+(`production,tls` pour vets), puis le gateway — avec `PKI_PASS` et `EUREKA_PASSWORD` obligatoires.
+
+### 11.3 Test à froid (obligatoire, ~1 h)
+
+1. Décompresser le ZIP dans un **dossier vide** (pas dans le dépôt).
+2. IntelliJ : `File → Open…` → sélectionner le `pom.xml` décompressé → *Open as Project* → attendre l'import.
+3. Dans IntelliJ, créer **une configuration par module** : `Run → Edit Configurations… → + → Application`
+   (ou *Spring Boot* en Ultimate) → classe principale `…ServiceApplication` → onglet *Environment variables* :
+
+```
+PKI_PASS=demo-local;PKI_DIR=C:/Users/<vous>/petclinic-secure/secrets;SERVER_PORT=8081;EUREKA_PASSWORD=demo-eureka
+```
+
+   (chemin **absolu**, avec des `/`). Pour `vets`, ajouter `SPRING_PROFILES_ACTIVE=tls` → en réalité
+   `production,tls` (le profil `production` active le cache).
+4. Dérouler le `LISEZMOI-RENDU.md` **tel quel**, sans rien compléter de mémoire.
+5. Toute correction faite pendant ce test se fait **dans le dépôt**, jamais dans le ZIP ; on régénère l'archive ensuite.
+
+### Critère de sortie
+
+**✅** L'archive s'ouvre dans IntelliJ, se compile, et `security-smoke.sh` passe **sans intervention manuelle
+hors du LISEZMOI**.
+
+---
+
+## P12 — Présentation · ⬜ À FAIRE (date annoncée par l'encadrant, 🅰️ + 🅱️)
+
+**Démonstration de 10 minutes**, dans cet ordre (préparer un terminal avec les variables déjà exportées) :
+
+1. `./scripts/security-smoke.sh` → toutes les lignes `OK` (30 s).
+2. Jeton `alice` → `GET /api/gateway/owners/1/dossier` → **200** avec les trois services (1 min).
+3. Même appel **sans jeton** → 401 ; avec `carol` → 403 ; `POST` de `bob` → 403 (2 min).
+4. Appel **direct** à `customers` : sans certificat (échec), avec le certificat du gateway (200),
+   avec `rogue-client` (**403**) (3 min).
+5. Schéma d'architecture + tableau des compromis (3 min).
+
+**Plan B** : captures et **vidéo de secours** de la démo, si le réseau ou Docker fait défaut le jour J.
+
+### Questions probables (chacun doit savoir répondre sur la partie de l'autre)
+
+- Pourquoi mTLS **et** JWT ? (le premier authentifie le service, le second l'utilisateur et ses rôles ;
+  JWT seul ne protège pas contre l'appel direct à un service.)
+- Pourquoi valider le JWT dans **chaque** service et pas seulement au gateway ? (Zero Trust, défense en profondeur.)
+- Pourquoi RBAC et pas ABAC/PBAC/ReBAC ? Que changerait ReBAC ici ? (« propriétaire de l'animal » est une relation.)
+- Différence entre **authentifier** et **autoriser** un service ? (mTLS vs liste blanche de CN.)
+- Pourquoi un SAN dans le certificat ? Que change une CA de projet ?
+- Que se passe-t-il si Keycloak tombe ? (les jetons valides restent vérifiables via les clés en cache,
+  mais plus aucun nouveau jeton n'est émis.)
+- Quelles sont vos limites ? (voir le chapitre 8 du rapport.)
+
+---
+
+## Annexe A — Dépannage rapide
+
+| Symptôme | Cause probable | Action |
 |---|---|---|
-| `curl -i http://localhost:8761/eureka/apps` | accès refusé | **401** |
-| `curl -u eureka:eureka-pass …/eureka/apps` | lecture autorisée | **200** |
-| `curl -u eureka:faux …/eureka/apps` | mot de passe refusé | **401** |
-| `curl -i http://localhost:8761/` (console Eureka) | accès refusé | **401** |
-| `curl …/actuator/health` | public (scripts) | **200** |
-| `curl …/actuator/env` et `/actuator/prometheus` | masqué | **404** |
-| Enregistrement de `customers` | toujours enregistré | `registration status: 204`, instance `UP` |
-| `./mvnw -pl spring-petclinic-discovery-server test` | vert | 1 test, **0 échec** |
-
-**⛔** Services disparus d'Eureka : `EUREKA_PASSWORD` manquant sur un seul processus, ou CSRF non exclu de `/eureka/**`.
-**⛔** Conséquence assumée : Prometheus/Grafana (hors périmètre v2) ne peuvent plus scraper `/actuator/prometheus`.
-À écrire dans le rapport : l'authentification basique de l'annuaire reste une protection **faible** (identifiants statiques, sans rotation, sans TLS en local).
-📸 `docs/preuves/p08-durcissement/` : les lignes du tableau ci-dessus (à capturer avant la démonstration).
-
----
-
-## P9 — Tests automatisés et script de contrôle (🅰️ + 🅱️, 1 j) — ⬜
-
-1. `scripts/security-smoke.sh` (v2 §9.1) : vérifie toute la matrice — 401/403/200/403/201 sur le gateway, `dossier` 200/401, `actuator/env` masqué, et les quatre cas mTLS (`000`, 401, 200, 403). Code de sortie non nul si une ligne échoue.
-2. Tests JUnit de sécurité, **au moins un par service** (v2 §9.2) : `@SpringBootTest` + `@AutoConfigureMockMvc` (filtres **actifs**), `jwt()` de `spring-security-test`.
-
-**✅** `./mvnw -B test` vert **et** `security-smoke.sh` entièrement `OK`.
-**⛔** Ne pas réutiliser les tests métier (`addFilters = false`) pour prouver la sécurité : ils ne testent rien des filtres.
-📸 `docs/preuves/p09-tests/` : sortie du script, sortie Maven.
+| Service qui ne démarre pas : `JwtDecoder` introuvable | `issuer-uri` absent du YAML | ajouter le bloc `spring.security.oauth2.resourceserver.jwt` (P5.3) |
+| Maven ne résout pas le starter OAuth2 | nom de starter Spring Boot 4 | `spring-boot-starter-security-oauth2-resource-server` |
+| `Account is not fully set up` (Keycloak) | prénom/nom/e-mail manquants | le JSON d'import les fournit ; sinon les saisir |
+| 401 avec un jeton valide | `iss` ≠ `issuer-uri` | même URL (`localhost`) des deux côtés |
+| `openssl req` : sujet déformé, chemin Windows | conversion de chemin Git Bash | `export MSYS_NO_PATHCONV=1` |
+| `PKIX path building failed` | CA absente du truststore | `trusted-x509-certificates` ou truststore JVM |
+| `handshake_failure` / `certificate_unknown` | pas de certificat client ou mauvaise CA | vérifier `api-gateway.p12` et `truststore.p12` |
+| `No subject alternative names matching` | nom d'hôte absent du SAN | régénérer avec le bon `DNS:`/`IP:` |
+| `lb://` appelle `http://` | instance sans port sécurisé | `secure-port-enabled: true`, `non-secure-port-enabled: false` |
+| 403 alors que le certificat du gateway est présenté | CN absent de `allowed-callers` | vérifier `petclinic.security.allowed-callers` |
+| Services disparus d'Eureka | identifiants manquants | `EUREKA_PASSWORD` défini pour **tous** les processus |
+| Tests `@WebMvcTest` en 401/403 | filtres actifs | `@AutoConfigureMockMvc(addFilters = false)` sur les tests métier |
+| `vets` : profil `production` perdu | `SPRING_PROFILES_ACTIVE` remplace le YAML | lancer avec `production,tls` |
+| `PKI_DIR` introuvable sous IntelliJ | répertoire de travail différent | chemin absolu avec des `/` |
 
 ---
 
-## P10 — Rapport (🅰️ + 🅱️, 17 → 22/11) — ⬜
+## Annexe B — Planning restant
 
-Plan en **9 chapitres**, exactement ceux de l'énoncé (v2 §8.1) : introduction et problématique (Zero Trust, constats P2) ; solutions existantes ; critères de décision et comparaison ; architecture du module ; fonctionnement des composants ; **installation et configuration** ; validation ; avantages et inconvénients ; conclusion.
-
-Les tableaux comparatifs (mTLS, JWT, OAuth2/OIDC, API key, service mesh / RBAC, ABAC, PBAC, ReBAC) et la grille de critères pour l'architecte sont **pré-remplis** en v2 §8.3 : il faut les vérifier, les compléter et les sourcer — pas les recopier tels quels.
-
-**✅** Chaque affirmation de sécurité renvoie à une figure ou une sortie de commande ; figures numérotées et citées ; **aucune capture ne montre un mot de passe, un jeton réel ou une clé**.
-**⛔** Le « 30-40 pages » et le « LaTeX » ne figurent pas dans l'énoncé : viser 25-35 pages denses, format libre (LaTeX possible).
-Les limites de la v2 §8.4 sont à assumer telles quelles (front sans écran de connexion, Keycloak en mode dev, CA sans révocation, jetons relayés sans contrôle d'audience, Eureka en basic).
-
----
-
-## P11 — Archive importable dans IntelliJ (🅰️ + 🅱️, 22/11) — ⬜
-
-`git archive --format=zip --prefix=petclinic-secure/ -o petclinic-secure-NOM1-NOM2.zip HEAD` : n'exporte que les fichiers suivis — ni `target/`, ni `secrets/`, ni `.idea/`. Ajouter `LISEZMOI-RENDU.md` et `scripts/run-secure.sh` (v2 §9.2 à §9.4).
-
-**✅ Test à froid obligatoire (≈ 1 h)** : décompresser dans un dossier vide et dérouler le `LISEZMOI-RENDU.md` tel quel.
-**⛔** Toute correction faite pendant le test à froid se fait **dans le dépôt**, jamais dans l'archive.
-**⛔** `PKI_DIR` doit être un chemin **absolu avec des `/`** sous IntelliJ.
+| Jour | 🅰️ A | 🅱️ B |
+|---|---|---|
+| Mar 10 (fait) | P8 (durcissement) ✅ | — |
+| Mer 11 | **P4** Keycloak + jetons | **P3** `rogue-client` + P6.1 |
+| Jeu 12 | **P5** module + services | **P6** palier 1 sur les 3 services |
+| Ven 13 | **P5** gateway | **P6** palier 2 |
+| Sam 14 – Dim 15 | tampon · **P5** finitions | **P6** palier 3 + liste blanche |
+| Lun 16 | **P7** `dossier` | **P7** client mTLS |
+| Mar 17 | **P9** tests | **P9** `security-smoke.sh` |
+| Mer 18 → Sam 21 | **P10** rapport (ch. 1-5 puis relecture) | **P10** rapport (ch. 6-9) |
+| Dim 22 | **P11** archive + test à froid | relecture croisée |
+| Lun 23 | **P12** préparation + **dépôt Moodle** | idem |
 
 ---
 
-## P12 — Présentation (🅰️ + 🅱️, date communiquée par l'encadrant) — ⬜
+## Annexe C — Check-list avant dépôt
 
-Démonstration de 10 minutes (v2 §10) : (1) `security-smoke.sh` vert ; (2) `dossier` avec `alice` → 200 ; (3) sans jeton → 401, `carol` → 403, POST de `bob` → 403 ; (4) appel direct à `customers` sans certificat (échec), avec celui du gateway (200), avec `rogue-client` (403) ; (5) architecture et tableau des compromis. Prévoir **captures et vidéo de secours**.
-
-Les questions probables et les réponses attendues sont en v2 §10 — chacun doit savoir répondre sur la partie de l'autre (notamment : pourquoi mTLS **et** JWT, et pourquoi valider le JWT dans chaque service).
-
----
-
-## Check-list finale (avant dépôt Moodle)
-
-**Exigences officielles**
+**Exigences**
 - [ ] E1 : OIDC/JWT + mTLS + RBAC implémentés **et justifiés** (P4, P5, P6)
 - [ ] E2 : chaque service valide le JWT **et** exige un certificat client autorisé (P5, P6)
-- [ ] E3 : scénario `dossier` fonctionnel avec les 3 microservices (P7)
-- [ ] E4 : avantages/inconvénients de chaque mécanisme **comparés aux existants**, avec critères de décision (P10)
-- [ ] E5 : rapport avec solutions existantes, architecture, composants, avantages/inconvénients **et installation/configuration**
-- [ ] E6 : archive Java **ouverte et testée à froid** dans IntelliJ (P11)
-- [ ] E7 : dépôt Moodle **avant le 24/11 minuit** (visé : le 23 au soir)
+- [ ] E3 : scénario `dossier` fonctionnel avec les 3 services (P7)
+- [ ] E4 : avantages/inconvénients de **chaque** mécanisme, comparés aux existants, avec critères de décision (P10)
+- [ ] E5 : rapport avec solutions existantes, architecture, composants, avantages/inconvénients **et installation** (P10)
+- [ ] E6 : archive **ouverte et testée à froid** dans IntelliJ (P11)
+- [ ] E7 : dépôt Moodle **avant le 24/11 minuit** (visé : 23 au soir)
 
 **Qualité**
 - [ ] `./mvnw -B clean verify` → `BUILD SUCCESS`
-- [ ] `security-smoke.sh` → toutes les lignes `OK`
+- [ ] `./scripts/security-smoke.sh` → aucun `FAIL`
 - [ ] `git log -p | grep -iE "password|PRIVATE KEY"` ne renvoie que des mots de passe de démonstration documentés
-- [ ] Captures sans secret, preuves rangées dans `docs/preuves/pXX-…/`
-- [ ] Keycloak arrêté après la démonstration (`docker compose -f docker-compose.security.yml down`)
-
----
-
-## Annexe — Dépannage
-
-Le tableau de dépannage complet (24 symptômes, de `JwtDecoder` introuvable à `No subject alternative names matching`) est dans **`GuideV2!!!.md`, section « Annexe — Dépannage rapide »**. S'y référer plutôt qu'à l'ancienne annexe de ce guide, qui mentionnait RDS, ECR et EC2 — désormais hors périmètre.
+- [ ] Captures sans secret, rangées dans `docs/preuves/pXX-…/`
+- [ ] Keycloak arrêté après la démonstration : `docker compose -f docker-compose.security.yml down`
