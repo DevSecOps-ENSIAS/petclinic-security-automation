@@ -1,0 +1,6 @@
+# Code front tiers, fichiers générés et documentation : hors périmètre SAST
+**/static/**
+**/webjars/**
+**/target/
+docs/
+*.md
