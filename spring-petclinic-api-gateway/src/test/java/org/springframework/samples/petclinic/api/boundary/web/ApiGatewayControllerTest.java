@@ -1,33 +1,39 @@
 package org.springframework.samples.petclinic.api.boundary.web;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JAutoConfiguration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.samples.petclinic.api.application.CustomersServiceClient;
 import org.springframework.samples.petclinic.api.application.VisitsServiceClient;
+import org.springframework.samples.petclinic.api.config.SecurityConfig;
 import org.springframework.samples.petclinic.api.dto.OwnerDetails;
 import org.springframework.samples.petclinic.api.dto.PetDetails;
 import org.springframework.samples.petclinic.api.dto.VisitDetails;
 import org.springframework.samples.petclinic.api.dto.Visits;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
-import org.springframework.context.annotation.Import;
-import org.springframework.samples.petclinic.api.config.SecurityConfig;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.net.ConnectException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @WebFluxTest(controllers = ApiGatewayController.class)
 @Import({ReactiveResilience4JAutoConfiguration.class, CircuitBreakerConfiguration.class, SecurityConfig.class})
 class ApiGatewayControllerTest {
+
+    /** Jeton accepté par le décodeur simulé : rôle staff, donc lecture et écriture autorisées. */
+    private static final String JETON = "jeton-test";
 
     @MockitoBean
     private ReactiveJwtDecoder jwtDecoder;
@@ -41,6 +47,27 @@ class ApiGatewayControllerTest {
     @Autowired
     private WebTestClient client;
 
+    /**
+     * Le gateway n'accepte plus aucune requête anonyme : chaque appel porte un jeton,
+     * et le décodeur simulé le traduit en jeton Keycloak porteur du rôle attendu.
+     */
+    @BeforeEach
+    void authentifierLeDecodeur() {
+        Mockito.when(jwtDecoder.decode(JETON)).thenReturn(Mono.just(
+            Jwt.withTokenValue(JETON)
+                .header("alg", "none")
+                .subject("alice")
+                .claim("realm_access", Map.of("roles", List.of("staff")))
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(300))
+                .build()));
+    }
+
+    private WebTestClient withUser() {
+        return client.mutate()
+            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + JETON)
+            .build();
+    }
 
     @Test
     void getOwnerDetails_withAvailableVisitsService() {
@@ -62,7 +89,7 @@ class ApiGatewayControllerTest {
             .when(visitsServiceClient.getVisitsForPets(Collections.singletonList(cat.id())))
             .thenReturn(Mono.just(visits));
 
-        client.get()
+        withUser().get()
             .uri("/api/gateway/owners/1")
             .exchange()
             .expectStatus().isOk()
@@ -80,7 +107,7 @@ class ApiGatewayControllerTest {
             .when(customersServiceClient.getOwner(1))
             .thenReturn(Mono.just(owner));
 
-        client.get()
+        withUser().get()
             .uri("/api/gateway/owners/1")
             .exchange()
             .expectStatus().isOk()
@@ -111,7 +138,7 @@ class ApiGatewayControllerTest {
             .when(visitsServiceClient.getVisitsForPets(Collections.singletonList(cat.id())))
             .thenReturn(Mono.error(new ConnectException("Simulate error")));
 
-        client.get()
+        withUser().get()
             .uri("/api/gateway/owners/1")
             .exchange()
             .expectStatus().isOk()
