@@ -1,0 +1,9 @@
+démarré : discovery (log : logs/discovery.log)
+attente Eureka (25 s)...
+démarré : customers (log : logs/customers.log)
+démarré : visits (log : logs/visits.log)
+démarré : vets (log : logs/vets.log)
+attente des services (40 s)...
+démarré : gateway (log : logs/gateway.log)
+attente du gateway (30 s)...
+Prêt. Test : curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8080/
