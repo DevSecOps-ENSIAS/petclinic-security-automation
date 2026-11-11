@@ -29,6 +29,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.samples</groupId>
+            <artifactId>spring-petclinic-security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>

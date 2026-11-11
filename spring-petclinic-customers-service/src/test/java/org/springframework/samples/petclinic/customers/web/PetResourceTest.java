@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.samples.petclinic.customers.model.Owner;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  * @author Maciej Szarlinski
  */
 @WebMvcTest(PetResource.class)
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class PetResourceTest {
 
