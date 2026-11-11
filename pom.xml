@@ -27,6 +27,7 @@
           - spring-petclinic-admin-server   : Jolokia (accès JMX distant) + Chaos Monkey.
     -->
     <modules>
+        <module>spring-petclinic-security</module>
         <module>spring-petclinic-customers-service</module>
         <module>spring-petclinic-vets-service</module>
         <module>spring-petclinic-visits-service</module>
@@ -102,6 +103,17 @@
                 <sonar.organization>devsecops-ensias</sonar.organization>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <sonar.exclusions>**/static/**,**/*.scss,**/webjars/**</sonar.exclusions>
+                <!--
+                    S4502 (CSRF désactivé) : nos API sont stateless et authentifiées par jeton Bearer,
+                    sans session ni cookie qu'un navigateur renverrait. Le risque CSRF est nul, la règle
+                    est un faux positif pour ce type d'architecture (justification dans le code de
+                    ServletSecurityConfiguration et dans docs/preuves/p05-jwt-rbac/).
+                -->
+                <sonar.issue.ignore.multicriteria>e1,e2</sonar.issue.ignore.multicriteria>
+                <sonar.issue.ignore.multicriteria.e1.ruleKey>java:S4502</sonar.issue.ignore.multicriteria.e1.ruleKey>
+                <sonar.issue.ignore.multicriteria.e1.resourceKey>**/ServletSecurityConfiguration.java</sonar.issue.ignore.multicriteria.e1.resourceKey>
+                <sonar.issue.ignore.multicriteria.e2.ruleKey>java:S4502</sonar.issue.ignore.multicriteria.e2.ruleKey>
+                <sonar.issue.ignore.multicriteria.e2.resourceKey>**/SecurityConfig.java</sonar.issue.ignore.multicriteria.e2.resourceKey>
             </properties>
             <build>
                 <plugins>

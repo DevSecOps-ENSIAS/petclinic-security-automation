@@ -9,7 +9,11 @@ spring:
     init:
       schema-locations: classpath*:db/hsqldb/schema.sql
       data-locations: classpath*:db/hsqldb/data.sql
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:http://localhost:8180/realms/petclinic}
 # 0 = port aléatoire en local (découverte via Eureka), surchargeable par SERVER_PORT
 server:
   port: ${SERVER_PORT:0}

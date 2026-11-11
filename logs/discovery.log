@@ -6,51 +6,72 @@
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
 
- :: Spring Boot ::                (v4.0.1)
+ :: Spring Boot ::                (v4.0.9)
 
-2026-11-08T22:35:22.745Z  INFO 26172 --- [discovery-server] [           main] o.s.s.p.d.DiscoveryServerApplication     : Starting DiscoveryServerApplication v4.0.1 using Java 21.0.11 with PID 26172 (C:\Users\akram\Downloads\petclinic-security-automation\spring-petclinic-discovery-server\target\spring-petclinic-discovery-server-4.0.1.jar started by akram in C:\Users\akram\Downloads\petclinic-security-automation)
-2026-11-08T22:35:22.758Z  INFO 26172 --- [discovery-server] [           main] o.s.s.p.d.DiscoveryServerApplication     : No active profile set, falling back to 1 default profile: "default"
-2026-11-08T22:35:26.535Z  INFO 26172 --- [discovery-server] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=bdc6685d-619e-390e-89c1-96d245c0cd91
-2026-11-08T22:35:28.109Z  INFO 26172 --- [discovery-server] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8761 (http)
-2026-11-08T22:35:28.160Z  INFO 26172 --- [discovery-server] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-11-08T22:35:28.161Z  INFO 26172 --- [discovery-server] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.15]
-2026-11-08T22:35:28.290Z  INFO 26172 --- [discovery-server] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 5314 ms
-2026-11-08T22:35:34.020Z  INFO 26172 --- [discovery-server] [           main] c.n.d.provider.DiscoveryJerseyProvider   : Using JSON encoding codec LegacyJacksonJson
-2026-11-08T22:35:34.021Z  INFO 26172 --- [discovery-server] [           main] c.n.d.provider.DiscoveryJerseyProvider   : Using JSON decoding codec LegacyJacksonJson
-2026-11-08T22:35:34.700Z  INFO 26172 --- [discovery-server] [           main] c.n.d.provider.DiscoveryJerseyProvider   : Using XML encoding codec XStreamXml
-2026-11-08T22:35:34.700Z  INFO 26172 --- [discovery-server] [           main] c.n.d.provider.DiscoveryJerseyProvider   : Using XML decoding codec XStreamXml
-2026-11-08T22:35:35.277Z  INFO 26172 --- [discovery-server] [           main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
-2026-11-08T22:35:37.434Z  INFO 26172 --- [discovery-server] [           main] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
-2026-11-08T22:35:39.282Z  INFO 26172 --- [discovery-server] [           main] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
-2026-11-08T22:35:39.406Z  WARN 26172 --- [discovery-server] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
-2026-11-08T22:35:39.469Z  INFO 26172 --- [discovery-server] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
-2026-11-08T22:35:39.529Z  INFO 26172 --- [discovery-server] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
-2026-11-08T22:35:39.529Z  INFO 26172 --- [discovery-server] [           main] com.netflix.discovery.DiscoveryClient    : Client configured to neither register nor query for data.
-2026-11-08T22:35:39.536Z  INFO 26172 --- [discovery-server] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1794177339532 with initial instances count: 0
-2026-11-08T22:35:39.665Z  INFO 26172 --- [discovery-server] [           main] c.n.eureka.DefaultEurekaServerContext    : Initializing ...
-2026-11-08T22:35:39.670Z  WARN 26172 --- [discovery-server] [           main] c.n.eureka.cluster.PeerEurekaNodes       : The replica size seems to be empty. Check the route 53 DNS Registry
-2026-11-08T22:35:39.698Z  INFO 26172 --- [discovery-server] [           main] c.n.e.registry.AbstractInstanceRegistry  : Finished initializing remote region registries. All known remote regions: []
-2026-11-08T22:35:39.698Z  INFO 26172 --- [discovery-server] [           main] c.n.eureka.DefaultEurekaServerContext    : Initialized
-2026-11-08T22:35:39.724Z  INFO 26172 --- [discovery-server] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
-2026-11-08T22:35:39.898Z  INFO 26172 --- [discovery-server] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application DISCOVERY-SERVER with eureka with status UP
-2026-11-08T22:35:39.964Z  INFO 26172 --- [discovery-server] [      Thread-10] o.s.c.n.e.server.EurekaServerBootstrap   : isAws returned false
-2026-11-08T22:35:39.966Z  INFO 26172 --- [discovery-server] [      Thread-10] o.s.c.n.e.server.EurekaServerBootstrap   : Initialized server context
-2026-11-08T22:35:39.966Z  INFO 26172 --- [discovery-server] [      Thread-10] c.n.e.r.PeerAwareInstanceRegistryImpl    : Got 1 instances from neighboring DS node
-2026-11-08T22:35:39.966Z  INFO 26172 --- [discovery-server] [      Thread-10] c.n.e.r.PeerAwareInstanceRegistryImpl    : Renew threshold is: 1
-2026-11-08T22:35:39.966Z  INFO 26172 --- [discovery-server] [      Thread-10] c.n.e.r.PeerAwareInstanceRegistryImpl    : Changing status to UP
-2026-11-08T22:35:39.982Z  INFO 26172 --- [discovery-server] [      Thread-10] e.s.EurekaServerInitializerConfiguration : Started Eureka Server
-2026-11-08T22:35:40.026Z  INFO 26172 --- [discovery-server] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8761 (http) with context path '/'
-2026-11-08T22:35:40.029Z  INFO 26172 --- [discovery-server] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8761
-2026-11-08T22:35:41.044Z  INFO 26172 --- [discovery-server] [           main] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
-2026-11-08T22:35:41.073Z  INFO 26172 --- [discovery-server] [           main] o.s.s.p.d.DiscoveryServerApplication     : Started DiscoveryServerApplication in 21.509 seconds (process running for 23.836)
-2026-11-08T22:36:40.126Z  INFO 26172 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
-2026-11-08T22:36:43.284Z  INFO 26172 --- [discovery-server] [nio-8761-exec-4] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-11-08T22:36:43.285Z  INFO 26172 --- [discovery-server] [nio-8761-exec-4] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-11-08T22:36:43.289Z  INFO 26172 --- [discovery-server] [nio-8761-exec-4] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
-2026-11-08T22:36:47.156Z  INFO 26172 --- [discovery-server] [nio-8761-exec-2] c.n.e.registry.AbstractInstanceRegistry  : Registered instance VISITS-SERVICE/visits-service:6d98958c-a054-439c-a481-dabf4f1c5299 with status UP (replication=false)
-2026-11-08T22:36:47.157Z  INFO 26172 --- [discovery-server] [nio-8761-exec-1] c.n.e.registry.AbstractInstanceRegistry  : Registered instance VETS-SERVICE/vets-service:1222495b-21c4-4661-90d6-cf2baa2060ee with status UP (replication=false)
-2026-11-08T22:36:53.947Z  INFO 26172 --- [discovery-server] [nio-8761-exec-6] c.n.e.registry.AbstractInstanceRegistry  : Registered instance CUSTOMERS-SERVICE/customers-service:975d40b5-d161-49e5-8245-f2cf491dfb91 with status UP (replication=false)
-2026-11-08T22:37:10.294Z  INFO 26172 --- [discovery-server] [io-8761-exec-10] c.n.e.registry.AbstractInstanceRegistry  : Registered instance API-GATEWAY/localhost:api-gateway:8080 with status UP (replication=false)
-2026-11-08T22:37:40.109Z  INFO 26172 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
-2026-11-08T22:38:40.120Z  INFO 26172 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 11ms
-2026-11-08T22:39:40.121Z  INFO 26172 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:06:11.917Z  INFO 26716 --- [discovery-server] [           main] o.s.s.p.d.DiscoveryServerApplication     : Starting DiscoveryServerApplication v4.0.1 using Java 25.0.4.1 with PID 26716 (C:\Users\aitel\OneDrive\Desktop\devsec - petclinic - Copy\spring-petclinic-discovery-server\target\spring-petclinic-discovery-server-4.0.1.jar started by aitel in C:\Users\aitel\OneDrive\Desktop\devsec - petclinic - Copy)
+2026-11-11T19:06:11.925Z  INFO 26716 --- [discovery-server] [           main] o.s.s.p.d.DiscoveryServerApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-11-11T19:06:14.726Z  INFO 26716 --- [discovery-server] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=da96b28a-98ce-3cca-b218-cbf8ca5b386b
+2026-11-11T19:06:15.300Z  INFO 26716 --- [discovery-server] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8761 (http)
+2026-11-11T19:06:15.324Z  INFO 26716 --- [discovery-server] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-11T19:06:15.324Z  INFO 26716 --- [discovery-server] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-11-11T19:06:15.369Z  INFO 26716 --- [discovery-server] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 3274 ms
+2026-11-11T19:06:16.701Z  INFO 26716 --- [discovery-server] [           main] c.n.d.provider.DiscoveryJerseyProvider   : Using JSON encoding codec LegacyJacksonJson
+2026-11-11T19:06:16.702Z  INFO 26716 --- [discovery-server] [           main] c.n.d.provider.DiscoveryJerseyProvider   : Using JSON decoding codec LegacyJacksonJson
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.thoughtworks.xstream.converters.reflection.SunUnsafeReflectionProvider (jar:nested:/C:/Users/aitel/OneDrive/Desktop/devsec%20-%20petclinic%20-%20Copy/spring-petclinic-discovery-server/target/spring-petclinic-discovery-server-4.0.1.jar/!BOOT-INF/lib/xstream-1.4.21.jar!/)
+WARNING: Please consider reporting this to the maintainers of class com.thoughtworks.xstream.converters.reflection.SunUnsafeReflectionProvider
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+2026-11-11T19:06:17.078Z  INFO 26716 --- [discovery-server] [           main] c.n.d.provider.DiscoveryJerseyProvider   : Using XML encoding codec XStreamXml
+2026-11-11T19:06:17.078Z  INFO 26716 --- [discovery-server] [           main] c.n.d.provider.DiscoveryJerseyProvider   : Using XML decoding codec XStreamXml
+2026-11-11T19:06:17.450Z  INFO 26716 --- [discovery-server] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-11-11T19:06:17.798Z  INFO 26716 --- [discovery-server] [           main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-11-11T19:06:19.222Z  INFO 26716 --- [discovery-server] [           main] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:06:20.691Z  INFO 26716 --- [discovery-server] [           main] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:06:20.784Z  WARN 26716 --- [discovery-server] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-11-11T19:06:20.825Z  INFO 26716 --- [discovery-server] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-11-11T19:06:20.864Z  INFO 26716 --- [discovery-server] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-11-11T19:06:20.866Z  INFO 26716 --- [discovery-server] [           main] com.netflix.discovery.DiscoveryClient    : Client configured to neither register nor query for data.
+2026-11-11T19:06:20.869Z  INFO 26716 --- [discovery-server] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1794423980867 with initial instances count: 0
+2026-11-11T19:06:20.929Z  INFO 26716 --- [discovery-server] [           main] c.n.eureka.DefaultEurekaServerContext    : Initializing ...
+2026-11-11T19:06:20.931Z  WARN 26716 --- [discovery-server] [           main] c.n.eureka.cluster.PeerEurekaNodes       : The replica size seems to be empty. Check the route 53 DNS Registry
+2026-11-11T19:06:20.946Z  INFO 26716 --- [discovery-server] [           main] c.n.e.registry.AbstractInstanceRegistry  : Finished initializing remote region registries. All known remote regions: []
+2026-11-11T19:06:20.946Z  INFO 26716 --- [discovery-server] [           main] c.n.eureka.DefaultEurekaServerContext    : Initialized
+2026-11-11T19:06:20.972Z  INFO 26716 --- [discovery-server] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-11-11T19:06:21.053Z  INFO 26716 --- [discovery-server] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application DISCOVERY-SERVER with eureka with status UP
+2026-11-11T19:06:21.071Z  INFO 26716 --- [discovery-server] [      Thread-10] o.s.c.n.e.server.EurekaServerBootstrap   : isAws returned false
+2026-11-11T19:06:21.071Z  INFO 26716 --- [discovery-server] [      Thread-10] o.s.c.n.e.server.EurekaServerBootstrap   : Initialized server context
+2026-11-11T19:06:21.071Z  INFO 26716 --- [discovery-server] [      Thread-10] c.n.e.r.PeerAwareInstanceRegistryImpl    : Got 1 instances from neighboring DS node
+2026-11-11T19:06:21.072Z  INFO 26716 --- [discovery-server] [      Thread-10] c.n.e.r.PeerAwareInstanceRegistryImpl    : Renew threshold is: 1
+2026-11-11T19:06:21.072Z  INFO 26716 --- [discovery-server] [      Thread-10] c.n.e.r.PeerAwareInstanceRegistryImpl    : Changing status to UP
+2026-11-11T19:06:21.076Z  INFO 26716 --- [discovery-server] [      Thread-10] e.s.EurekaServerInitializerConfiguration : Started Eureka Server
+2026-11-11T19:06:21.109Z  INFO 26716 --- [discovery-server] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8761 (http) with context path '/'
+2026-11-11T19:06:21.110Z  INFO 26716 --- [discovery-server] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8761
+2026-11-11T19:06:22.123Z  INFO 26716 --- [discovery-server] [           main] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:06:22.137Z  INFO 26716 --- [discovery-server] [           main] o.s.s.p.d.DiscoveryServerApplication     : Started DiscoveryServerApplication in 12.603 seconds (process running for 14.002)
+2026-11-11T19:07:00.620Z  INFO 26716 --- [discovery-server] [nio-8761-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-11T19:07:00.620Z  INFO 26716 --- [discovery-server] [nio-8761-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-11T19:07:00.621Z  INFO 26716 --- [discovery-server] [nio-8761-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-11-11T19:07:01.551Z  INFO 26716 --- [discovery-server] [nio-8761-exec-2] c.n.e.registry.AbstractInstanceRegistry  : Registered instance VETS-SERVICE/vets-service:fa86ab69-e24d-4039-8b8a-5bdb9fb63407 with status UP (replication=false)
+2026-11-11T19:07:01.781Z  INFO 26716 --- [discovery-server] [nio-8761-exec-4] c.n.e.registry.AbstractInstanceRegistry  : Registered instance VISITS-SERVICE/visits-service:8ac8c4cf-0899-45e6-8be6-db2634a2b5b3 with status UP (replication=false)
+2026-11-11T19:07:03.463Z  INFO 26716 --- [discovery-server] [nio-8761-exec-6] c.n.e.registry.AbstractInstanceRegistry  : Registered instance CUSTOMERS-SERVICE/customers-service:78ed3dd3-1d34-4069-a1f1-794a8fcd8fd6 with status UP (replication=false)
+2026-11-11T19:07:21.075Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:07:28.587Z  INFO 26716 --- [discovery-server] [nio-8761-exec-8] c.n.e.registry.AbstractInstanceRegistry  : Registered instance API-GATEWAY/localhost:api-gateway:8080 with status UP (replication=false)
+2026-11-11T19:08:21.075Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:09:21.076Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:10:21.076Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:11:21.077Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:12:21.078Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:13:21.079Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:14:21.080Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:15:21.084Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 4ms
+2026-11-11T19:16:20.940Z  WARN 26716 --- [discovery-server] [eerNodesUpdater] c.n.eureka.cluster.PeerEurekaNodes       : The replica size seems to be empty. Check the route 53 DNS Registry
+2026-11-11T19:16:21.091Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 7ms
+2026-11-11T19:17:21.104Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 13ms
+2026-11-11T19:18:21.105Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:19:21.108Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2026-11-11T19:20:21.113Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 5ms
+2026-11-11T19:21:20.947Z  INFO 26716 --- [discovery-server] [hresholdUpdater] c.n.e.r.PeerAwareInstanceRegistryImpl    : Current renewal threshold is : 8
+2026-11-11T19:21:21.114Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2026-11-11T19:22:21.121Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 7ms
+2026-11-11T19:23:21.128Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 7ms
+2026-11-11T19:24:21.142Z  INFO 26716 --- [discovery-server] [a-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 13ms

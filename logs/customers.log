@@ -1,4 +1,4 @@
-22:35:49,700 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]
+19:06:38,151 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -7,60 +7,57 @@
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
 
- :: Spring Boot ::                (v4.0.1)
+ :: Spring Boot ::                (v4.0.9)
 
-2026-11-08T22:35:50.907Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.s.p.c.CustomersServiceApplication    : Starting CustomersServiceApplication v4.0.1 using Java 21.0.11 with PID 2908 (C:\Users\akram\Downloads\petclinic-security-automation\spring-petclinic-customers-service\target\spring-petclinic-customers-service-4.0.1.jar started by akram in C:\Users\akram\Downloads\petclinic-security-automation)
-2026-11-08T22:35:50.924Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.s.p.c.CustomersServiceApplication    : The following 1 profile is active: "tls"
-2026-11-08T22:35:58.579Z  INFO 2908 --- [customers-service] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-11-08T22:35:59.417Z  INFO 2908 --- [customers-service] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 791 ms. Found 2 JPA repository interfaces.
-2026-11-08T22:36:01.796Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.cloud.context.scope.GenericScope     : BeanFactory id=06fb8255-7095-35c8-80b9-64871637208e
-2026-11-08T22:36:06.610Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8081 (https)
-2026-11-08T22:36:06.744Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-11-08T22:36:06.746Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.15]
-2026-11-08T22:36:07.007Z  INFO 2908 --- [customers-service] [           main] [                                                 ] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 15782 ms
-2026-11-08T22:36:13.373Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-11-08T22:36:16.151Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Driver does not support get/set network timeout for connections. (feature not supported)
-2026-11-08T22:36:16.172Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.hsqldb.jdbc.JDBCConnection@49353d43
-2026-11-08T22:36:16.177Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-11-08T22:36:17.575Z  INFO 2908 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-11-08T22:36:17.809Z  INFO 2908 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.0.Final
-2026-11-08T22:36:18.259Z  WARN 2908 --- [customers-service] [/api/v2/spans}}] [                                                 ] z.r.i.AsyncReporter$BoundedAsyncReporter : Spans were dropped due to exceptions. All subsequent errors will be logged at FINE level.
-2026-11-08T22:36:18.261Z  WARN 2908 --- [customers-service] [/api/v2/spans}}] [                                                 ] z.r.i.AsyncReporter$BoundedAsyncReporter : Dropped 44 spans due to ConnectException()
+2026-11-11T19:06:38.705Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.s.p.c.CustomersServiceApplication    : Starting CustomersServiceApplication v4.0.1 using Java 25.0.4.1 with PID 23444 (C:\Users\aitel\OneDrive\Desktop\devsec - petclinic - Copy\spring-petclinic-customers-service\target\spring-petclinic-customers-service-4.0.1.jar started by aitel in C:\Users\aitel\OneDrive\Desktop\devsec - petclinic - Copy)
+2026-11-11T19:06:38.731Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.s.p.c.CustomersServiceApplication    : No active profile set, falling back to 1 default profile: "default"
+2026-11-11T19:06:43.559Z  INFO 23444 --- [customers-service] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-11T19:06:44.446Z  INFO 23444 --- [customers-service] [           main] [                                                 ] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 850 ms. Found 2 JPA repository interfaces.
+2026-11-11T19:06:46.070Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.cloud.context.scope.GenericScope     : BeanFactory id=ebb015bd-711e-3fb1-abb1-f5f08313bf9a
+2026-11-11T19:06:49.281Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8081 (http)
+2026-11-11T19:06:49.335Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-11T19:06:49.337Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-11-11T19:06:49.440Z  INFO 23444 --- [customers-service] [           main] [                                                 ] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 10252 ms
+2026-11-11T19:06:51.438Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-11T19:06:51.967Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Driver does not support get/set network timeout for connections. (feature not supported)
+2026-11-11T19:06:51.970Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.hsqldb.jdbc.JDBCConnection@807c1e8
+2026-11-11T19:06:51.972Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-11T19:06:52.576Z  INFO 23444 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-11T19:06:52.708Z  INFO 23444 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.25.Final
+2026-11-11T19:06:53.260Z  WARN 23444 --- [customers-service] [/api/v2/spans}}] [                                                 ] z.r.i.AsyncReporter$BoundedAsyncReporter : Spans were dropped due to exceptions. All subsequent errors will be logged at FINE level.
+2026-11-11T19:06:53.261Z  WARN 23444 --- [customers-service] [/api/v2/spans}}] [                                                 ] z.r.i.AsyncReporter$BoundedAsyncReporter : Dropped 44 spans due to ConnectException()
 
 java.net.ConnectException
-	at java.net.http/jdk.internal.net.http.HttpClientImpl.send(HttpClientImpl.java:955)
+	at java.net.http/jdk.internal.net.http.HttpClientImpl.send(HttpClientImpl.java:923)
 	at java.net.http/jdk.internal.net.http.HttpClientFacade.send(HttpClientFacade.java:133)
-	at org.springframework.boot.zipkin.autoconfigure.ZipkinHttpClientSender.postSpans(ZipkinHttpClientSender.java:59)
-	at org.springframework.boot.zipkin.autoconfigure.HttpSender.postSpans(HttpSender.java:69)
-	at org.springframework.boot.zipkin.autoconfigure.HttpSender.postSpans(HttpSender.java:41)
+	at org.springframework.boot.zipkin.autoconfigure.ZipkinHttpClientSender.postSpans(ZipkinHttpClientSender.java:47)
+	at org.springframework.boot.zipkin.autoconfigure.HttpSender.postSpans(HttpSender.java:57)
+	at org.springframework.boot.zipkin.autoconfigure.HttpSender.postSpans(HttpSender.java:29)
 	at zipkin2.reporter.BaseHttpSender.send(BaseHttpSender.java:123)
 	at zipkin2.reporter.internal.AsyncReporter$BoundedAsyncReporter.flush(AsyncReporter.java:266)
 	at zipkin2.reporter.internal.AsyncReporter$Flusher.run(AsyncReporter.java:352)
-	at java.base/java.lang.Thread.run(Thread.java:1583)
+	at java.base/java.lang.Thread.run(Thread.java:1474)
 Caused by: java.net.ConnectException
-	at java.net.http/jdk.internal.net.http.common.Utils.toConnectException(Utils.java:1065)
-	at java.net.http/jdk.internal.net.http.PlainHttpConnection.connectAsync(PlainHttpConnection.java:227)
-	at java.net.http/jdk.internal.net.http.PlainHttpConnection.checkRetryConnect(PlainHttpConnection.java:280)
-	at java.net.http/jdk.internal.net.http.PlainHttpConnection.lambda$connectAsync$2(PlainHttpConnection.java:238)
-	at java.base/java.util.concurrent.CompletableFuture.uniHandle(CompletableFuture.java:934)
-	at java.base/java.util.concurrent.CompletableFuture$UniHandle.tryFire(CompletableFuture.java:911)
-	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1773)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.net.http/jdk.internal.net.http.common.Utils.toConnectException(Utils.java:1070)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.connectAsync(PlainHttpConnection.java:223)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.checkRetryConnect(PlainHttpConnection.java:277)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.lambda$connectAsync$0(PlainHttpConnection.java:235)
+	at java.base/java.util.concurrent.CompletableFuture.uniHandle(CompletableFuture.java:955)
+	at java.base/java.util.concurrent.CompletableFuture$UniHandle.tryFire(CompletableFuture.java:932)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:531)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1794)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
 	... 1 common frames omitted
 Caused by: java.nio.channels.ClosedChannelException
-	at java.base/sun.nio.ch.SocketChannelImpl.ensureOpen(SocketChannelImpl.java:202)
-	at java.base/sun.nio.ch.SocketChannelImpl.beginConnect(SocketChannelImpl.java:786)
-	at java.base/sun.nio.ch.SocketChannelImpl.connect(SocketChannelImpl.java:874)
-	at java.net.http/jdk.internal.net.http.PlainHttpConnection.lambda$connectAsync$1(PlainHttpConnection.java:210)
-	at java.base/java.security.AccessController.doPrivileged(AccessController.java:571)
-	at java.net.http/jdk.internal.net.http.PlainHttpConnection.connectAsync(PlainHttpConnection.java:212)
+	at java.base/sun.nio.ch.SocketChannelImpl.ensureOpen(SocketChannelImpl.java:204)
+	at java.base/sun.nio.ch.SocketChannelImpl.connect(SocketChannelImpl.java:942)
+	at java.net.http/jdk.internal.net.http.PlainHttpConnection.connectAsync(PlainHttpConnection.java:211)
 	... 9 common frames omitted
 
-2026-11-08T22:36:20.749Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-11-08T22:36:21.026Z  INFO 2908 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [jdbc:hsqldb:mem:b2c0c5b9-0f56-4a0e-8e64-330d2276700c]
+2026-11-11T19:06:53.608Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-11T19:06:53.834Z  INFO 23444 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:hsqldb:mem:b7532ddf-7dc5-497f-b34e-94cc49fb7650]
 	Database driver: HSQL Database Engine Driver
 	Database dialect: HSQLDialect
 	Database version: 2.7.3
@@ -71,55 +68,48 @@ Caused by: java.nio.channels.ClosedChannelException
 	Pool: DataSourceConnectionProvider
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-11-08T22:36:21.543Z  WARN 2908 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.deprecation            : HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at org.springframework.samples.petclinic.customers.model.Pet.birthDate.
-2026-11-08T22:36:28.389Z  INFO 2908 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-11-08T22:36:28.480Z  INFO 2908 --- [customers-service] [           main] [                                                 ] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-11-08T22:36:29.899Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-11-08T22:36:41.007Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
-2026-11-08T22:36:47.855Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
-2026-11-08T22:36:48.324Z  INFO 2908 --- [customers-service] [           main] [                                                 ] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestClient.
-2026-11-08T22:36:49.635Z  WARN 2908 --- [customers-service] [           main] [                                                 ] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
-2026-11-08T22:36:50.304Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
-2026-11-08T22:36:50.632Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
-2026-11-08T22:36:50.657Z  INFO 2908 --- [customers-service] [           main] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
-2026-11-08T22:36:50.719Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
-2026-11-08T22:36:50.720Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
-2026-11-08T22:36:50.727Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
-2026-11-08T22:36:50.728Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application is null : false
-2026-11-08T22:36:50.728Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
-2026-11-08T22:36:50.729Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
-2026-11-08T22:36:50.729Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
-2026-11-08T22:36:53.154Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : The response status is 200
-2026-11-08T22:36:53.160Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
-2026-11-08T22:36:53.176Z  INFO 2908 --- [customers-service] [           main] [                                                 ] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
-2026-11-08T22:36:53.212Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1794177413209 with initial instances count: 0
-2026-11-08T22:36:53.280Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application CUSTOMERS-SERVICE with eureka with status UP
-2026-11-08T22:36:53.286Z  INFO 2908 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1794177413286, current=UP, previous=STARTING]
-2026-11-08T22:36:53.308Z  INFO 2908 --- [customers-service] [foReplicator-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CUSTOMERS-SERVICE/customers-service:975d40b5-d161-49e5-8245-f2cf491dfb91: registering service...
-2026-11-08T22:36:53.393Z  WARN 2908 --- [customers-service] [           main] [                                                 ] org.apache.tomcat.util.net.SSLUtilBase   : The JSSE TLS 1.3 implementation does not support post handshake authentication (PHA) and is therefore incompatible with optional certificate authentication
-2026-11-08T22:36:53.735Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.a.t.util.net.NioEndpoint.certificate   : Connector [https-jsse-nio-8081], TLS virtual host [_default_], certificate type [UNDEFINED] configured from keystore [Set directly - location unknown] using alias [customers] with trust store [null]
-2026-11-08T22:36:53.772Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8081 (https) with context path '/'
-2026-11-08T22:36:53.775Z  INFO 2908 --- [customers-service] [           main] [                                                 ] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8081
-2026-11-08T22:36:53.956Z  INFO 2908 --- [customers-service] [foReplicator-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CUSTOMERS-SERVICE/customers-service:975d40b5-d161-49e5-8245-f2cf491dfb91 - registration status: 204
-2026-11-08T22:36:55.893Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
-2026-11-08T22:36:56.187Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8091 (https)
-2026-11-08T22:36:56.190Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-11-08T22:36:56.191Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.15]
-2026-11-08T22:36:56.211Z  INFO 2908 --- [customers-service] [           main] [                                                 ] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 309 ms
-2026-11-08T22:36:56.263Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 17 endpoints beneath base path '/actuator'
-2026-11-08T22:36:56.784Z  WARN 2908 --- [customers-service] [           main] [                                                 ] org.apache.tomcat.util.net.SSLUtilBase   : The JSSE TLS 1.3 implementation does not support post handshake authentication (PHA) and is therefore incompatible with optional certificate authentication
-2026-11-08T22:36:56.806Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.a.t.util.net.NioEndpoint.certificate   : Connector [https-jsse-nio-8091], TLS virtual host [_default_], certificate type [UNDEFINED] configured from keystore [Set directly - location unknown] using alias [customers] with trust store [null]
-2026-11-08T22:36:56.831Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8091 (https) with context path '/'
-2026-11-08T22:36:57.924Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
-2026-11-08T22:36:57.974Z  INFO 2908 --- [customers-service] [           main] [                                                 ] o.s.s.p.c.CustomersServiceApplication    : Started CustomersServiceApplication in 71.916 seconds (process running for 75.778)
-2026-11-08T22:37:23.162Z  INFO 2908 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
-2026-11-08T22:37:23.163Z  INFO 2908 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
-2026-11-08T22:37:23.163Z  INFO 2908 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
-2026-11-08T22:37:23.164Z  INFO 2908 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application is null : false
-2026-11-08T22:37:23.165Z  INFO 2908 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
-2026-11-08T22:37:23.166Z  INFO 2908 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application version is -1: false
-2026-11-08T22:37:23.167Z  INFO 2908 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
-2026-11-08T22:37:23.221Z  INFO 2908 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : The response status is 200
-2026-11-08T22:39:19.867Z  INFO 2908 --- [customers-service] [nio-8081-exec-5] [                                                 ] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-11-08T22:39:19.868Z  INFO 2908 --- [customers-service] [nio-8081-exec-5] [                                                 ] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-11-08T22:39:19.871Z  INFO 2908 --- [customers-service] [nio-8081-exec-5] [                                                 ] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2026-11-11T19:06:54.161Z  WARN 23444 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.deprecation            : HHH90000033: Encountered use of deprecated annotation [interface jakarta.persistence.Temporal] at org.springframework.samples.petclinic.customers.model.Pet.birthDate.
+2026-11-11T19:06:55.881Z  INFO 23444 --- [customers-service] [           main] [                                                 ] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-11T19:06:55.899Z  INFO 23444 --- [customers-service] [           main] [                                                 ] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-11T19:06:56.221Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-11T19:07:00.824Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:07:02.513Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:07:02.536Z  INFO 23444 --- [customers-service] [           main] [                                                 ] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestClient.
+2026-11-11T19:07:02.631Z  WARN 23444 --- [customers-service] [           main] [                                                 ] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-11-11T19:07:02.650Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-11-11T19:07:02.750Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-11-11T19:07:02.810Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-11-11T19:07:02.818Z  INFO 23444 --- [customers-service] [           main] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-11T19:07:02.833Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-11-11T19:07:02.833Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-11-11T19:07:02.834Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-11-11T19:07:02.834Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-11-11T19:07:02.834Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-11-11T19:07:02.834Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-11-11T19:07:02.834Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-11-11T19:07:03.313Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-11-11T19:07:03.315Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-11-11T19:07:03.317Z  INFO 23444 --- [customers-service] [           main] [                                                 ] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-11-11T19:07:03.319Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1794424023318 with initial instances count: 0
+2026-11-11T19:07:03.326Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application CUSTOMERS-SERVICE with eureka with status UP
+2026-11-11T19:07:03.327Z  INFO 23444 --- [customers-service] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1794424023327, current=UP, previous=STARTING]
+2026-11-11T19:07:03.328Z  INFO 23444 --- [customers-service] [foReplicator-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CUSTOMERS-SERVICE/customers-service:78ed3dd3-1d34-4069-a1f1-794a8fcd8fd6: registering service...
+2026-11-11T19:07:03.342Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8081 (http) with context path '/'
+2026-11-11T19:07:03.345Z  INFO 23444 --- [customers-service] [           main] [                                                 ] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8081
+2026-11-11T19:07:03.465Z  INFO 23444 --- [customers-service] [foReplicator-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CUSTOMERS-SERVICE/customers-service:78ed3dd3-1d34-4069-a1f1-794a8fcd8fd6 - registration status: 204
+2026-11-11T19:07:04.356Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:07:04.375Z  INFO 23444 --- [customers-service] [           main] [                                                 ] o.s.s.p.c.CustomersServiceApplication    : Started CustomersServiceApplication in 28.693 seconds (process running for 31.092)
+2026-11-11T19:07:33.317Z  INFO 23444 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-11-11T19:07:33.317Z  INFO 23444 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-11-11T19:07:33.317Z  INFO 23444 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-11-11T19:07:33.317Z  INFO 23444 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-11-11T19:07:33.317Z  INFO 23444 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-11-11T19:07:33.318Z  INFO 23444 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application version is -1: false
+2026-11-11T19:07:33.318Z  INFO 23444 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-11-11T19:07:33.478Z  INFO 23444 --- [customers-service] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-11-11T19:11:36.927Z  INFO 23444 --- [customers-service] [nio-8081-exec-1] [                                                 ] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-11T19:11:36.927Z  INFO 23444 --- [customers-service] [nio-8081-exec-1] [                                                 ] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-11T19:11:36.929Z  INFO 23444 --- [customers-service] [nio-8081-exec-1] [                                                 ] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-11-11T19:12:02.837Z  INFO 23444 --- [customers-service] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-11T19:17:02.841Z  INFO 23444 --- [customers-service] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-11T19:22:02.855Z  INFO 23444 --- [customers-service] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

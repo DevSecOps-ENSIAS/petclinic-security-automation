@@ -18,11 +18,13 @@ package org.springframework.samples.petclinic.visits;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Import;
 
 /**
  * @author Maciej Szarlinski
  */
 @EnableDiscoveryClient
+@Import(org.springframework.samples.petclinic.security.ServletSecurityConfiguration.class)
 @SpringBootApplication
 public class VisitsServiceApplication {
 
