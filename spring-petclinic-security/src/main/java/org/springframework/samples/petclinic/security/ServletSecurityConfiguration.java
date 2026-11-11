@@ -26,6 +26,9 @@ public class ServletSecurityConfiguration {
             @Value("${petclinic.security.allowed-callers:api-gateway}") List<String> allowedCallers,
             @Value("${petclinic.security.mtls-required:false}") boolean mtlsRequired) throws Exception {
 
+        // CSRF désactivé volontairement : API stateless authentifiée par jeton Bearer, sans session
+        // ni cookie que le navigateur renverrait automatiquement, donc aucune requête forgée possible.
+        // Sonar S4502 est un faux positif documenté (docs/preuves/p05-jwt-rbac/).
         http
             .csrf(csrf -> csrf.disable())                                   // API sans session : jeton Bearer
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
