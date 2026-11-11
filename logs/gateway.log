@@ -1,1 +1,69 @@
 Picked up JAVA_TOOL_OPTIONS: 
+19:07:17,233 |-WARN in ch.qos.logback.core.model.processor.ImplicitModelHandler - Ignoring unknown property [jmxConfigurator] in [ch.qos.logback.classic.LoggerContext]
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.9)
+
+2026-11-11T19:07:17.674Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.s.p.api.ApiGatewayApplication        : Starting ApiGatewayApplication v4.0.1 using Java 25.0.4.1 with PID 8488 (C:\Users\aitel\OneDrive\Desktop\devsec - petclinic - Copy\spring-petclinic-api-gateway\target\spring-petclinic-api-gateway-4.0.1.jar started by aitel in C:\Users\aitel\OneDrive\Desktop\devsec - petclinic - Copy)
+2026-11-11T19:07:17.684Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.s.p.api.ApiGatewayApplication        : No active profile set, falling back to 1 default profile: "default"
+2026-11-11T19:07:21.031Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.cloud.context.scope.GenericScope     : BeanFactory id=27ddff96-4ce8-34ba-836c-6a8dcdbbd324
+2026-11-11T19:07:24.139Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:07:24.535Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [After]
+2026-11-11T19:07:24.535Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Before]
+2026-11-11T19:07:24.535Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Between]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Cookie]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Header]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Host]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Method]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Path]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Query]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [ReadBody]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [RemoteAddr]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Version]
+2026-11-11T19:07:24.536Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [XForwardedRemoteAddr]
+2026-11-11T19:07:24.537Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Weight]
+2026-11-11T19:07:24.537Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [CloudFoundryRouteService]
+2026-11-11T19:07:25.735Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:07:26.803Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:07:26.930Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-11-11T19:07:27.394Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestClient.
+2026-11-11T19:07:27.634Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-11-11T19:07:27.686Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-11-11T19:07:27.694Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-11T19:07:27.711Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-11-11T19:07:27.711Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-11-11T19:07:27.712Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-11-11T19:07:27.712Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-11-11T19:07:27.712Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-11-11T19:07:27.712Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-11-11T19:07:27.712Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-11-11T19:07:28.400Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-11-11T19:07:28.403Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-11-11T19:07:28.406Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-11-11T19:07:28.408Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1794424048407 with initial instances count: 0
+2026-11-11T19:07:28.414Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application API-GATEWAY with eureka with status UP
+2026-11-11T19:07:28.415Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1794424048415, current=UP, previous=STARTING]
+2026-11-11T19:07:28.418Z  INFO 8488 --- [api-gateway] [foReplicator-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/localhost:api-gateway:8080: registering service...
+2026-11-11T19:07:28.591Z  INFO 8488 --- [api-gateway] [foReplicator-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/localhost:api-gateway:8080 - registration status: 204
+2026-11-11T19:07:28.817Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.boot.reactor.netty.NettyWebServer    : Netty started on port 8080 (http)
+2026-11-11T19:07:28.820Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8080
+2026-11-11T19:07:29.832Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:07:30.845Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.cloud.commons.util.InetUtils         : Cannot determine local hostname
+2026-11-11T19:07:30.878Z  INFO 8488 --- [api-gateway] [           main] [                                                 ] o.s.s.p.api.ApiGatewayApplication        : Started ApiGatewayApplication in 15.894 seconds (process running for 17.444)
+2026-11-11T19:07:58.404Z  INFO 8488 --- [api-gateway] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-11-11T19:07:58.405Z  INFO 8488 --- [api-gateway] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-11-11T19:07:58.405Z  INFO 8488 --- [api-gateway] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-11-11T19:07:58.406Z  INFO 8488 --- [api-gateway] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-11-11T19:07:58.407Z  INFO 8488 --- [api-gateway] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-11-11T19:07:58.408Z  INFO 8488 --- [api-gateway] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Application version is -1: false
+2026-11-11T19:07:58.408Z  INFO 8488 --- [api-gateway] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-11-11T19:07:58.558Z  INFO 8488 --- [api-gateway] [reshExecutor-%d] [                                                 ] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-11-11T19:12:27.715Z  INFO 8488 --- [api-gateway] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-11T19:17:27.724Z  INFO 8488 --- [api-gateway] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-11T19:22:27.737Z  INFO 8488 --- [api-gateway] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

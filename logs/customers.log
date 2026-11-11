@@ -111,3 +111,5 @@ Caused by: java.nio.channels.ClosedChannelException
 2026-11-11T19:11:36.927Z  INFO 23444 --- [customers-service] [nio-8081-exec-1] [                                                 ] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
 2026-11-11T19:11:36.929Z  INFO 23444 --- [customers-service] [nio-8081-exec-1] [                                                 ] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
 2026-11-11T19:12:02.837Z  INFO 23444 --- [customers-service] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-11T19:17:02.841Z  INFO 23444 --- [customers-service] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-11-11T19:22:02.855Z  INFO 23444 --- [customers-service] [rap-executor-%d] [                                                 ] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
