@@ -53,7 +53,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | **P2** | Modèle de menace (constats « avant ») | ✅ TERMINÉ | A | `docs/preuves/p02-menace/` |
 | **P3** | PKI OpenSSL (CA + certificats) | 🟨 PARTIEL — reste `rogue-client` | B | `docs/preuves/p03-pki/` |
 | **P4** | Keycloak : émission de jetons OIDC | ✅ TERMINÉ le 10/11/2026 (PR #54) | A | `docs/preuves/p04-keycloak/` |
-| **P5** | Module `spring-petclinic-security` : JWT + RBAC partout | ⬜ À FAIRE | A | `docs/preuves/p05-jwt-rbac/` |
+| **P5** | Module `spring-petclinic-security` : JWT + RBAC partout | ✅ TERMINÉ le 11/11/2026 (PR #61 et #63) | A | `docs/preuves/p05-jwt-rbac/` |
 | **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — paliers 1-2 faits | B | `docs/preuves/p06-mtls/` |
 | **P7** | Scénario `dossier` à 3 microservices | ⬜ À FAIRE | A (gateway) + B (client mTLS) | `docs/preuves/p07-dossier/` |
 | **P8** | Durcissement (Actuator + Eureka) | ✅ TERMINÉ le 10/11/2026 | A | `docs/preuves/p08-durcissement/` |
@@ -62,7 +62,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | **P11** | Archive importable + test à froid IntelliJ | ⬜ À FAIRE | A + B | — |
 | **P12** | Présentation (10 min) | ⬜ À FAIRE | A + B | — |
 
-### Où sont les preuves (état au 10/11/2026)
+### Où sont les preuves (état au 14/11/2026)
 
 | Dossier | Phase v2 | Contenu attendu | État |
 |---|---|---|---|
@@ -70,7 +70,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | `p02-menace/` | P2 | les 5 constats « avant » + README | ✅ **présent** |
 | `p03-pki/` | P3 | CA, sortie `openssl verify`, keystore | ❌ **absent du dépôt** (captures chez B) |
 | `p04-keycloak/` | P4 | realm importé, 3 utilisateurs, rôle d'`alice`, jeton décodé | ✅ **présent** (4 captures) |
-| `p05-jwt-rbac/` | P5 | matrice 401/403/200/403/201 | ❌ à créer |
+| `p05-jwt-rbac/` | P5 | matrice 401/403/200/403/201, les deux `SecurityConfig`, jeton décodé | ✅ **présent** (4 captures) |
 | `p06-mtls/` | P6 | les 5 tests du palier 3 + Eureka en `https` | ❌ **absent du dépôt** (paliers 1-2 chez B) |
 | `p07-dossier/` | P7 | `dossier` 200/401/403 + diagramme de séquence | ❌ à créer |
 | `p08-durcissement/` | P8 | `actuator/env` 404, `eureka/apps` 401, service `UP` | 🟨 dossier créé, **captures à prendre** |
@@ -81,7 +81,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 > Les dossiers `p03-pki/` et `p06-mtls/` sont **référencés mais absents** : les captures ont été prises par B
 > sans être committées. À récupérer avant P10, sinon le rapport citera des figures inexistantes.
 
-**Chemin critique** : P4 → P5 → P7 → P9 → P10. P3 et P6 avancent en parallèle côté B, mais **P7 a besoin de P6**
+**Chemin critique** : P4 ✅ → P5 ✅ → **P7 → P9 → P10**. P3 et P6 avancent en parallèle côté B, mais **P7 a besoin de P6**
 (le gateway doit présenter son certificat pour appeler `vets`).
 
 ---
@@ -450,7 +450,40 @@ sinon P5 renverra 401 avec un jeton pourtant valide.
 
 ---
 
-## P5 — Module `spring-petclinic-security` : JWT + RBAC dans **chaque** service · ⬜ À FAIRE (1,5 j, 🅰️)
+## P5 — Module `spring-petclinic-security` : JWT + RBAC dans **chaque** service · ✅ TERMINÉ le 11/11/2026 (1,5 j, 🅰️)
+
+### Ce qui a été livré (PR #61 et #63, fusionnées dans `dev` le 11/11/2026)
+
+| Élément | Fichier | Contenu |
+|---|---|---|
+| Module | `spring-petclinic-security/` | `KeycloakRoles`, `ServletSecurityConfiguration`, `ServiceIdentityFilter` ; jar **non repackagé** pour rester utilisable comme dépendance |
+| Services | `customers`, `vets`, `visits` | dépendance au module, `@Import(ServletSecurityConfiguration.class)`, `issuer-uri` dans `application.yml` |
+| Gateway | `spring-petclinic-api-gateway` | `SecurityConfig` réécrit en `ServerHttpSecurity` : `GET /api/**` → `viewer`/`staff`, reste de `/api/**` → `staff`, `anyExchange().denyAll()` |
+| Tests | module + gateway | 16 tests du module (couverture 100 % des lignes), 48 tests au total, `./mvnw -B -P quality verify` vert |
+| Analyse | `pom.xml` racine | exemption Sonar `java:S4502` limitée aux deux `SecurityConfig` (API stateless à jeton, cf. commentaire dans le code) |
+| Preuves | `docs/preuves/p05-jwt-rbac/` | `01-matrice.png`, `02-servlet-security.png`, `03-gateway-security.png`, `04-jwt-claims.png` |
+
+Rejeu de la vérification (pile démarrée, cf. §5.5) :
+
+```bash
+tok() { curl -s -X POST http://localhost:8180/realms/petclinic/protocol/openid-connect/token \
+  -d grant_type=password -d client_id=petclinic-cli -d username=$1 -d password=$2 \
+  | sed -E 's/.*"access_token":"([^"]+)".*/\1/'; }
+
+TOKEN=$(tok alice alice-pass); TOKEN_BOB=$(tok bob bob-pass); TOKEN_CAROL=$(tok carol carol-pass)
+echo "alice=${#TOKEN} bob=${#TOKEN_BOB} carol=${#TOKEN_CAROL}"   # ≈ 1085, 1075, 1035
+```
+
+> Trois valeurs vides (`0`) expliquent **tous** les `401` d'une matrice : les variables sont propres à
+> chaque terminal. Vérifier les longueurs **avant** de conclure à un problème de jeton.
+
+Deux points appris en chemin :
+
+- **Nom du starter** : `spring-boot-starter-oauth2-resource-server` fonctionne en Boot 4.0.9 et c'est
+  celui du gateway ; inutile de chercher un nom « security- ».
+- **Tests** : les quatre tests métier gardent `@AutoConfigureMockMvc(addFilters = false)`, mais le test
+  du controller du gateway s'authentifie avec un vrai jeton (`ReactiveJwtDecoder` simulé) : les règles
+  RBAC y sont donc réellement exercées, et `mockJwt()` n'y prend pas effet.
 
 **But** : c'est le « module d'authentification/autorisation » exigé par l'énoncé (E1, E2). Un module Maven
 unique, réutilisé par les 3 services **et** le gateway, qui vérifie le JWT et applique le RBAC — localement,
@@ -473,7 +506,7 @@ sans appeler Keycloak à chaque requête.
 ```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+    <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 </dependency>
 <dependency>
     <groupId>jakarta.servlet</groupId>
@@ -482,9 +515,9 @@ sans appeler Keycloak à chaque requête.
 </dependency>
 ```
 
-> Spring Boot 4 a renommé le starter : `spring-boot-starter-security-oauth2-resource-server`
-> (l'ancien nom `spring-boot-starter-oauth2-resource-server` est déprécié). Si Maven ne résout pas
-> `jakarta.servlet-api`, le remplacer par `spring-boot-starter-webmvc` en scope `provided`.
+> Le nom retenu est `spring-boot-starter-oauth2-resource-server` : il résout en Boot 4.0.9 et c'est
+> celui qu'utilise déjà le gateway. Si Maven ne résout pas `jakarta.servlet-api`, le remplacer par
+> `spring-boot-starter-webmvc` en scope `provided`.
 
 ### 5.2 Trois classes (package `org.springframework.samples.petclinic.security`)
 
@@ -510,7 +543,8 @@ Pour **chacun** de `customers`, `visits`, `vets` :
 
 ```xml
 <dependency>
-    <groupId>org.springframework.samples.petclinic.client</groupId>
+    <!-- groupId du parent, PAS celui des services (…petclinic.client) -->
+    <groupId>org.springframework.samples</groupId>
     <artifactId>spring-petclinic-security</artifactId>
     <version>${project.version}</version>
 </dependency>
@@ -604,6 +638,21 @@ C'est la partie « droits du service » du Zero Trust, distincte de l'identité 
 
 **Ce qui existe déjà** : profils `tls` dans les 4 applications, HTTPS, mTLS `client-auth: want`,
 gateway faisant confiance à la CA, Eureka enregistré par nom d'hôte avec port sécurisé.
+
+**État vérifié dans le code le 14/11/2026** :
+
+| Point | État |
+|---|---|
+| Profil `tls` + keystore | ✅ dans les 4 applications |
+| `client-auth: want` | ✅ sur les trois services — `need` à passer en **§6.4** |
+| Confiance en la CA côté gateway | ✅ `trusted-x509-certificates: …/ca.pem` |
+| `ServiceIdentityFilter` | ✅ livré avec P5 et branché dans les trois services, avant `BearerTokenAuthenticationFilter` |
+| `CLIENT_AUTH`, `MTLS_REQUIRED`, `allowed-callers` | ❌ absents de tous les `application.yml` : le filtre tourne avec ses valeurs par défaut (`api-gateway`, `mtls-required=false`) — **à faire au §6.1** |
+| Certificat `rogue-client` | ❌ `scripts/pki/` ne contient que `generate.sh`, `secrets/` est vide — à générer avec **`scripts/pki/generate.sh`** (cf. §6.4) |
+| Preuves `docs/preuves/p06-mtls/` | ❌ dossier absent — les 4 captures de la fin de **§6.4** |
+
+> Conséquence : le palier 3 n'est **pas démontrable** aujourd'hui. `mtls-required` vaut `false` et la liste
+> blanche n'est pas configurée — le §6.1 est donc le premier travail à faire, pas une option.
 
 ### 6.0 Les cinq pièges de ce dépôt (déjà rencontrés)
 
@@ -717,6 +766,18 @@ plutôt que d'y passer le week-end.
 ---
 
 ## P7 — Scénario `dossier` à 3 microservices · ⬜ À FAIRE (1 j, 🅰️ gateway + 🅱️ client mTLS)
+
+**État vérifié dans le code le 14/11/2026** — rien du scénario n'est encore écrit :
+
+- pas de `MtlsHttpClientFactory`, pas de `VetsServiceClient`, pas de `DossierController` ;
+- **pas de `ServerBearerExchangeFilterFunction`** dans `ApiGatewayApplication`. C'est le point bloquant :
+  le gateway n'appelle pas les services avec le jeton de l'utilisateur, donc l'agrégation existante
+  `GET /api/gateway/owners/{id}` renvoie `500` même avec un jeton valide, alors que les routes proxy
+  (`/api/vet/**`, `/api/customer/**`) fonctionnent car Spring Cloud Gateway recopie les en-têtes ;
+- preuves `docs/preuves/p07-dossier/` : ❌ absentes.
+
+> Ordre de travail conseillé : le filtre `ServerBearerExchangeFilterFunction` (point 3 du §7.1) **avant**
+> `MtlsHttpClientFactory`. Sans lui, le §7.3 ne peut pas afficher de `200`.
 
 **But** : l'exigence E3 de l'énoncé — une requête cliente fait collaborer **les trois** services métier.
 Le `GET /api/gateway/owners/{id}/dossier` interroge `customers` (propriétaire + animaux), `visits` (visites)
@@ -884,6 +945,19 @@ sans rotation, sans TLS en local) ; l'idéal serait mTLS vers Eureka.
 ---
 
 ## P9 — Tests automatisés et script de contrôle · ⬜ À FAIRE (1 j, 🅰️ + 🅱️)
+
+**État vérifié dans le code le 14/11/2026** :
+
+| Élément attendu | État |
+|---|---|
+| `scripts/security-smoke.sh` | ❌ absent (`scripts/` = `dev-start`, `dev-stop`, `run_all`, `stop_all`, `pushImages`, `tagImages`, `pki`) |
+| Tests JUnit de sécurité dans les services | ❌ aucun ; seuls existent les 16 tests du module `spring-petclinic-security` et les 14 du gateway |
+| `./mvnw -B -P quality verify` | ✅ vert, 48 tests — mais rien ne prouve le RBAC **via HTTP réel** |
+| Preuves `docs/preuves/p09-tests/` | ❌ dossier absent |
+
+> La dépendance `spring-boot-starter-security-test` existe bien dans le BOM 4.0.9 (vérifié) : le §9.2
+> est applicable tel quel. P9 dépend de P7 (les trois lignes « dossier » du smoke) et du palier 3 de P6
+> (les quatre lignes mTLS) : à planifier après eux, sinon le script restera partiellement `SKIP`.
 
 **But** : transformer la matrice de vérification en **preuve reproductible**, utilisable en démonstration
 et par le correcteur.
