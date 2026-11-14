@@ -639,6 +639,21 @@ C'est la partie « droits du service » du Zero Trust, distincte de l'identité 
 **Ce qui existe déjà** : profils `tls` dans les 4 applications, HTTPS, mTLS `client-auth: want`,
 gateway faisant confiance à la CA, Eureka enregistré par nom d'hôte avec port sécurisé.
 
+**État vérifié dans le code le 14/11/2026** :
+
+| Point | État |
+|---|---|
+| Profil `tls` + keystore | ✅ dans les 4 applications |
+| `client-auth: want` | ✅ sur les trois services — `need` à passer en **§6.4** |
+| Confiance en la CA côté gateway | ✅ `trusted-x509-certificates: …/ca.pem` |
+| `ServiceIdentityFilter` | ✅ livré avec P5 et branché dans les trois services, avant `BearerTokenAuthenticationFilter` |
+| `CLIENT_AUTH`, `MTLS_REQUIRED`, `allowed-callers` | ❌ absents de tous les `application.yml` : le filtre tourne avec ses valeurs par défaut (`api-gateway`, `mtls-required=false`) — **à faire au §6.1** |
+| Certificat `rogue-client` | ❌ `scripts/pki/` ne contient que `generate.sh`, `secrets/` est vide — à générer avec **`scripts/pki/generate.sh`** (cf. §6.4) |
+| Preuves `docs/preuves/p06-mtls/` | ❌ dossier absent — les 4 captures de la fin de **§6.4** |
+
+> Conséquence : le palier 3 n'est **pas démontrable** aujourd'hui. `mtls-required` vaut `false` et la liste
+> blanche n'est pas configurée — le §6.1 est donc le premier travail à faire, pas une option.
+
 ### 6.0 Les cinq pièges de ce dépôt (déjà rencontrés)
 
 1. Les services écoutent sur un port aléatoire (`port: 0`) → fixer 8081/8082/8083 via `SERVER_PORT`.
@@ -751,6 +766,18 @@ plutôt que d'y passer le week-end.
 ---
 
 ## P7 — Scénario `dossier` à 3 microservices · ⬜ À FAIRE (1 j, 🅰️ gateway + 🅱️ client mTLS)
+
+**État vérifié dans le code le 14/11/2026** — rien du scénario n'est encore écrit :
+
+- pas de `MtlsHttpClientFactory`, pas de `VetsServiceClient`, pas de `DossierController` ;
+- **pas de `ServerBearerExchangeFilterFunction`** dans `ApiGatewayApplication`. C'est le point bloquant :
+  le gateway n'appelle pas les services avec le jeton de l'utilisateur, donc l'agrégation existante
+  `GET /api/gateway/owners/{id}` renvoie `500` même avec un jeton valide, alors que les routes proxy
+  (`/api/vet/**`, `/api/customer/**`) fonctionnent car Spring Cloud Gateway recopie les en-têtes ;
+- preuves `docs/preuves/p07-dossier/` : ❌ absentes.
+
+> Ordre de travail conseillé : le filtre `ServerBearerExchangeFilterFunction` (point 3 du §7.1) **avant**
+> `MtlsHttpClientFactory`. Sans lui, le §7.3 ne peut pas afficher de `200`.
 
 **But** : l'exigence E3 de l'énoncé — une requête cliente fait collaborer **les trois** services métier.
 Le `GET /api/gateway/owners/{id}/dossier` interroge `customers` (propriétaire + animaux), `visits` (visites)
@@ -918,6 +945,19 @@ sans rotation, sans TLS en local) ; l'idéal serait mTLS vers Eureka.
 ---
 
 ## P9 — Tests automatisés et script de contrôle · ⬜ À FAIRE (1 j, 🅰️ + 🅱️)
+
+**État vérifié dans le code le 14/11/2026** :
+
+| Élément attendu | État |
+|---|---|
+| `scripts/security-smoke.sh` | ❌ absent (`scripts/` = `dev-start`, `dev-stop`, `run_all`, `stop_all`, `pushImages`, `tagImages`, `pki`) |
+| Tests JUnit de sécurité dans les services | ❌ aucun ; seuls existent les 16 tests du module `spring-petclinic-security` et les 14 du gateway |
+| `./mvnw -B -P quality verify` | ✅ vert, 48 tests — mais rien ne prouve le RBAC **via HTTP réel** |
+| Preuves `docs/preuves/p09-tests/` | ❌ dossier absent |
+
+> La dépendance `spring-boot-starter-security-test` existe bien dans le BOM 4.0.9 (vérifié) : le §9.2
+> est applicable tel quel. P9 dépend de P7 (les trois lignes « dossier » du smoke) et du palier 3 de P6
+> (les quatre lignes mTLS) : à planifier après eux, sinon le script restera partiellement `SKIP`.
 
 **But** : transformer la matrice de vérification en **preuve reproductible**, utilisable en démonstration
 et par le correcteur.
