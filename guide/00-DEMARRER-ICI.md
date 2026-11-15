@@ -51,7 +51,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | **P0** | Outils et build de référence | ✅ TERMINÉ | A + B | — |
 | **P1** | Dépôt, branches, hygiène des secrets | ✅ TERMINÉ | A | `docs/preuves/p01-depot/` |
 | **P2** | Modèle de menace (constats « avant ») | ✅ TERMINÉ | A | `docs/preuves/p02-menace/` |
-| **P3** | PKI OpenSSL (CA + certificats) | 🟨 PARTIEL — script complet (5 certificats dont `rogue-client`) ; reste à générer `secrets/` et à prendre les captures | B | `docs/preuves/p03-pki/` |
+| **P3** | PKI OpenSSL (CA + certificats) | ✅ TERMINÉ — script complet (5 certificats dont `rogue-client`) ; reste à générer `secrets/` et à prendre les captures | B | `docs/preuves/p03-pki/` |
 | **P4** | Keycloak : émission de jetons OIDC | ✅ TERMINÉ le 10/11/2026 (PR #54) | A | `docs/preuves/p04-keycloak/` |
 | **P5** | Module `spring-petclinic-security` : JWT + RBAC partout | ✅ TERMINÉ le 11/11/2026 (PR #61 et #63) | A | `docs/preuves/p05-jwt-rbac/` |
 | **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — palier 3 **configuré** (`need` + liste blanche) ; reste PKI à générer, les 5 tests et les captures | B | `docs/preuves/p06-mtls/` |
