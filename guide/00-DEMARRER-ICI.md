@@ -32,14 +32,14 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | 3 CI + JaCoCo | — | conservé tel quel (gratuit, ne bloque rien) |
 | 4 SonarCloud, SCA, secrets | — | ✅ fait (bonus, conservé) |
 | 4 bis Chaîne logicielle | — | ✅ fait par B (PR #44), conservé |
-| 5 PKI OpenSSL | **P3** | ✅ fait, **sauf** le certificat `rogue-client` |
-| 6 JWT en bordure | **P5** | 🟨 le gateway valide un jeton, **pas** les services |
-| 7 TLS puis mTLS | **P6** | 🟨 HTTPS et mTLS en place, **pas** la liste blanche de CN |
+| 5 PKI OpenSSL | **P3** | ✅ script complet (5 certificats) — captures à prendre |
+| 6 JWT en bordure | **P5** | ✅ fait : le module valide le jeton dans les services **et** le gateway |
+| 7 TLS puis mTLS | **P6** | 🟨 `client-auth: need` et liste blanche configurés — tests et captures à faire |
 | 8 RDS MySQL | ❌ supprimée | HSQLDB en mémoire suffit ; artefacts retirés du dépôt |
 | 9 Docker, ECR, EC2 | ❌ supprimée | exécution locale + IntelliJ ; Docker **uniquement** pour Keycloak |
 | 10 Durcissement | **P8** | ✅ fait le 10/11/2026 (Actuator + Eureka seulement) |
 | 11 Observabilité | ❌ supprimée | bonus éventuel |
-| 12 Rapport | **P10** | ⬜ plan réaligné sur les 9 chapitres de l'énoncé |
+| 12 Rapport | **P10** | 🟨 squelette Overleaf et chapitres 4 à 7 rédigés |
 | 13 Soutenance | **P12** | ⬜ conservée |
 
 ---
@@ -51,14 +51,14 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | **P0** | Outils et build de référence | ✅ TERMINÉ | A + B | — |
 | **P1** | Dépôt, branches, hygiène des secrets | ✅ TERMINÉ | A | `docs/preuves/p01-depot/` |
 | **P2** | Modèle de menace (constats « avant ») | ✅ TERMINÉ | A | `docs/preuves/p02-menace/` |
-| **P3** | PKI OpenSSL (CA + certificats) | 🟨 PARTIEL — reste `rogue-client` | B | `docs/preuves/p03-pki/` |
+| **P3** | PKI OpenSSL (CA + certificats) | 🟨 PARTIEL — script complet (5 certificats dont `rogue-client`) ; reste à générer `secrets/` et à prendre les captures | B | `docs/preuves/p03-pki/` |
 | **P4** | Keycloak : émission de jetons OIDC | ✅ TERMINÉ le 10/11/2026 (PR #54) | A | `docs/preuves/p04-keycloak/` |
 | **P5** | Module `spring-petclinic-security` : JWT + RBAC partout | ✅ TERMINÉ le 11/11/2026 (PR #61 et #63) | A | `docs/preuves/p05-jwt-rbac/` |
-| **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — paliers 1-2 faits | B | `docs/preuves/p06-mtls/` |
+| **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — palier 3 **configuré** (`need` + liste blanche) ; reste PKI à générer, les 5 tests et les captures | B | `docs/preuves/p06-mtls/` |
 | **P7** | Scénario `dossier` à 3 microservices | 🟨 PARTIEL — gateway terminé (membre A, PR #68) ; client mTLS à B | A (gateway) + B (client mTLS) | `docs/preuves/p07-dossier/` |
 | **P8** | Durcissement (Actuator + Eureka) | ✅ TERMINÉ le 10/11/2026 | A | `docs/preuves/p08-durcissement/` |
-| **P9** | Tests automatisés et `security-smoke.sh` | 🟨 PARTIEL — A livré (8 tests + smoke 8 OK / 1 SKIP) ; reste les 4 lignes mTLS de B et `01-smoke.png` | A + B | `docs/preuves/p09-tests/` |
-| **P10** | Rapport (9 chapitres) | ⬜ À FAIRE | A + B | — |
+| **P9** | Tests automatisés et `security-smoke.sh` | 🟨 PARTIEL — livré et fusionné (3 classes de tests, smoke 8 OK / 1 SKIP) ; reste les 4 lignes mTLS et `01-smoke.png` | A + B | `docs/preuves/p09-tests/` |
+| **P10** | Rapport (9 chapitres) | 🟨 PARTIEL — squelette LaTeX + chapitres 4 à 7 rédigés (35 p, 8 figures) ; ch. 1-3, 8 et 9 à rédiger | A + B | `Rapport_PetClinic_Securite/` |
 | **P11** | Archive importable + test à froid IntelliJ | ⬜ À FAIRE | A + B | — |
 | **P12** | Présentation (10 min) | ⬜ À FAIRE | A + B | — |
 
@@ -68,10 +68,10 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 |---|---|---|---|
 | `p01-depot/` | P1 | PR fusionnée, branches, protection de `main` | ❌ à créer |
 | `p02-menace/` | P2 | les 5 constats « avant » + README | ✅ **présent** |
-| `p03-pki/` | P3 | CA, sortie `openssl verify`, keystore | ❌ **absent du dépôt** (captures chez B) |
+| `p03-pki/` | P3 | CA, sortie `openssl verify`, keystore | ❌ **absent** — le script génère les 5 certificats, les captures restent à prendre |
 | `p04-keycloak/` | P4 | realm importé, 3 utilisateurs, rôle d'`alice`, jeton décodé | ✅ **présent** (4 captures) |
 | `p05-jwt-rbac/` | P5 | matrice 401/403/200/403/201, les deux `SecurityConfig`, jeton décodé | ✅ **présent** (4 captures) |
-| `p06-mtls/` | P6 | les 5 tests du palier 3 + Eureka en `https` | ❌ **absent du dépôt** (paliers 1-2 chez B) |
+| `p06-mtls/` | P6 | les 5 tests du palier 3 + Eureka en `https` | ❌ **absent** — configuration prête, exécution et captures à faire |
 | `p07-dossier/` | P7 | `dossier` 200/401/403 + diagramme de séquence | 🟨 **partiel** : 01, 02, 03, 05 présentes (membre A) ; `04-journaux.png` à venir avec le client mTLS |
 | `p08-durcissement/` | P8 | `actuator/env` 404, `eureka/apps` 401, service `UP` | 🟨 dossier créé, **captures à prendre** |
 | `p09-tests/` | P9 | sortie du smoke, `mvn test`, JUnit de sécurité | 🟨 **partiel** : `02-mvn-test.png` et `03-junit-securite.png` prises ; `01-smoke.png` attend les 12 lignes |
@@ -81,8 +81,9 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 > Les dossiers `p03-pki/` et `p06-mtls/` sont **référencés mais absents** : les captures ont été prises par B
 > sans être committées. À récupérer avant P10, sinon le rapport citera des figures inexistantes.
 
-**Chemin critique** : P4 ✅ → P5 ✅ → **P7 🟨 (gateway ✅ membre A, client mTLS à B) → P9 → P10**. P3 et P6 avancent
-en parallèle côté B ; seuls le client mTLS de P7 et les 4 lignes mTLS de P9 en dépendent.
+**Chemin critique** : P4 ✅ → P5 ✅ → **P7 🟨 (gateway ✅ membre A, client mTLS à B) → P9 🟨 → P10 🟨**.
+P3 et P6 sont **prêts côté code** (script PKI complet, palier 3 configuré) mais sans preuves : il ne manque que
+`secrets/`, l'exécution des 5 tests et les captures. C'est ce même travail qui débloque les 4 lignes mTLS de P9.
 
 ---
 
@@ -270,9 +271,11 @@ est relié à la phase qui le corrige (F4-a → P8, F1-a → P5, F7 → P6, F6 �
 **But** : disposer d'une autorité de certification de projet et de certificats pour les 4 applications,
 plus un certificat volontairement **non autorisé** (`rogue-client`) qui servira à prouver le refus en P6.
 
-**Ce qui existe déjà** : `scripts/pki/generate.sh` génère la CA (`PetClinic-CA`), les certificats serveur
-`customers`, `vets`, `visits`, le certificat client `api-gateway` et le `truststore.p12`.
-**Ce qui manque** : le certificat `rogue-client` et sa vérification dans la sortie du script.
+**Ce qui existe** : `scripts/pki/generate.sh` génère la CA (`PetClinic-CA`), les certificats serveur
+`customers`, `vets`, `visits`, le certificat client `api-gateway`, le certificat non autorisé
+`rogue-client` et le `truststore.p12` ; la vérification finale couvre bien les **cinq** certificats.
+**Ce qui manque** : exécuter le script pour produire `secrets/` (dossier exclu de Git) et prendre les
+captures `docs/preuves/p03-pki/`.
 
 ### 3.1 Ateliers de cryptographie (à garder pour le rapport, chapitre 5)
 
@@ -292,7 +295,7 @@ cd ../..
 
 📸 Les deux sorties (OK puis Failure) : elles prouvent intégrité et authenticité dans le rapport.
 
-### 3.2 Ajouter `rogue-client` (≈ 30 min) — **à faire**
+### 3.2 Ajouter `rogue-client` (≈ 30 min) — **fait**
 
 Ouvrir `scripts/pki/generate.sh` et vérifier que la boucle d'émission contient bien les **cinq** lignes :
 
@@ -636,23 +639,25 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:8080/api/custo
 **But** : prouver **quel service appelle** (mTLS) puis **si ce service a le droit** (liste blanche de CN).
 C'est la partie « droits du service » du Zero Trust, distincte de l'identité de l'utilisateur (P5).
 
-**Ce qui existe déjà** : profils `tls` dans les 4 applications, HTTPS, mTLS `client-auth: want`,
-gateway faisant confiance à la CA, Eureka enregistré par nom d'hôte avec port sécurisé.
+**Ce qui existe déjà** : profils `tls` dans les 4 applications, HTTPS, gateway faisant confiance à la CA,
+Eureka enregistré par nom d'hôte avec port sécurisé.
 
-**État vérifié dans le code le 14/11/2026** :
+**État vérifié dans le code le 15/11/2026** :
 
 | Point | État |
 |---|---|
 | Profil `tls` + keystore | ✅ dans les 4 applications |
-| `client-auth: want` | ✅ sur les trois services — `need` à passer en **§6.4** |
+| `client-auth` | ✅ `${CLIENT_AUTH:need}` sur les trois services — `need` par défaut, donc palier 3 |
 | Confiance en la CA côté gateway | ✅ `trusted-x509-certificates: …/ca.pem` |
 | `ServiceIdentityFilter` | ✅ livré avec P5 et branché dans les trois services, avant `BearerTokenAuthenticationFilter` |
-| `CLIENT_AUTH`, `MTLS_REQUIRED`, `allowed-callers` | ❌ absents de tous les `application.yml` : le filtre tourne avec ses valeurs par défaut (`api-gateway`, `mtls-required=false`) — **à faire au §6.1** |
-| Certificat `rogue-client` | ❌ `scripts/pki/` ne contient que `generate.sh`, `secrets/` est vide — à générer avec **`scripts/pki/generate.sh`** (cf. §6.4) |
+| `MTLS_REQUIRED` + `allowed-callers` | ✅ `mtls-required: ${MTLS_REQUIRED:true}` et `allowed-callers: api-gateway` dans le profil `tls` des trois services |
+| Certificat `rogue-client` | ✅ émis par `scripts/pki/generate.sh` (5 certificats vérifiés) — `secrets/` reste à générer localement, il est exclu de Git |
 | Preuves `docs/preuves/p06-mtls/` | ❌ dossier absent — les 4 captures de la fin de **§6.4** |
 
-> Conséquence : le palier 3 n'est **pas démontrable** aujourd'hui. `mtls-required` vaut `false` et la liste
-> blanche n'est pas configurée — le §6.1 est donc le premier travail à faire, pas une option.
+> Conséquence : le palier 3 est **configuré** mais **pas encore démontré**. Générer la PKI, lancer la pile en
+> `tls`, exécuter les 5 tests du §6.4 et prendre les captures : c'est tout ce qui manque.
+> Le mode `plain` reste utilisable (`MTLS_REQUIRED=false`) : la propriété est dans le profil `tls`, elle ne
+> s'applique donc pas aux tests HTTP simple de P9.
 
 ### 6.0 Les cinq pièges de ce dépôt (déjà rencontrés)
 
@@ -665,7 +670,7 @@ gateway faisant confiance à la CA, Eureka enregistré par nom d'hôte avec port
 5. `PKI_DIR` doit être un **chemin absolu avec des `/`** (`C:/Users/.../secrets`) : le répertoire de travail
    d'IntelliJ n'est pas toujours la racine du projet.
 
-### 6.1 Rendre la rigueur mTLS paramétrable (≈ 20 min) — **à faire**
+### 6.1 Rendre la rigueur mTLS paramétrable (≈ 20 min) — **fait**
 
 Dans le profil `tls` des trois services, remplacer la valeur figée :
 
@@ -967,9 +972,10 @@ sans rotation, sans TLS en local) ; l'idéal serait mTLS vers Eureka.
 | `./mvnw -B test` | ✅ vert : **58 tests**, 7 modules `SUCCESS` |
 | Preuves `docs/preuves/p09-tests/` | 🟨 `02-mvn-test.png` et `03-junit-securite.png` prises ; `01-smoke.png` manquante |
 
-**Ce qui reste — dépend de B** : les 4 lignes mTLS du §9.1, aujourd'hui regroupées dans `check_mtls()`
-en `SKIP` motivé. Elles exigent de B : `client-auth: need`, `allowed-callers` avec `mtls-required: true`,
-et le certificat `rogue-client`. Ensuite : remplir `check_mtls()`, relancer le script (12 `OK`),
+**Ce qui reste** : les 4 lignes mTLS du §9.1, aujourd'hui regroupées dans `check_mtls()` en `SKIP` motivé.
+Les prérequis côté code sont **désormais en place** (`client-auth: need`, `mtls-required: true`,
+`allowed-callers: api-gateway`, `rogue-client` dans le script PKI). Il reste à : générer `secrets/`
+(`./scripts/pki/generate.sh`), démarrer la pile en `tls`, remplir `check_mtls()`, obtenir 12 `OK`,
 prendre `01-smoke.png`, puis passer P9 en ✅ TERMINÉ.
 
 > Le script sort volontairement en code **0** malgré un `SKIP` : c'est un contrôle **partiel** assumé,
@@ -1030,7 +1036,17 @@ mockMvc.perform(post("/owners").with(jwt().authorities(new SimpleGrantedAuthorit
 
 ---
 
-## P10 — Rapport · ⬜ À FAIRE (17 → 22/11, 🅰️ + 🅱️)
+## P10 — Rapport · 🟨 PARTIEL (17 → 22/11, 🅰️ + 🅱️)
+
+**État au 15/11/2026** — le rapport LaTeX existe dans `Rapport_PetClinic_Securite/` :
+
+| Élément | État |
+|---|---|
+| Squelette Overleaf (classe ENSIAS, XeLaTeX, Comic Sans avec repli) | ✅ 9 chapitres en place, compile sans erreur |
+| Chapitres 4 à 7 (architecture, composants, installation, validation) | ✅ rédigés — **35 pages**, dans la cible 30-40 |
+| Figures | ✅ 8 captures choisies dans `docs/preuves/` (séquence `dossier`, jeton, matrice RBAC, `dossier` 200, Actuator, Eureka, tests, JUnit) |
+| Chapitres 1 à 3, 8 et 9 | ⬜ squelettes : contexte, état de l'art, critères de décision, avantages/limites, conclusion |
+| Titre de la page de garde | ✅ porte le module étudié, le but Zero Trust et le nom PetClinic |
 
 **But** : livrable 1 de l'énoncé (E5). **Neuf chapitres**, exactement ceux qui sont demandés — pas les
 douze chapitres de l'ancien plan.
