@@ -1,11 +1,11 @@
 # Guide de démarrage — pas à pas, clic par clic (aligné sur le guide v2)
 
-**Version du 10 novembre 2026.** Ce fichier remplace intégralement la version précédente.
+**Version du 15 novembre 2026.** Ce fichier remplace intégralement la version précédente.
 Il suit la numérotation du guide officiel de référence : **`guide/GuideV2!!!.md`**, qui fait foi
 (il est lui-même aligné sur l'énoncé de l'encadrant : *Authentification et autorisation interservices*, A.U. 2026/2027).
 
 > **Dépôt Moodle : mardi 24 novembre 2026 avant minuit — déposer le lundi 23 au soir.**
-> Aujourd'hui : mardi 10 novembre 2026. Il reste 14 jours.
+> Aujourd'hui : dimanche 15 novembre 2026. Il reste 8 jours.
 
 **Légende**
 
@@ -55,14 +55,14 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | **P4** | Keycloak : émission de jetons OIDC | ✅ TERMINÉ le 10/11/2026 (PR #54) | A | `docs/preuves/p04-keycloak/` |
 | **P5** | Module `spring-petclinic-security` : JWT + RBAC partout | ✅ TERMINÉ le 11/11/2026 (PR #61 et #63) | A | `docs/preuves/p05-jwt-rbac/` |
 | **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — paliers 1-2 faits | B | `docs/preuves/p06-mtls/` |
-| **P7** | Scénario `dossier` à 3 microservices | ⬜ À FAIRE | A (gateway) + B (client mTLS) | `docs/preuves/p07-dossier/` |
+| **P7** | Scénario `dossier` à 3 microservices | 🟨 PARTIEL — gateway terminé (membre A, PR #68) ; client mTLS à B | A (gateway) + B (client mTLS) | `docs/preuves/p07-dossier/` |
 | **P8** | Durcissement (Actuator + Eureka) | ✅ TERMINÉ le 10/11/2026 | A | `docs/preuves/p08-durcissement/` |
-| **P9** | Tests automatisés et `security-smoke.sh` | ⬜ À FAIRE | A + B | `docs/preuves/p09-tests/` |
+| **P9** | Tests automatisés et `security-smoke.sh` | 🟨 PARTIEL — A livré (8 tests + smoke 8 OK / 1 SKIP) ; reste les 4 lignes mTLS de B et `01-smoke.png` | A + B | `docs/preuves/p09-tests/` |
 | **P10** | Rapport (9 chapitres) | ⬜ À FAIRE | A + B | — |
 | **P11** | Archive importable + test à froid IntelliJ | ⬜ À FAIRE | A + B | — |
 | **P12** | Présentation (10 min) | ⬜ À FAIRE | A + B | — |
 
-### Où sont les preuves (état au 14/11/2026)
+### Où sont les preuves (état au 15/11/2026)
 
 | Dossier | Phase v2 | Contenu attendu | État |
 |---|---|---|---|
@@ -72,17 +72,17 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | `p04-keycloak/` | P4 | realm importé, 3 utilisateurs, rôle d'`alice`, jeton décodé | ✅ **présent** (4 captures) |
 | `p05-jwt-rbac/` | P5 | matrice 401/403/200/403/201, les deux `SecurityConfig`, jeton décodé | ✅ **présent** (4 captures) |
 | `p06-mtls/` | P6 | les 5 tests du palier 3 + Eureka en `https` | ❌ **absent du dépôt** (paliers 1-2 chez B) |
-| `p07-dossier/` | P7 | `dossier` 200/401/403 + diagramme de séquence | ❌ à créer |
+| `p07-dossier/` | P7 | `dossier` 200/401/403 + diagramme de séquence | 🟨 **partiel** : 01, 02, 03, 05 présentes (membre A) ; `04-journaux.png` à venir avec le client mTLS |
 | `p08-durcissement/` | P8 | `actuator/env` 404, `eureka/apps` 401, service `UP` | 🟨 dossier créé, **captures à prendre** |
-| `p09-tests/` | P9 | sortie du smoke, `mvn test`, JUnit de sécurité | ❌ à créer |
+| `p09-tests/` | P9 | sortie du smoke, `mvn test`, JUnit de sécurité | 🟨 **partiel** : `02-mvn-test.png` et `03-junit-securite.png` prises ; `01-smoke.png` attend les 12 lignes |
 | `bonus-ci/` | ancienne phase 3 | JaCoCo, run Actions, protection de `main` | ✅ présent (hors périmètre v2) |
 | `bonus-qualite-sca/` | ancienne phase 4 | Sonar, Trivy, Dependabot | ✅ présent (hors périmètre v2) |
 
 > Les dossiers `p03-pki/` et `p06-mtls/` sont **référencés mais absents** : les captures ont été prises par B
 > sans être committées. À récupérer avant P10, sinon le rapport citera des figures inexistantes.
 
-**Chemin critique** : P4 ✅ → P5 ✅ → **P7 → P9 → P10**. P3 et P6 avancent en parallèle côté B, mais **P7 a besoin de P6**
-(le gateway doit présenter son certificat pour appeler `vets`).
+**Chemin critique** : P4 ✅ → P5 ✅ → **P7 🟨 (gateway ✅ membre A, client mTLS à B) → P9 → P10**. P3 et P6 avancent
+en parallèle côté B ; seuls le client mTLS de P7 et les 4 lignes mTLS de P9 en dépendent.
 
 ---
 
@@ -765,19 +765,30 @@ plutôt que d'y passer le week-end.
 
 ---
 
-## P7 — Scénario `dossier` à 3 microservices · ⬜ À FAIRE (1 j, 🅰️ gateway + 🅱️ client mTLS)
+## P7 — Scénario `dossier` à 3 microservices · 🟨 PARTIEL — (gateway ✅ membre A, client mTLS ⬜ à faire B)
 
-**État vérifié dans le code le 14/11/2026** — rien du scénario n'est encore écrit :
+**Ce qui a été livré par A (gateway)** — PR #68 fusionnée dans `dev` le 15/11/2026 :
 
-- pas de `MtlsHttpClientFactory`, pas de `VetsServiceClient`, pas de `DossierController` ;
-- **pas de `ServerBearerExchangeFilterFunction`** dans `ApiGatewayApplication`. C'est le point bloquant :
-  le gateway n'appelle pas les services avec le jeton de l'utilisateur, donc l'agrégation existante
-  `GET /api/gateway/owners/{id}` renvoie `500` même avec un jeton valide, alors que les routes proxy
-  (`/api/vet/**`, `/api/customer/**`) fonctionnent car Spring Cloud Gateway recopie les en-têtes ;
-- preuves `docs/preuves/p07-dossier/` : ❌ absentes.
+| Élément | Fichier | Contenu |
+|---|---|---|
+| Relais du jeton | `…/api/ApiGatewayApplication.java` | `ServerBearerExchangeFilterFunction` branché sur le `WebClient` `@LoadBalanced` — c'était le point bloquant du `500` |
+| Client `vets` | `…/api/application/VetsServiceClient.java` | `http://vets-service/vets`, `bodyToFlux(VetDetails.class).collectList()` |
+| DTO | `…/api/dto/VetDetails.java` | record + constructeur compact (spécialités `null` → `List.of()`) |
+| Agrégat | `…/api/dto/OwnerDossier.java` | `record OwnerDossier(OwnerDetails owner, List<VetDetails> vets)` |
+| Endpoint | `…/api/boundary/web/DossierController.java` | `GET /api/gateway/owners/{id}/dossier` = `Mono.zip(owners, vets, OwnerDossier::new)` — **classe distincte** de `ApiGatewayController` |
+| Tests | `DossierControllerTest`, `VetsServiceClientTest`, `VetDetailsTest` | 4 tests, couvrant les trois classes |
+| Preuves | `docs/preuves/p07-dossier/` | `01-dossier-200.png`, `02-sans-jeton.png`, `03-carol-403.png`, `05-sequence.png` |
 
-> Ordre de travail conseillé : le filtre `ServerBearerExchangeFilterFunction` (point 3 du §7.1) **avant**
-> `MtlsHttpClientFactory`. Sans lui, le §7.3 ne peut pas afficher de `200`.
+**Matrice mesurée le 15/11/2026** via le gateway : `dossier` **200** avec `alice`, **401** sans jeton
+(`WWW-Authenticate: Bearer`), **403** avec `carol` (`error="insufficient_scope"`) ; et
+`GET /api/gateway/owners/1` renvoie **200** — le `500` a disparu.
+
+**Ce qui reste à B (§7.1)** : le client mTLS `MtlsHttpClientFactory`. Il n'est indispensable qu'en profil
+`tls` — l'agrégation fonctionne déjà en HTTP simple. La capture `04-journaux.png` (CN `api-gateway` dans
+les journaux des services) en dépend.
+
+> Les §7.1 à §7.3 ci-dessous restent la procédure de référence : elles documentent ce qui a été fait
+> et ce que B doit compléter.
 
 **But** : l'exigence E3 de l'énoncé — une requête cliente fait collaborer **les trois** services métier.
 Le `GET /api/gateway/owners/{id}/dossier` interroge `customers` (propriétaire + animaux), `visits` (visites)
@@ -944,20 +955,25 @@ sans rotation, sans TLS en local) ; l'idéal serait mTLS vers Eureka.
 
 ---
 
-## P9 — Tests automatisés et script de contrôle · ⬜ À FAIRE (1 j, 🅰️ + 🅱️)
+## P9 — Tests automatisés et script de contrôle · 🟨 PARTIEL (1 j, 🅰️ + 🅱️)
 
-**État vérifié dans le code le 14/11/2026** :
+**État au 15/11/2026 — livré par A** :
 
-| Élément attendu | État |
+| Élément | État |
 |---|---|
-| `scripts/security-smoke.sh` | ❌ absent (`scripts/` = `dev-start`, `dev-stop`, `run_all`, `stop_all`, `pushImages`, `tagImages`, `pki`) |
-| Tests JUnit de sécurité dans les services | ❌ aucun ; seuls existent les 16 tests du module `spring-petclinic-security` et les 14 du gateway |
-| `./mvnw -B -P quality verify` | ✅ vert, 48 tests — mais rien ne prouve le RBAC **via HTTP réel** |
-| Preuves `docs/preuves/p09-tests/` | ❌ dossier absent |
+| `scripts/security-smoke.sh` | ✅ créé — **8 `OK`, 0 `FAIL`, 1 `SKIP`**, code de sortie 0 |
+| Tests JUnit de sécurité | ✅ 3 classes : `OwnerSecurityTest` (3 tests), `VetSecurityTest` (2), `VisitSecurityTest` (3) |
+| `spring-security-test` dans les 3 services | ✅ ajouté (artefact déjà utilisé par le gateway et le module de sécurité) |
+| `./mvnw -B test` | ✅ vert : **58 tests**, 7 modules `SUCCESS` |
+| Preuves `docs/preuves/p09-tests/` | 🟨 `02-mvn-test.png` et `03-junit-securite.png` prises ; `01-smoke.png` manquante |
 
-> La dépendance `spring-boot-starter-security-test` existe bien dans le BOM 4.0.9 (vérifié) : le §9.2
-> est applicable tel quel. P9 dépend de P7 (les trois lignes « dossier » du smoke) et du palier 3 de P6
-> (les quatre lignes mTLS) : à planifier après eux, sinon le script restera partiellement `SKIP`.
+**Ce qui reste — dépend de B** : les 4 lignes mTLS du §9.1, aujourd'hui regroupées dans `check_mtls()`
+en `SKIP` motivé. Elles exigent de B : `client-auth: need`, `allowed-callers` avec `mtls-required: true`,
+et le certificat `rogue-client`. Ensuite : remplir `check_mtls()`, relancer le script (12 `OK`),
+prendre `01-smoke.png`, puis passer P9 en ✅ TERMINÉ.
+
+> Le script sort volontairement en code **0** malgré un `SKIP` : c'est un contrôle **partiel** assumé,
+> pas un succès complet. Ne pas surdéclarer P9.
 
 **But** : transformer la matrice de vérification en **preuve reproductible**, utilisable en démonstration
 et par le correcteur.
@@ -985,8 +1001,10 @@ et la valeur obtenue. `000` signifie « pas de réponse HTTP » : c'est le refus
 
 ### 9.2 Tests JUnit de sécurité (au moins un par service)
 
-Ajouter `spring-boot-starter-security-test` en scope `test` (Spring Boot 4), puis, dans un
-`@SpringBootTest` + `@AutoConfigureMockMvc` **avec filtres actifs** (contrairement aux tests métier de P5.3) :
+Ajouter `org.springframework.security:spring-security-test` en scope `test` (même artefact que le gateway),
+puis, dans un `@WebMvcTest` + `@Import(ServletSecurityConfiguration.class)` **avec filtres actifs**
+(pas de `addFilters = false`, contrairement aux tests métier de P5.3), avec un `@MockitoBean JwtDecoder`
+pour ne pas contacter Keycloak :
 
 ```java
 mockMvc.perform(get("/owners")).andExpect(status().isUnauthorized());
