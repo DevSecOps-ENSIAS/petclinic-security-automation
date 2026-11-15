@@ -37,7 +37,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <bouncycastle.version>1.85</bouncycastle.version>
+        <bouncycastle.version>1.87</bouncycastle.version>
         <spring-cloud.version>2025.1.0</spring-cloud.version>
         <datasource-micrometer.version>2.3.0</datasource-micrometer.version>
 
