@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-# Génère une CA, un certificat serveur par service et un certificat client pour le gateway.
-# Usage : PKI_PASS='mot-de-passe-fort' ./scripts/pki/generate.sh [dossier-sortie]
+# Usage : PKI_PASS='mot-de-passe' ./scripts/pki/generate.sh [dossier-sortie]
 set -euo pipefail
 : "${PKI_PASS:?définir PKI_PASS (ex. export PKI_PASS='...')}"
 OUT="${1:-secrets}"
 mkdir -p "$OUT"
 cd "$OUT"
-
-# Évite la conversion de chemins de Git Bash pour -subj
 export MSYS_NO_PATHCONV=1
 
 echo "== 1. Autorité de certification =="
@@ -32,7 +29,8 @@ issue() {  # issue <nom> <serverAuth|clientAuth> <SAN>
 for svc in customers vets visits; do
   issue "$svc" serverAuth "DNS:localhost,DNS:$svc-service,IP:127.0.0.1"
 done
-issue api-gateway clientAuth "DNS:localhost,DNS:api-gateway"
+issue api-gateway  clientAuth "DNS:localhost,DNS:api-gateway"
+issue rogue-client clientAuth "DNS:localhost"
 
 echo "== Truststore Java =="
 rm -f truststore.p12
@@ -40,5 +38,5 @@ keytool -importcert -noprompt -alias petclinic-ca -file ca.pem \
   -keystore truststore.p12 -storetype PKCS12 -storepass "$PKI_PASS"
 
 echo "== Vérifications =="
-for f in customers vets visits api-gateway; do openssl verify -CAfile ca.pem "$f.crt"; done
+for f in customers vets visits api-gateway rogue-client; do openssl verify -CAfile ca.pem "$f.crt"; done
 echo "Terminé. Fichiers dans $(pwd)"
