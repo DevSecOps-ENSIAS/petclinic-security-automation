@@ -20,7 +20,7 @@
         <webjars-vue-router.version>4.5.1</webjars-vue-router.version>
         <webjars-dompurify.version>3.4.17</webjars-dompurify.version>
         <webjars-marked.version>18.2.0</webjars-marked.version>
-        <squareup-okhttp3.version>5.0.0-alpha.14</squareup-okhttp3.version>
+        <squareup-okhttp3.version>5.5.1</squareup-okhttp3.version>
 
         <libsass-maven-plugin.version>0.3.4</libsass-maven-plugin.version>
         <docker.image.exposed.port>8081</docker.image.exposed.port>
