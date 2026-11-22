@@ -96,7 +96,7 @@
         <profile>
             <id>quality</id>
             <properties>
-                <jacoco.version>0.8.12</jacoco.version>
+                <jacoco.version>0.8.16</jacoco.version>
                 <jacoco.minimum>0.60</jacoco.minimum>
                 <jacoco.check.skip>false</jacoco.check.skip>
                 <sonar.projectKey>DevSecOps-ENSIAS_petclinic-security-automation</sonar.projectKey>
