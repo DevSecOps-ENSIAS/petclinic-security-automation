@@ -63,6 +63,8 @@ management:
     export:
       zipkin:
         endpoint: http://tracing-server:9411/api/v2/spans
+
+
 ---
 spring:
   config:
@@ -77,14 +79,10 @@ server:
     key-store-type: PKCS12
     key-store-password: ${PKI_PASS}
     key-alias: customers
-    client-auth: want
+    client-auth: ${CLIENT_AUTH:need}
     trust-store: file:${PKI_DIR:secrets}/truststore.p12
     trust-store-type: PKCS12
     trust-store-password: ${PKI_PASS}
-
-management:
-  server:
-    port: ${MANAGEMENT_PORT:8091}
 
 eureka:
   instance:
@@ -92,4 +90,9 @@ eureka:
     prefer-ip-address: false
     secure-port-enabled: true
     non-secure-port-enabled: false
-    secure-port: ${SERVER_PORT:8081}
+    secure-port: ${server.port}
+
+petclinic:
+  security:
+    mtls-required: ${MTLS_REQUIRED:true}
+    allowed-callers: api-gateway

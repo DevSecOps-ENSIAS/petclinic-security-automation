@@ -93,6 +93,7 @@ management:
 
 
 
+
 ---
 spring:
   config:
@@ -104,9 +105,15 @@ spring:
         webflux:
           httpclient:
             ssl:
-              trusted-x509-certificates:
+              trustedX509Certificates:
                 - ${PKI_DIR:secrets}/ca.pem
               key-store: ${PKI_DIR:secrets}/api-gateway.p12
               key-store-type: PKCS12
               key-store-password: ${PKI_PASS}
               key-password: ${PKI_PASS}
+
+petclinic:
+  mtls:
+    key-store: ${PKI_DIR:secrets}/api-gateway.p12
+    trust-store: ${PKI_DIR:secrets}/truststore.p12
+    password: ${PKI_PASS}

@@ -18,8 +18,8 @@
         <webjars-bootstrap.version>5.3.8</webjars-bootstrap.version>
         <webjars-font-awesome.version>4.7.0</webjars-font-awesome.version>
         <webjars-vue-router.version>4.5.1</webjars-vue-router.version>
-        <webjars-dompurify.version>3.3.1</webjars-dompurify.version>
-        <webjars-marked.version>14.1.2</webjars-marked.version>
+        <webjars-dompurify.version>3.4.17</webjars-dompurify.version>
+        <webjars-marked.version>18.2.0</webjars-marked.version>
         <squareup-okhttp3.version>5.0.0-alpha.14</squareup-okhttp3.version>
 
         <libsass-maven-plugin.version>0.3.4</libsass-maven-plugin.version>
@@ -132,7 +132,7 @@
         <dependency>
             <groupId>org.webjars.npm</groupId>
             <artifactId>vue</artifactId>
-            <version>3.5.44</version>
+            <version>3.5.45</version>
         </dependency>
         <dependency>
             <groupId>org.webjars.npm</groupId>

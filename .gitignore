@@ -35,3 +35,9 @@ generated/
 secrets/
 /pki/
 docs/preuves/**/*.har
+
+logs/
+dossier.json
+
+logs/
+dossier.json
