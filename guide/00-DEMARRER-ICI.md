@@ -1,11 +1,13 @@
 # Guide de démarrage — pas à pas, clic par clic (aligné sur le guide v2)
 
-**Version du 15 novembre 2026.** Ce fichier remplace intégralement la version précédente.
+**Version du 23 novembre 2026** — mise à jour d'après une lecture du code, des YAML, des tests et des scripts
+de `main` (la version précédente datait du 15/11). Les statuts ci-dessous décrivent ce que le dépôt **contient**,
+pas ce que le planning prévoyait.
 Il suit la numérotation du guide officiel de référence : **`guide/GuideV2!!!.md`**, qui fait foi
 (il est lui-même aligné sur l'énoncé de l'encadrant : *Authentification et autorisation interservices*, A.U. 2026/2027).
 
 > **Dépôt Moodle : mardi 24 novembre 2026 avant minuit — déposer le lundi 23 au soir.**
-> Aujourd'hui : dimanche 15 novembre 2026. Il reste 8 jours.
+> Aujourd'hui : lundi 23 novembre 2026. Il reste jusqu'à demain minuit.
 
 **Légende**
 
@@ -34,7 +36,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | 4 bis Chaîne logicielle | — | ✅ fait par B (PR #44), conservé |
 | 5 PKI OpenSSL | **P3** | ✅ script complet (5 certificats) — captures à prendre |
 | 6 JWT en bordure | **P5** | ✅ fait : le module valide le jeton dans les services **et** le gateway |
-| 7 TLS puis mTLS | **P6** | 🟨 `client-auth: need` et liste blanche configurés — tests et captures à faire |
+| 7 TLS puis mTLS | **P6** | 🟨 serveur ✅ (`client-auth: need`, liste blanche, filtre) — client mTLS du gateway ❌, tests et captures à faire |
 | 8 RDS MySQL | ❌ supprimée | HSQLDB en mémoire suffit ; artefacts retirés du dépôt |
 | 9 Docker, ECR, EC2 | ❌ supprimée | exécution locale + IntelliJ ; Docker **uniquement** pour Keycloak |
 | 10 Durcissement | **P8** | ✅ fait le 10/11/2026 (Actuator + Eureka seulement) |
@@ -51,18 +53,18 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | **P0** | Outils et build de référence | ✅ TERMINÉ | A + B | — |
 | **P1** | Dépôt, branches, hygiène des secrets | ✅ TERMINÉ | A | `docs/preuves/p01-depot/` |
 | **P2** | Modèle de menace (constats « avant ») | ✅ TERMINÉ | A | `docs/preuves/p02-menace/` |
-| **P3** | PKI OpenSSL (CA + certificats) | 🟨 PARTIEL — script complet (5 certificats dont `rogue-client`) ; reste à générer `secrets/` et à prendre les captures | B | `docs/preuves/p03-pki/` |
+| **P3** | PKI OpenSSL (CA + certificats) | ✅ TERMINÉ (code) — script complet (5 certificats dont `rogue-client`) ; `secrets/` à **régénérer** avec le script (le ZIP du 08/11 n'a pas `rogue-client`) ; captures à prendre | B | `docs/preuves/p03-pki/` |
 | **P4** | Keycloak : émission de jetons OIDC | ✅ TERMINÉ le 10/11/2026 (PR #54) | A | `docs/preuves/p04-keycloak/` |
 | **P5** | Module `spring-petclinic-security` : JWT + RBAC partout | ✅ TERMINÉ le 11/11/2026 (PR #61 et #63) | A | `docs/preuves/p05-jwt-rbac/` |
-| **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — palier 3 **configuré** (`need` + liste blanche) ; reste PKI à générer, les 5 tests et les captures | B | `docs/preuves/p06-mtls/` |
-| **P7** | Scénario `dossier` à 3 microservices | 🟨 PARTIEL — gateway terminé (membre A, PR #68) ; client mTLS à B | A (gateway) + B (client mTLS) | `docs/preuves/p07-dossier/` |
+| **P6** | mTLS strict + autorisation par identité de service | 🟨 PARTIEL — **côté serveur ✅** (`need`, liste blanche, `ServiceIdentityFilter`, 6 tests unitaires) ; **côté client ❌** (le `WebClient` du gateway ne présente aucun certificat) ; les 5 tests et les captures restent à faire | B | `docs/preuves/p06-mtls/` |
+| **P7** | Scénario `dossier` à 3 microservices | 🟨 PARTIEL — endpoint ✅ (customers + visits + vets, PR #68) ; **`MtlsHttpClientFactory` absent du dépôt** : en profil `tls`, l'agrégat `/api/gateway/**` ne peut pas passer le handshake | A (gateway) + B (client mTLS) | `docs/preuves/p07-dossier/` |
 | **P8** | Durcissement (Actuator + Eureka) | ✅ TERMINÉ le 10/11/2026 | A | `docs/preuves/p08-durcissement/` |
 | **P9** | Tests automatisés et `security-smoke.sh` | 🟨 PARTIEL — livré et fusionné (3 classes de tests, smoke 8 OK / 1 SKIP) ; reste les 4 lignes mTLS et `01-smoke.png` | A + B | `docs/preuves/p09-tests/` |
 | **P10** | Rapport (9 chapitres) | 🟨 PARTIEL — squelette LaTeX + chapitres 4 à 7 rédigés (35 p, 8 figures) ; ch. 1-3, 8 et 9 à rédiger | A + B | `Rapport_PetClinic_Securite/` |
-| **P11** | Archive importable + test à froid IntelliJ | ⬜ À FAIRE | A + B | — |
+| **P11** | Archive importable + test à froid IntelliJ | ⬜ À FAIRE — absents : `scripts/run-secure.sh`, `LISEZMOI-RENDU.md`, règles `export-ignore` ; `logs/` à retirer de Git | A + B | — |
 | **P12** | Présentation (10 min) | ⬜ À FAIRE | A + B | — |
 
-### Où sont les preuves (état au 15/11/2026)
+### Où sont les preuves (état au 23/11/2026, d'après le contenu de `main`)
 
 | Dossier | Phase v2 | Contenu attendu | État |
 |---|---|---|---|
@@ -73,7 +75,7 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 | `p05-jwt-rbac/` | P5 | matrice 401/403/200/403/201, les deux `SecurityConfig`, jeton décodé | ✅ **présent** (4 captures) |
 | `p06-mtls/` | P6 | les 5 tests du palier 3 + Eureka en `https` | ❌ **absent** — configuration prête, exécution et captures à faire |
 | `p07-dossier/` | P7 | `dossier` 200/401/403 + diagramme de séquence | 🟨 **partiel** : 01, 02, 03, 05 présentes (membre A) ; `04-journaux.png` à venir avec le client mTLS |
-| `p08-durcissement/` | P8 | `actuator/env` 404, `eureka/apps` 401, service `UP` | 🟨 dossier créé, **captures à prendre** |
+| `p08-durcissement/` | P8 | `actuator/env` 404, `eureka/apps` 401, service `UP` | ✅ **présent** (3 captures : 01, 02, 03) |
 | `p09-tests/` | P9 | sortie du smoke, `mvn test`, JUnit de sécurité | 🟨 **partiel** : `02-mvn-test.png` et `03-junit-securite.png` prises ; `01-smoke.png` attend les 12 lignes |
 | `bonus-ci/` | ancienne phase 3 | JaCoCo, run Actions, protection de `main` | ✅ présent (hors périmètre v2) |
 | `bonus-qualite-sca/` | ancienne phase 4 | Sonar, Trivy, Dependabot | ✅ présent (hors périmètre v2) |
@@ -81,7 +83,8 @@ ont changé de numéro. Ne confondez plus « ancienne phase 10 » et « P10 » :
 > Les dossiers `p03-pki/` et `p06-mtls/` sont **référencés mais absents** : les captures ont été prises par B
 > sans être committées. À récupérer avant P10, sinon le rapport citera des figures inexistantes.
 
-**Chemin critique** : P4 ✅ → P5 ✅ → **P7 🟨 (gateway ✅ membre A, client mTLS à B) → P9 🟨 → P10 🟨**.
+**Chemin critique (23/11)** : P4 ✅ → P5 ✅ → **client mTLS du gateway (P7 ❌) → 5 tests mTLS (P6) → `check_mtls` (P9) → P11**.
+Le client mTLS passe en premier : sans lui, le test à froid de P11 échoue au `security-smoke.sh`.
 P3 et P6 sont **prêts côté code** (script PKI complet, palier 3 configuré) mais sans preuves : il ne manque que
 `secrets/`, l'exécution des 5 tests et les captures. C'est ce même travail qui débloque les 4 lignes mTLS de P9.
 
@@ -92,7 +95,9 @@ P3 et P6 sont **prêts côté code** (script PKI complet, palier 3 configuré) m
 1. **Branches** : `main` (protégée) ← `dev` ← `feature/<phase>-<sujet>`. Jamais de push direct sur `main` ni `dev`.
 2. **Chaque PR** est relue et approuvée par l'autre membre.
 3. **Messages de commit** : `feat:`, `fix:`, `sec:`, `docs:`, `chore:`, `ci:`.
-4. **Aucun secret dans Git** : `*.p12`, `*.pem`, `*.key`, `.env`, `secrets/` (déjà dans `.gitignore`).
+4. **Aucun secret réel dans Git** : `*.p12`, `*.pem`, `*.key`, `.env`, `secrets/` (déjà dans `.gitignore`).
+   Seule exception : les certificats **de démonstration** de P3 (voir la décision du 23/11 dans P3).
+   Les `logs/` ne vont jamais dans Git : `JAVA_TOOL_OPTIONS` y affiche le mot de passe du truststore.
    Contrôle final : `git log -p | grep -iE "password|PRIVATE KEY"`.
 5. **Toujours `./mvnw`**, jamais `mvn`. Après tout changement de `pom.xml` ou de code Java :
    `./mvnw -B -DskipTests package` doit afficher `BUILD SUCCESS`.
@@ -266,7 +271,7 @@ est relié à la phase qui le corrige (F4-a → P8, F1-a → P5, F7 → P6, F6 �
 
 ---
 
-## P3 — PKI avec OpenSSL (CA + certificats) · 🟨 PARTIEL
+## P3 — PKI avec OpenSSL (CA + certificats) · ✅ TERMINÉ (code) · 🟨 captures à prendre
 
 **But** : disposer d'une autorité de certification de projet et de certificats pour les 4 applications,
 plus un certificat volontairement **non autorisé** (`rogue-client`) qui servira à prouver le refus en P6.
@@ -274,8 +279,13 @@ plus un certificat volontairement **non autorisé** (`rogue-client`) qui servira
 **Ce qui existe** : `scripts/pki/generate.sh` génère la CA (`PetClinic-CA`), les certificats serveur
 `customers`, `vets`, `visits`, le certificat client `api-gateway`, le certificat non autorisé
 `rogue-client` et le `truststore.p12` ; la vérification finale couvre bien les **cinq** certificats.
-**Ce qui manque** : exécuter le script pour produire `secrets/` (dossier exclu de Git) et prendre les
-captures `docs/preuves/p03-pki/`.
+**Ce qui manque** : régénérer `secrets/` avec le script de `main` et prendre les captures
+`docs/preuves/p03-pki/`.
+
+> ⛔ **Un `secrets/` ancien circule** (ZIP du 08/11/2026) : il contient la CA, `customers`, `vets`, `visits`,
+> `api-gateway` et le `truststore.p12`, mais **pas `rogue-client`** — script antérieur à son ajout. Avec ce
+> dossier, le test n°4 de P6 (certificat intrus → 403) est impossible. **Toujours régénérer** :
+> `rm -rf secrets && PKI_PASS='demo-local' ./scripts/pki/generate.sh`, et ne garder qu'**une seule** CA.
 
 ### 3.1 Ateliers de cryptographie (à garder pour le rapport, chapitre 5)
 
@@ -325,8 +335,17 @@ export PKI_PASS='demo-local'
 **✅** Cinq lignes `…crt: OK`, et dans `secrets/` : `ca.pem`, `ca.key`, `customers.p12`, `vets.p12`,
 `visits.p12`, `api-gateway.p12`, `rogue-client.p12`, `truststore.p12`.
 **⛔** Un sujet `C=/C=MA/...` déformé sous Git Bash → `export MSYS_NO_PATHCONV=1` (déjà dans le script).
-**⛔** `secrets/` ne doit **jamais** être committé : les fichiers se transmettent entre A et B hors Git,
-et **une seule CA** doit servir pour la démonstration finale.
+**Décision du 23/11/2026 — `secrets/` de démonstration versionné.** Projet académique, CA locale jetable,
+aucun certificat réutilisé ailleurs : les fichiers générés peuvent être poussés pour que le correcteur dispose
+d'une PKI qui fonctionne sans rien régénérer. Conditions :
+1. Générer avec le **mot de passe de démonstration** `demo-local` (celui du `LISEZMOI-RENDU.md`), jamais un mot de
+   passe personnel ou réutilisé.
+2. `*.p12`, `*.pem`, `*.key`, `*.csr`, `*.srl` et `secrets/` sont dans `.gitignore` : forcer l'ajout avec
+   `git add -f secrets/`.
+3. Une seule CA pour toute la démonstration ; régénérer = remplacer **tous** les fichiers.
+4. Vérifier au premier run CI que Trivy (`scanners: secret`) ne bloque pas sur les clés privées.
+Alternative sans clé dans Git : laisser `secrets/` ignoré et faire générer la PKI par le correcteur (étape 3 du
+`LISEZMOI-RENDU.md`) — c'est le comportement par défaut de P11 tant que `secrets/` n'est pas ajouté.
 
 ### Captures 📸 (`docs/preuves/p03-pki/`)
 
@@ -642,7 +661,7 @@ C'est la partie « droits du service » du Zero Trust, distincte de l'identité 
 **Ce qui existe déjà** : profils `tls` dans les 4 applications, HTTPS, gateway faisant confiance à la CA,
 Eureka enregistré par nom d'hôte avec port sécurisé.
 
-**État vérifié dans le code le 15/11/2026** :
+**État vérifié dans le code le 23/11/2026** :
 
 | Point | État |
 |---|---|
@@ -652,10 +671,14 @@ Eureka enregistré par nom d'hôte avec port sécurisé.
 | `ServiceIdentityFilter` | ✅ livré avec P5 et branché dans les trois services, avant `BearerTokenAuthenticationFilter` |
 | `MTLS_REQUIRED` + `allowed-callers` | ✅ `mtls-required: ${MTLS_REQUIRED:true}` et `allowed-callers: api-gateway` dans le profil `tls` des trois services |
 | Certificat `rogue-client` | ✅ émis par `scripts/pki/generate.sh` (5 certificats vérifiés) — `secrets/` reste à générer localement, il est exclu de Git |
+| Tests unitaires du filtre | ✅ `ServiceIdentityFilterTest` : 6 cas (santé non filtrée, pas de certificat → 401, CN autorisé → passe, CN inconnu → 403, certificat sans CN → 403) |
+| Routes proxifiées du gateway (`/api/customer/**`, `/api/vet/**`, `/api/visit/**`) | ✅ `spring.cloud.gateway…httpclient.ssl` présente le certificat `api-gateway.p12` |
+| **Client mTLS du `WebClient` du gateway** | ❌ `ApiGatewayApplication` ne construit qu'un `WebClient` avec `ServerBearerExchangeFilterFunction` : aucun `SslContext`, aucune propriété `petclinic.mtls.*`, pas de `MtlsHttpClientFactory` dans le dépôt |
 | Preuves `docs/preuves/p06-mtls/` | ❌ dossier absent — les 4 captures de la fin de **§6.4** |
 
-> Conséquence : le palier 3 est **configuré** mais **pas encore démontré**. Générer la PKI, lancer la pile en
-> `tls`, exécuter les 5 tests du §6.4 et prendre les captures : c'est tout ce qui manque.
+> Conséquence : le palier 3 est **configuré côté serveur** mais **ni démontré ni utilisable par les appels
+> agrégés**. Il manque : (1) le client mTLS du gateway (voir P7, §7.1) ; (2) générer la PKI ; (3) lancer la pile
+> en `tls` ; (4) exécuter les 5 tests du §6.4 ; (5) prendre les captures.
 > Le mode `plain` reste utilisable (`MTLS_REQUIRED=false`) : la propriété est dans le profil `tls`, elle ne
 > s'applique donc pas aux tests HTTP simple de P9.
 
@@ -788,9 +811,17 @@ plutôt que d'y passer le week-end.
 (`WWW-Authenticate: Bearer`), **403** avec `carol` (`error="insufficient_scope"`) ; et
 `GET /api/gateway/owners/1` renvoie **200** — le `500` a disparu.
 
-**Ce qui reste à B (§7.1)** : le client mTLS `MtlsHttpClientFactory`. Il n'est indispensable qu'en profil
-`tls` — l'agrégation fonctionne déjà en HTTP simple. La capture `04-journaux.png` (CN `api-gateway` dans
-les journaux des services) en dépend.
+**Ce qui reste à B (§7.1)** : le client mTLS `MtlsHttpClientFactory`. Il manque dans le dépôt (vérifié le
+23/11 : aucune occurrence de `MtlsHttpClientFactory`, `petclinic.mtls` ni `SslContext`). L'agrégation
+fonctionne en HTTP simple, mais **dès que les services exigent un certificat client — c'est-à-dire en profil
+`tls`, celui du rendu —** les appels du `WebClient` (`/api/gateway/owners/{id}` et `/dossier`) ne présentent aucun
+certificat et doivent échouer au handshake. La capture `04-journaux.png` (CN `api-gateway` dans les journaux
+des services) en dépend.
+
+> ⛔ **Piège de vérification** : l'appel aux visites est enveloppé dans un circuit breaker dont le repli renvoie
+> des visites **vides** (`emptyVisitsForPets`). Un `200` sur le dossier ne prouve donc pas que `visits` répond
+> en mTLS : vérifier que les visites sont **présentes** dans le JSON, et chercher `CN=api-gateway` dans le
+> journal de `visits`.
 
 > Les §7.1 à §7.3 ci-dessous restent la procédure de référence : elles documentent ce qui a été fait
 > et ce que B doit compléter.
@@ -942,7 +973,7 @@ Puis démarrer `customers` et vérifier qu'il **s'enregistre toujours** :
 
 **Non-régression** : `./mvnw -B verify` → `BUILD SUCCESS` (32 tests, 0 échec).
 
-### Captures 📸 (`docs/preuves/p08-durcissement/`) — **à prendre**
+### Captures 📸 (`docs/preuves/p08-durcissement/`) — ✅ présentes dans le dépôt
 
 | Fichier | Quoi |
 |---|---|
@@ -1099,7 +1130,27 @@ git archive --format=zip --prefix=petclinic-secure/ -o petclinic-secure-NOM1-NOM
 ```
 
 `git archive` n'exporte que les fichiers **suivis** : ni `target/`, ni `secrets/`, ni `.idea/`.
-Les modules hors build (config-server, genai, admin) sont exclus par les règles `export-ignore` de P1.
+Les modules hors build (config-server, genai, admin) ne sont exclus **que si** des règles `export-ignore`
+existent : **vérifié le 23/11, `.gitattributes` n'en contient aucune** (seulement `*.css linguist-generated`).
+À faire avant de produire l'archive :
+
+```bash
+git switch main && git pull && git switch -c feature/p11-archive
+git rm -r --cached logs && echo "logs/" >> .gitignore      # logs versionnés, dont un mot de passe de truststore
+printf '%s\n' \
+  "spring-petclinic-config-server export-ignore" \
+  "spring-petclinic-genai-service export-ignore" \
+  "spring-petclinic-admin-server export-ignore" \
+  "logs export-ignore" "guide export-ignore" "rapport export-ignore" >> .gitattributes
+git update-index --chmod=+x scripts/run-secure.sh scripts/security-smoke.sh scripts/pki/generate.sh mvnw   # Windows
+```
+
+Fichiers **absents** à créer (constat du 23/11) : `scripts/run-secure.sh` (contenu : `GuideV2!!!.md` §9.3) et
+`LISEZMOI-RENDU.md`. Archiver depuis **`main`**, pas depuis `dev` : `dev` est en retard (il n'a plus
+`rogue-client`, ni `client-auth: need`, ni la liste blanche).
+
+Contrôle de l'archive : `unzip -l petclinic-secure-*.zip | grep -E "logs/|genai|config-server|admin-server"`
+ne doit rien afficher.
 
 ### 11.2 Ajouter `LISEZMOI-RENDU.md` et `scripts/run-secure.sh`
 
