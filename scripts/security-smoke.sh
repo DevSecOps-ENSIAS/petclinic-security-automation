@@ -53,9 +53,22 @@ expect "actuator/env gateway" 404 "$(code -H "Authorization: Bearer $TOKEN" "$GA
 echo
 echo "== mTLS direct =="
 check_mtls() {
-  # À remplir avec les 4 vérifications mTLS du guide (section 9.1).
-  # Requiert : client-auth: need, allowed-callers, certificat rogue-client, PKI_DIR renseigné.
-  skip "mTLS direct : en attente du palier 3 de P6"
+  local PD="${PKI_DIR:-secrets}" SVC=localhost:8081
+  if [ ! -f "$PD/rogue-client.crt" ]; then skip "mTLS direct : certificats absents (PKI_DIR)"; return; fi
+  mtls_status() {  # $1 = nom du certificat ou "none", $2 = jeton (facultatif)
+    local hdr="" r
+    [ -n "${2:-}" ] && hdr="Authorization: Bearer $2\r\n"
+    local certopt=()
+    [ "$1" != none ] && certopt=(-cert "$PD/$1.crt" -key "$PD/$1.key")
+    r=$(printf "GET /owners HTTP/1.1\r\nHost: localhost\r\n${hdr}Connection: close\r\n\r\n" \
+      | openssl s_client -connect "$SVC" -CAfile "$PD/ca.pem" ${certopt[@]+"${certopt[@]}"} -quiet 2>/dev/null \
+      | head -1 | grep -oE '[0-9]{3}' | head -1)
+    echo "${r:-000}"
+  }
+  expect "service direct sans certificat"      000 "$(mtls_status none "$TOKEN")"
+  expect "certificat gateway sans jeton"       401 "$(mtls_status api-gateway)"
+  expect "certificat gateway + jeton alice"    200 "$(mtls_status api-gateway "$TOKEN")"
+  expect "certificat intrus + jeton alice"     403 "$(mtls_status rogue-client "$TOKEN")"
 }
 check_mtls
 

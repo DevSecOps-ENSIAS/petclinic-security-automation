@@ -17,6 +17,8 @@ package org.springframework.samples.petclinic.api;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
@@ -28,6 +30,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.samples.petclinic.api.config.MtlsHttpClientFactory;
 import org.springframework.security.oauth2.server.resource.web.reactive.function.client.ServerBearerExchangeFilterFunction;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -58,8 +62,14 @@ public class ApiGatewayApplication {
 
     @Bean
     @LoadBalanced
-    public WebClient.Builder loadBalancedWebClientBuilder() {
-        return WebClient.builder().filter(new ServerBearerExchangeFilterFunction());
+    public WebClient.Builder loadBalancedWebClientBuilder(
+            @Value("${petclinic.mtls.key-store:}") String keyStore,
+            @Value("${petclinic.mtls.trust-store:}") String trustStore,
+            @Value("${petclinic.mtls.password:}") String password) {
+        return WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(
+                MtlsHttpClientFactory.create(keyStore, trustStore, password)))
+            .filter(new ServerBearerExchangeFilterFunction());
     }
 
     @Bean

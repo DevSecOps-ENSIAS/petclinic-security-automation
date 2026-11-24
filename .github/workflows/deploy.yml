@@ -60,7 +60,7 @@ jobs:
         if: matrix.java == '21' && github.actor != 'dependabot[bot]'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw -B -P quality sonar:sonar -Dsonar.qualitygate.wait=true
+        run: ./mvnw -B -P quality org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211:sonar -Dsonar.qualitygate.wait=true
 
       - name: Semgrep (SAST bloquant)
         if: matrix.java == '21'
